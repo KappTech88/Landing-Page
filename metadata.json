@@ -1,0 +1,8 @@
+{
+  "name": "Estimate Reliance",
+  "description": "Professional estimating platform with creative labs and startup portal.",
+  "requestFramePermissions": [
+    "microphone",
+    "camera"
+  ]
+}
