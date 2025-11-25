@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Upload, Film, Loader2, Key } from 'lucide-react';
 import { generateVeoVideo } from '../services/geminiService';
+import ApiKeyManager, { getStoredApiConfig } from './ApiKeyManager';
 
 const MemoryAnimator: React.FC = () => {
   const [file, setFile] = useState<File | null>(null);
@@ -9,23 +10,24 @@ const MemoryAnimator: React.FC = () => {
   const [loading, setLoading] = useState(false);
   const [videoUrl, setVideoUrl] = useState<string | null>(null);
   const [hasKey, setHasKey] = useState(false);
+  const [showApiKeyManager, setShowApiKeyManager] = useState(false);
 
   useEffect(() => {
     checkKey();
   }, []);
 
-  const checkKey = async () => {
-    if (window.aistudio && window.aistudio.hasSelectedApiKey) {
-      const has = await window.aistudio.hasSelectedApiKey();
-      setHasKey(has);
-    }
+  const checkKey = () => {
+    const config = getStoredApiConfig();
+    setHasKey(!!config && !!config.apiKey);
   };
 
-  const handleSelectKey = async () => {
-    if (window.aistudio && window.aistudio.openSelectKey) {
-      await window.aistudio.openSelectKey();
-      checkKey();
-    }
+  const handleSelectKey = () => {
+    setShowApiKeyManager(true);
+  };
+
+  const handleApiKeySaved = () => {
+    checkKey();
+    setShowApiKeyManager(false);
   };
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {

@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { ArrowLeft, Key, Upload, Wand2, Loader2, FileText } from 'lucide-react';
 import { generateProGraphics } from '../../services/geminiService';
+import ApiKeyManager, { getStoredApiConfig } from '../ApiKeyManager';
 
 interface FlyerStudioProps {
   onBack: () => void;
@@ -8,6 +9,7 @@ interface FlyerStudioProps {
 
 const FlyerStudio: React.FC<FlyerStudioProps> = ({ onBack }) => {
   const [hasKey, setHasKey] = useState(false);
+  const [showApiKeyManager, setShowApiKeyManager] = useState(false);
   const [file, setFile] = useState<File | null>(null);
   const [imagePreview, setImagePreview] = useState<string | null>(null);
   const [companyName, setCompanyName] = useState('');
@@ -19,14 +21,21 @@ const FlyerStudio: React.FC<FlyerStudioProps> = ({ onBack }) => {
   const [generatedAsset, setGeneratedAsset] = useState<string | null>(null);
 
   useEffect(() => {
-    if (window.aistudio && window.aistudio.hasSelectedApiKey) window.aistudio.hasSelectedApiKey().then(setHasKey);
+    checkApiKey();
   }, []);
 
-  const handleSelectKey = async () => {
-    if (window.aistudio && window.aistudio.openSelectKey) {
-        await window.aistudio.openSelectKey();
-        setHasKey(await window.aistudio.hasSelectedApiKey());
-    }
+  const checkApiKey = () => {
+    const config = getStoredApiConfig();
+    setHasKey(!!config && !!config.apiKey);
+  };
+
+  const handleSelectKey = () => {
+    setShowApiKeyManager(true);
+  };
+
+  const handleApiKeySaved = () => {
+    checkApiKey();
+    setShowApiKeyManager(false);
   };
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {

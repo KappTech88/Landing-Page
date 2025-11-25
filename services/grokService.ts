@@ -3,8 +3,30 @@
  * Used specifically for SloganStudio.tsx
  */
 
-const GROK_API_KEY = import.meta.env.VITE_GROK_API_KEY;
 const GROK_API_URL = 'https://api.x.ai/v1/chat/completions';
+
+// Helper to get stored API configuration
+const getStoredApiConfig = () => {
+  try {
+    const stored = localStorage.getItem('estimate-reliance-api-config');
+    return stored ? JSON.parse(stored) : null;
+  } catch {
+    return null;
+  }
+};
+
+// Helper to get active API key (prioritizes user-configured key over environment variable)
+const getActiveApiKey = (): string => {
+  const config = getStoredApiConfig();
+
+  // If user has configured Grok API key, use it
+  if (config && config.provider === 'grok' && config.apiKey) {
+    return config.apiKey;
+  }
+
+  // Otherwise fall back to environment variable
+  return import.meta.env.VITE_GROK_API_KEY || '';
+};
 
 export interface SloganFormData {
   companyName: string;
@@ -20,8 +42,10 @@ export interface SloganFormData {
  * Generates catchy slogans using the Grok API
  */
 export const generateGrokSlogans = async (data: SloganFormData): Promise<string> => {
+  const GROK_API_KEY = getActiveApiKey();
+
   if (!GROK_API_KEY) {
-    throw new Error('Grok API key is not configured. Please set VITE_GROK_API_KEY in .env.local');
+    throw new Error('Grok API key is not configured. Please configure your API key in the settings.');
   }
 
   const prompt = `
@@ -94,8 +118,10 @@ export const generateGrokMarketing = async (
   prompt: string,
   contentType: 'social' | 'email' | 'website' | 'ad' = 'social'
 ): Promise<string> => {
+  const GROK_API_KEY = getActiveApiKey();
+
   if (!GROK_API_KEY) {
-    throw new Error('Grok API key is not configured');
+    throw new Error('Grok API key is not configured. Please configure your API key in the settings.');
   }
 
   const systemPrompts = {

@@ -1,12 +1,15 @@
-import React, { useState } from 'react';
-import { ArrowLeft, Bot, CheckSquare, Square, Loader2 } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { ArrowLeft, Bot, CheckSquare, Square, Loader2, Key } from 'lucide-react';
 import { generateGrokSlogans, SloganFormData } from '../../services/grokService';
+import ApiKeyManager, { getStoredApiConfig } from '../ApiKeyManager';
 
 interface SloganStudioProps {
   onBack: () => void;
 }
 
 const SloganStudio: React.FC<SloganStudioProps> = ({ onBack }) => {
+  const [hasKey, setHasKey] = useState(false);
+  const [showApiKeyManager, setShowApiKeyManager] = useState(false);
   const [sloganCompany, setSloganCompany] = useState('');
   const [industries, setIndustries] = useState<string[]>([]);
   const [audiences, setAudiences] = useState<string[]>([]);
@@ -16,6 +19,20 @@ const SloganStudio: React.FC<SloganStudioProps> = ({ onBack }) => {
   const [sloganPreferences, setSloganPreferences] = useState('');
   const [sloganLoading, setSloganLoading] = useState(false);
   const [sloganResult, setSloganResult] = useState<string | null>(null);
+
+  useEffect(() => {
+    checkApiKey();
+  }, []);
+
+  const checkApiKey = () => {
+    const config = getStoredApiConfig();
+    setHasKey(!!config && !!config.apiKey);
+  };
+
+  const handleApiKeySaved = () => {
+    checkApiKey();
+    setShowApiKeyManager(false);
+  };
 
   const toggleSelection = (list: string[], setList: React.Dispatch<React.SetStateAction<string[]>>, item: string) => {
     setList(list.includes(item) ? list.filter(i => i !== item) : [...list, item]);
@@ -46,12 +63,38 @@ const SloganStudio: React.FC<SloganStudioProps> = ({ onBack }) => {
   );
 
   return (
-    <div className="animate-fadeIn glass-panel rounded-2xl shadow-2xl border border-teal-500/30 overflow-hidden min-h-[700px]">
-        <div className="bg-slate-900/40 border-b border-teal-500/20 p-6 flex items-center justify-between">
-            <button onClick={onBack} className="flex items-center text-teal-400 hover:text-teal-300 transition-colors text-sm"><ArrowLeft className="w-4 h-4 mr-2" /> Back</button>
-            <h2 className="text-2xl font-light text-teal-200 tracking-wide">SLOGAN CREATION</h2>
-            <div className="w-16"></div>
-        </div>
+    <div className="animate-fadeIn">
+        {showApiKeyManager && (
+          <ApiKeyManager
+            onClose={() => setShowApiKeyManager(false)}
+            onSave={handleApiKeySaved}
+          />
+        )}
+
+        <div className="glass-panel rounded-2xl shadow-2xl border border-teal-500/30 overflow-hidden min-h-[700px]">
+            <div className="bg-slate-900/40 border-b border-teal-500/20 p-6 flex items-center justify-between">
+                <button onClick={onBack} className="flex items-center text-teal-400 hover:text-teal-300 transition-colors text-sm"><ArrowLeft className="w-4 h-4 mr-2" /> Back</button>
+                <h2 className="text-2xl font-light text-teal-200 tracking-wide">SLOGAN CREATION</h2>
+                {hasKey ? (
+                  <button
+                    onClick={() => setShowApiKeyManager(true)}
+                    className="text-teal-400 hover:text-teal-300 transition-colors text-xs flex items-center"
+                  >
+                    <Key className="w-3 h-3 mr-1" /> Change API
+                  </button>
+                ) : (
+                  <div className="w-16"></div>
+                )}
+            </div>
+
+            {!hasKey ? (
+                <div className="p-8 text-center py-20">
+                    <Key className="w-12 h-12 text-teal-400 mx-auto mb-4" />
+                    <h3 className="text-xl font-bold text-teal-100 mb-2">API Key Required</h3>
+                    <p className="text-slate-400 mb-6 max-w-md mx-auto">Configure your LLM API key to unlock slogan generation features</p>
+                    <button onClick={() => setShowApiKeyManager(true)} className="bg-teal-600 hover:bg-teal-500 text-white font-bold py-3 px-8 rounded-xl transition-all mt-4">Configure API Key</button>
+                </div>
+            ) : (
         <div className="p-8 grid lg:grid-cols-2 gap-12 items-start">
             <div className="space-y-6 max-h-[700px] overflow-y-auto pr-2 custom-scrollbar">
                 <div><label className="block text-teal-200 text-sm font-medium mb-2">Company Name *</label><input value={sloganCompany} onChange={e => setSloganCompany(e.target.value)} className="w-full bg-slate-900/50 border border-teal-500/30 rounded-lg p-3 text-teal-100" placeholder="Estimate Reliance" /></div>
@@ -65,6 +108,8 @@ const SloganStudio: React.FC<SloganStudioProps> = ({ onBack }) => {
                 <h3 className="text-teal-400 text-sm font-bold tracking-widest uppercase mb-6">Grok Output</h3>
                 {sloganResult ? <div className="text-teal-100 whitespace-pre-wrap font-mono">{sloganResult}</div> : <div className="text-teal-500/30 flex-grow flex items-center justify-center"><Bot className="w-12 h-12 opacity-50" /></div>}
             </div>
+        </div>
+            )}
         </div>
     </div>
   );
