@@ -5,6 +5,15 @@
 -- This combines all 8 migration files into one
 -- Estimated execution time: 10-15 seconds
 -- =====================================================
+--
+-- ⚠️  IMPORTANT: Run this on a FRESH database only!
+--
+-- If tables already exist, you will get errors like:
+--   "relation 'organizations' already exists"
+--
+-- To start fresh, run DROP_ALL_TABLES.sql first, then run this file.
+--
+-- =====================================================
 
 -- ===== Starting Database Setup =====
 -- ===== Step 1/8: Organizations, Users, Roles =====

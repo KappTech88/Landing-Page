@@ -20,12 +20,32 @@ Your `.env.local` is configured with:
 
 ### 🗄️ STEP 2: Apply Database Schema
 
-#### Option A: Manual (Recommended - Most Reliable)
+#### ⚠️ Starting Fresh? Run Cleanup First
+
+If tables already exist (you'll see "relation already exists" errors), run cleanup:
+1. Open: `database/DROP_ALL_TABLES.sql`
+2. Copy entire file → Paste into SQL Editor → Run
+3. This will delete ALL existing data and start fresh
+
+#### Option A: All-in-One (Quickest - Recommended)
 
 1. **Open Supabase SQL Editor**:
    - https://app.supabase.com/project/qxswelavrvfgtpyukijb/sql/new
 
-2. **Run Each File IN ORDER** (copy entire file → paste → run):
+2. **Run Complete Schema**:
+   - Open: `database/COMPLETE_SCHEMA.sql`
+   - Copy entire file (2,900+ lines)
+   - Paste into SQL Editor
+   - Click **RUN**
+   - Wait ~10-15 seconds
+
+3. **Verify Success**:
+   - Should show "Success" in green
+   - Check **Table Editor** - you should see 20+ tables
+
+#### Option B: Step-by-Step (if Option A fails)
+
+Run each file **IN ORDER** (copy entire file → paste → run):
 
    ```
    ✓ database/schemas/001-init.sql          (Organizations, Users, Roles)
@@ -37,14 +57,6 @@ Your `.env.local` is configured with:
    ✓ database/schemas/007-status-history.sql (Audit Trail)
    ✓ database/schemas/008-rls-policies.sql  (Security Policies)
    ```
-
-3. **Verify Success**:
-   - Each file should show "Success" in green
-   - Check **Table Editor** - you should see 20+ tables
-
-#### Option B: Copy-Paste Friendly
-
-Open each file in your code editor, select all (Cmd/Ctrl+A), copy, paste into SQL Editor, run.
 
 ---
 
