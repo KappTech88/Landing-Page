@@ -7,9 +7,16 @@
 
 export enum AppView {
   LANDING = 'LANDING',
+  SERVICES = 'SERVICES',
+  DENIAL_APPEAL = 'DENIAL_APPEAL',
+  XACTIMATE_ESTIMATE = 'XACTIMATE_ESTIMATE',
+  SUPPLEMENT_CLAIM = 'SUPPLEMENT_CLAIM',
+  COMMERCIAL_BID = 'COMMERCIAL_BID',
+  CUSTOMIZED_DOCS = 'CUSTOMIZED_DOCS',
   CLAIMS = 'CLAIMS',
   LABS = 'LABS',
   PORTAL = 'PORTAL',
+  REGISTER = 'REGISTER',
 }
 
 export type SubscriptionTier = 'free' | 'basic' | 'professional' | 'enterprise';
