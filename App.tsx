@@ -75,22 +75,6 @@ const App: React.FC = () => {
                 <p className="text-xl md:text-2xl text-slate-300 font-light tracking-wide mb-10 max-w-3xl mx-auto leading-relaxed animate-fadeIn stagger-2">
                   Professional insurance restoration estimates, supplements, and creative marketing solutions—powered by AI.
                 </p>
-                <div className="flex flex-col sm:flex-row gap-4 justify-center items-center animate-slideUp stagger-3">
-                  <button
-                    onClick={() => setView(AppView.CLAIMS)}
-                    className="group px-10 py-5 text-lg font-medium bg-gradient-to-r from-indigo-600 to-violet-600 hover:from-indigo-500 hover:to-violet-500 rounded-xl shadow-2xl shadow-indigo-600/30 transition-all transform hover:scale-105 hover:shadow-indigo-600/50 relative overflow-hidden"
-                  >
-                    <span className="relative z-10">Inquire / Submit Task →</span>
-                    <div className="absolute inset-0 bg-gradient-to-r from-indigo-400/0 via-white/20 to-indigo-400/0 -translate-x-full group-hover:translate-x-full transition-transform duration-1000"></div>
-                  </button>
-                  <button
-                    onClick={() => setView(AppView.LABS)}
-                    className="group px-10 py-5 text-lg font-light border-2 border-teal-500/50 hover:border-teal-400 text-teal-100 hover:bg-teal-500/10 rounded-xl transition-all hover:shadow-lg hover:shadow-teal-500/20 relative overflow-hidden"
-                  >
-                    <span className="relative z-10">Explore Labs</span>
-                    <div className="absolute inset-0 bg-teal-500/5 -translate-y-full group-hover:translate-y-0 transition-transform duration-300"></div>
-                  </button>
-                </div>
               </div>
             </div>
 
