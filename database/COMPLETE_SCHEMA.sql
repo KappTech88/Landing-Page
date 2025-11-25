@@ -2394,7 +2394,7 @@ COMMENT ON COLUMN notifications.expires_at IS 'Auto-delete notification after th
 -- =====================================================
 
 -- Get current user's organization IDs (user can belong to multiple orgs)
-CREATE OR REPLACE FUNCTION auth.user_organization_ids()
+CREATE OR REPLACE FUNCTION public.user_organization_ids()
 RETURNS UUID[] AS $$
     SELECT ARRAY_AGG(DISTINCT organization_id)
     FROM user_organization_roles
@@ -2403,7 +2403,7 @@ RETURNS UUID[] AS $$
 $$ LANGUAGE sql SECURITY DEFINER STABLE;
 
 -- Check if current user is super admin
-CREATE OR REPLACE FUNCTION auth.is_super_admin()
+CREATE OR REPLACE FUNCTION public.is_super_admin()
 RETURNS BOOLEAN AS $$
     SELECT EXISTS (
         SELECT 1
@@ -2416,7 +2416,7 @@ RETURNS BOOLEAN AS $$
 $$ LANGUAGE sql SECURITY DEFINER STABLE;
 
 -- Check if current user is admin in specific organization
-CREATE OR REPLACE FUNCTION auth.is_org_admin(p_organization_id UUID)
+CREATE OR REPLACE FUNCTION public.is_org_admin(p_organization_id UUID)
 RETURNS BOOLEAN AS $$
     SELECT EXISTS (
         SELECT 1
@@ -2430,7 +2430,7 @@ RETURNS BOOLEAN AS $$
 $$ LANGUAGE sql SECURITY DEFINER STABLE;
 
 -- Check if user has specific permission
-CREATE OR REPLACE FUNCTION auth.user_has_permission(
+CREATE OR REPLACE FUNCTION public.user_has_permission(
     p_organization_id UUID,
     p_resource VARCHAR,
     p_action VARCHAR
@@ -2491,19 +2491,19 @@ ALTER TABLE notifications ENABLE ROW LEVEL SECURITY;
 CREATE POLICY "Users can view their organizations"
     ON organizations FOR SELECT
     USING (
-        auth.is_super_admin()
-        OR id = ANY(auth.user_organization_ids())
+        public.is_super_admin()
+        OR id = ANY(public.user_organization_ids())
     );
 
 CREATE POLICY "Super admins can create organizations"
     ON organizations FOR INSERT
-    WITH CHECK (auth.is_super_admin());
+    WITH CHECK (public.is_super_admin());
 
 CREATE POLICY "Admins can update their organization"
     ON organizations FOR UPDATE
     USING (
-        auth.is_super_admin()
-        OR auth.is_org_admin(id)
+        public.is_super_admin()
+        OR public.is_org_admin(id)
     );
 
 -- =====================================================
@@ -2513,7 +2513,7 @@ CREATE POLICY "Admins can update their organization"
 CREATE POLICY "Users can view themselves"
     ON users FOR SELECT
     USING (
-        auth.is_super_admin()
+        public.is_super_admin()
         OR id = auth.uid()
         OR EXISTS (
             SELECT 1
@@ -2531,26 +2531,26 @@ CREATE POLICY "Users can view roles in their organizations"
     ON roles FOR SELECT
     USING (
         is_system_role = true
-        OR auth.is_super_admin()
-        OR organization_id = ANY(auth.user_organization_ids())
+        OR public.is_super_admin()
+        OR organization_id = ANY(public.user_organization_ids())
     );
 
 CREATE POLICY "Admins can create custom roles"
     ON roles FOR INSERT
     WITH CHECK (
-        auth.is_super_admin()
+        public.is_super_admin()
         OR (
             is_custom_role = true
-            AND auth.is_org_admin(organization_id)
+            AND public.is_org_admin(organization_id)
         )
     );
 
 CREATE POLICY "Users can view organization roles"
     ON user_organization_roles FOR SELECT
     USING (
-        auth.is_super_admin()
+        public.is_super_admin()
         OR user_id = auth.uid()
-        OR organization_id = ANY(auth.user_organization_ids())
+        OR organization_id = ANY(public.user_organization_ids())
     );
 
 -- =====================================================
@@ -2560,29 +2560,29 @@ CREATE POLICY "Users can view organization roles"
 CREATE POLICY "Users can view claims in their organization"
     ON claims FOR SELECT
     USING (
-        auth.is_super_admin()
-        OR organization_id = ANY(auth.user_organization_ids())
+        public.is_super_admin()
+        OR organization_id = ANY(public.user_organization_ids())
     );
 
 CREATE POLICY "Users with permission can create claims"
     ON claims FOR INSERT
     WITH CHECK (
-        auth.is_super_admin()
-        OR auth.user_has_permission(organization_id, 'claims', 'create')
+        public.is_super_admin()
+        OR public.user_has_permission(organization_id, 'claims', 'create')
     );
 
 CREATE POLICY "Users with permission can update claims"
     ON claims FOR UPDATE
     USING (
-        auth.is_super_admin()
-        OR auth.user_has_permission(organization_id, 'claims', 'update')
+        public.is_super_admin()
+        OR public.user_has_permission(organization_id, 'claims', 'update')
     );
 
 CREATE POLICY "Users with permission can delete claims"
     ON claims FOR DELETE
     USING (
-        auth.is_super_admin()
-        OR auth.user_has_permission(organization_id, 'claims', 'delete')
+        public.is_super_admin()
+        OR public.user_has_permission(organization_id, 'claims', 'delete')
     );
 
 -- =====================================================
@@ -2592,22 +2592,22 @@ CREATE POLICY "Users with permission can delete claims"
 CREATE POLICY "Properties inherit claim access"
     ON properties FOR SELECT
     USING (
-        auth.is_super_admin()
-        OR organization_id = ANY(auth.user_organization_ids())
+        public.is_super_admin()
+        OR organization_id = ANY(public.user_organization_ids())
     );
 
 CREATE POLICY "Properties inherit claim create"
     ON properties FOR INSERT
     WITH CHECK (
-        auth.is_super_admin()
-        OR auth.user_has_permission(organization_id, 'claims', 'create')
+        public.is_super_admin()
+        OR public.user_has_permission(organization_id, 'claims', 'create')
     );
 
 CREATE POLICY "Properties inherit claim update"
     ON properties FOR UPDATE
     USING (
-        auth.is_super_admin()
-        OR auth.user_has_permission(organization_id, 'claims', 'update')
+        public.is_super_admin()
+        OR public.user_has_permission(organization_id, 'claims', 'update')
     );
 
 -- =====================================================
@@ -2617,79 +2617,79 @@ CREATE POLICY "Properties inherit claim update"
 CREATE POLICY "Users can view estimates in their organization"
     ON estimates FOR SELECT
     USING (
-        auth.is_super_admin()
-        OR organization_id = ANY(auth.user_organization_ids())
+        public.is_super_admin()
+        OR organization_id = ANY(public.user_organization_ids())
     );
 
 CREATE POLICY "Users with permission can create estimates"
     ON estimates FOR INSERT
     WITH CHECK (
-        auth.is_super_admin()
-        OR auth.user_has_permission(organization_id, 'estimates', 'create')
+        public.is_super_admin()
+        OR public.user_has_permission(organization_id, 'estimates', 'create')
     );
 
 CREATE POLICY "Users with permission can update estimates"
     ON estimates FOR UPDATE
     USING (
-        auth.is_super_admin()
-        OR auth.user_has_permission(organization_id, 'estimates', 'update')
+        public.is_super_admin()
+        OR public.user_has_permission(organization_id, 'estimates', 'update')
     );
 
 CREATE POLICY "Users with permission can delete estimates"
     ON estimates FOR DELETE
     USING (
-        auth.is_super_admin()
-        OR auth.user_has_permission(organization_id, 'estimates', 'delete')
+        public.is_super_admin()
+        OR public.user_has_permission(organization_id, 'estimates', 'delete')
     );
 
 -- Apply same pattern to estimate_line_items, materials, labor
 CREATE POLICY "Line items inherit estimate access - select"
     ON estimate_line_items FOR SELECT
     USING (
-        auth.is_super_admin()
-        OR organization_id = ANY(auth.user_organization_ids())
+        public.is_super_admin()
+        OR organization_id = ANY(public.user_organization_ids())
     );
 
 CREATE POLICY "Line items inherit estimate access - insert"
     ON estimate_line_items FOR INSERT
     WITH CHECK (
-        auth.is_super_admin()
-        OR auth.user_has_permission(organization_id, 'estimates', 'create')
+        public.is_super_admin()
+        OR public.user_has_permission(organization_id, 'estimates', 'create')
     );
 
 CREATE POLICY "Line items inherit estimate access - update"
     ON estimate_line_items FOR UPDATE
     USING (
-        auth.is_super_admin()
-        OR auth.user_has_permission(organization_id, 'estimates', 'update')
+        public.is_super_admin()
+        OR public.user_has_permission(organization_id, 'estimates', 'update')
     );
 
 CREATE POLICY "Materials inherit estimate access - select"
     ON materials FOR SELECT
     USING (
-        auth.is_super_admin()
-        OR organization_id = ANY(auth.user_organization_ids())
+        public.is_super_admin()
+        OR organization_id = ANY(public.user_organization_ids())
     );
 
 CREATE POLICY "Materials inherit estimate access - insert"
     ON materials FOR INSERT
     WITH CHECK (
-        auth.is_super_admin()
-        OR auth.user_has_permission(organization_id, 'estimates', 'create')
+        public.is_super_admin()
+        OR public.user_has_permission(organization_id, 'estimates', 'create')
     );
 
 CREATE POLICY "Labor inherit estimate access - select"
     ON labor FOR SELECT
     USING (
-        auth.is_super_admin()
-        OR organization_id = ANY(auth.user_organization_ids())
+        public.is_super_admin()
+        OR organization_id = ANY(public.user_organization_ids())
     );
 
 CREATE POLICY "Labor inherit estimate access - insert"
     ON labor FOR INSERT
     WITH CHECK (
-        auth.is_super_admin()
-        OR auth.user_has_permission(organization_id, 'estimates', 'create')
+        public.is_super_admin()
+        OR public.user_has_permission(organization_id, 'estimates', 'create')
     );
 
 -- =====================================================
@@ -2699,19 +2699,19 @@ CREATE POLICY "Labor inherit estimate access - insert"
 CREATE POLICY "Users can view photos in their organization"
     ON photos FOR SELECT
     USING (
-        auth.is_super_admin()
-        OR organization_id = ANY(auth.user_organization_ids())
+        public.is_super_admin()
+        OR organization_id = ANY(public.user_organization_ids())
         OR (is_public = true AND claim_id IN (
-            SELECT id FROM claims WHERE organization_id = ANY(auth.user_organization_ids())
+            SELECT id FROM claims WHERE organization_id = ANY(public.user_organization_ids())
         ))
     );
 
 CREATE POLICY "Users can upload photos to their claims"
     ON photos FOR INSERT
     WITH CHECK (
-        auth.is_super_admin()
+        public.is_super_admin()
         OR (
-            organization_id = ANY(auth.user_organization_ids())
+            organization_id = ANY(public.user_organization_ids())
             AND claim_id IN (
                 SELECT id FROM claims
                 WHERE organization_id = organization_id
@@ -2722,15 +2722,15 @@ CREATE POLICY "Users can upload photos to their claims"
 CREATE POLICY "Users can view documents in their organization"
     ON documents FOR SELECT
     USING (
-        auth.is_super_admin()
-        OR organization_id = ANY(auth.user_organization_ids())
+        public.is_super_admin()
+        OR organization_id = ANY(public.user_organization_ids())
     );
 
 CREATE POLICY "Users can upload documents"
     ON documents FOR INSERT
     WITH CHECK (
-        auth.is_super_admin()
-        OR organization_id = ANY(auth.user_organization_ids())
+        public.is_super_admin()
+        OR organization_id = ANY(public.user_organization_ids())
     );
 
 -- =====================================================
@@ -2740,46 +2740,46 @@ CREATE POLICY "Users can upload documents"
 CREATE POLICY "Users can view invoices in their organization"
     ON invoices FOR SELECT
     USING (
-        auth.is_super_admin()
-        OR organization_id = ANY(auth.user_organization_ids())
+        public.is_super_admin()
+        OR organization_id = ANY(public.user_organization_ids())
     );
 
 CREATE POLICY "Users with permission can create invoices"
     ON invoices FOR INSERT
     WITH CHECK (
-        auth.is_super_admin()
-        OR auth.user_has_permission(organization_id, 'invoices', 'create')
+        public.is_super_admin()
+        OR public.user_has_permission(organization_id, 'invoices', 'create')
     );
 
 CREATE POLICY "Users with permission can update invoices"
     ON invoices FOR UPDATE
     USING (
-        auth.is_super_admin()
-        OR auth.user_has_permission(organization_id, 'invoices', 'update')
+        public.is_super_admin()
+        OR public.user_has_permission(organization_id, 'invoices', 'update')
     );
 
 CREATE POLICY "Invoice line items inherit invoice access - select"
     ON invoice_line_items FOR SELECT
     USING (
-        auth.is_super_admin()
+        public.is_super_admin()
         OR invoice_id IN (
             SELECT id FROM invoices
-            WHERE organization_id = ANY(auth.user_organization_ids())
+            WHERE organization_id = ANY(public.user_organization_ids())
         )
     );
 
 CREATE POLICY "Payments inherit invoice access - select"
     ON payments FOR SELECT
     USING (
-        auth.is_super_admin()
-        OR organization_id = ANY(auth.user_organization_ids())
+        public.is_super_admin()
+        OR organization_id = ANY(public.user_organization_ids())
     );
 
 CREATE POLICY "Payments inherit invoice access - insert"
     ON payments FOR INSERT
     WITH CHECK (
-        auth.is_super_admin()
-        OR auth.user_has_permission(organization_id, 'invoices', 'create')
+        public.is_super_admin()
+        OR public.user_has_permission(organization_id, 'invoices', 'create')
     );
 
 -- =====================================================
@@ -2789,31 +2789,31 @@ CREATE POLICY "Payments inherit invoice access - insert"
 CREATE POLICY "Users can view insurance companies in their org"
     ON insurance_companies FOR SELECT
     USING (
-        auth.is_super_admin()
+        public.is_super_admin()
         OR organization_id IS NULL -- Global companies
-        OR organization_id = ANY(auth.user_organization_ids())
+        OR organization_id = ANY(public.user_organization_ids())
     );
 
 CREATE POLICY "Users can view adjusters"
     ON insurance_adjusters FOR SELECT
     USING (
-        auth.is_super_admin()
+        public.is_super_admin()
         OR organization_id IS NULL
-        OR organization_id = ANY(auth.user_organization_ids())
+        OR organization_id = ANY(public.user_organization_ids())
     );
 
 CREATE POLICY "Users can view claim insurance relationships"
     ON claim_insurers FOR SELECT
     USING (
-        auth.is_super_admin()
-        OR organization_id = ANY(auth.user_organization_ids())
+        public.is_super_admin()
+        OR organization_id = ANY(public.user_organization_ids())
     );
 
 CREATE POLICY "Users can view correspondence in their org"
     ON correspondence FOR SELECT
     USING (
-        auth.is_super_admin()
-        OR organization_id = ANY(auth.user_organization_ids())
+        public.is_super_admin()
+        OR organization_id = ANY(public.user_organization_ids())
     );
 
 -- =====================================================
@@ -2823,8 +2823,8 @@ CREATE POLICY "Users can view correspondence in their org"
 CREATE POLICY "Users can view status history in their org"
     ON status_history FOR SELECT
     USING (
-        auth.is_super_admin()
-        OR organization_id = ANY(auth.user_organization_ids())
+        public.is_super_admin()
+        OR organization_id = ANY(public.user_organization_ids())
     );
 
 CREATE POLICY "System can insert status history"
@@ -2834,8 +2834,8 @@ CREATE POLICY "System can insert status history"
 CREATE POLICY "Users can view activity in their org"
     ON activity_log FOR SELECT
     USING (
-        auth.is_super_admin()
-        OR organization_id = ANY(auth.user_organization_ids())
+        public.is_super_admin()
+        OR organization_id = ANY(public.user_organization_ids())
     );
 
 CREATE POLICY "System can insert activity logs"
@@ -2845,29 +2845,29 @@ CREATE POLICY "System can insert activity logs"
 CREATE POLICY "Users can view notes in their org"
     ON notes FOR SELECT
     USING (
-        auth.is_super_admin()
-        OR organization_id = ANY(auth.user_organization_ids())
+        public.is_super_admin()
+        OR organization_id = ANY(public.user_organization_ids())
         OR (visibility = 'public')
     );
 
 CREATE POLICY "Users can create notes"
     ON notes FOR INSERT
     WITH CHECK (
-        auth.is_super_admin()
-        OR organization_id = ANY(auth.user_organization_ids())
+        public.is_super_admin()
+        OR organization_id = ANY(public.user_organization_ids())
     );
 
 CREATE POLICY "Users can update their own notes"
     ON notes FOR UPDATE
     USING (
-        auth.is_super_admin()
+        public.is_super_admin()
         OR created_by = auth.uid()
     );
 
 CREATE POLICY "Users can view their own notifications"
     ON notifications FOR SELECT
     USING (
-        auth.is_super_admin()
+        public.is_super_admin()
         OR user_id = auth.uid()
     );
 
@@ -2898,10 +2898,10 @@ CREATE POLICY "Users can update their own notifications"
 -- COMMENTS FOR DOCUMENTATION
 -- =====================================================
 
-COMMENT ON FUNCTION auth.user_organization_ids() IS 'Returns array of organization IDs the current user belongs to';
-COMMENT ON FUNCTION auth.is_super_admin() IS 'Checks if current user has super_admin role';
-COMMENT ON FUNCTION auth.is_org_admin(UUID) IS 'Checks if current user is admin of specified organization';
-COMMENT ON FUNCTION auth.user_has_permission(UUID, VARCHAR, VARCHAR) IS 'Checks if user has specific permission in organization';
+COMMENT ON FUNCTION public.user_organization_ids() IS 'Returns array of organization IDs the current user belongs to';
+COMMENT ON FUNCTION public.is_super_admin() IS 'Checks if current user has super_admin role';
+COMMENT ON FUNCTION public.is_org_admin(UUID) IS 'Checks if current user is admin of specified organization';
+COMMENT ON FUNCTION public.user_has_permission(UUID, VARCHAR, VARCHAR) IS 'Checks if user has specific permission in organization';
 
 -- =====================================================
 -- TESTING RLS POLICIES

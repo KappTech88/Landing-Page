@@ -68,10 +68,10 @@ DROP FUNCTION IF EXISTS mark_notification_read(UUID) CASCADE;
 DROP FUNCTION IF EXISTS trigger_log_status_change() CASCADE;
 
 -- Drop auth helper functions
-DROP FUNCTION IF EXISTS auth.user_organization_ids() CASCADE;
-DROP FUNCTION IF EXISTS auth.is_super_admin() CASCADE;
-DROP FUNCTION IF EXISTS auth.is_org_admin(UUID) CASCADE;
-DROP FUNCTION IF EXISTS auth.user_has_permission(UUID, VARCHAR, VARCHAR) CASCADE;
+DROP FUNCTION IF EXISTS public.user_organization_ids() CASCADE;
+DROP FUNCTION IF EXISTS public.is_super_admin() CASCADE;
+DROP FUNCTION IF EXISTS public.is_org_admin(UUID) CASCADE;
+DROP FUNCTION IF EXISTS public.user_has_permission(UUID, VARCHAR, VARCHAR) CASCADE;
 
 -- Note: Extensions are kept (uuid-ossp, cube, earthdistance)
 -- They don't interfere with the schema
