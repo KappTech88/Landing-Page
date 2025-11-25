@@ -3,33 +3,46 @@ import StarField from './components/StarField';
 import ClaimSubmission from './components/ClaimSubmission';
 import Labs from './components/Labs';
 import PortalLogin from './components/PortalLogin';
+import PartnerRegistration from './components/PartnerRegistration';
+import DenialAppealForm from './components/DenialAppealForm';
+import XactimateEstimateForm from './components/XactimateEstimateForm';
+import SupplementClaimForm from './components/SupplementClaimForm';
+import CommercialBidForm from './components/CommercialBidForm';
+import CustomizedDocumentsForm from './components/CustomizedDocumentsForm';
 import { AppView } from './types';
-import { FileText, Microscope, ShieldCheck, ArrowLeft, UserPlus, LogIn, ClipboardList } from 'lucide-react';
+import { FileText, Microscope, ShieldCheck, ArrowLeft, UserPlus, LogIn, ClipboardList, FileCheck, Calculator, Building2, FileEdit, DollarSign } from 'lucide-react';
 
 const App: React.FC = () => {
   const [view, setView] = useState<AppView>(AppView.LANDING);
 
-  // Logo Component
+  // Logo Component (removed text, just click area to return home)
   const Logo = () => (
-    <div className="flex flex-col group cursor-pointer select-none" onClick={() => setView(AppView.LANDING)}>
-      <span className="text-xl font-bold tracking-widest text-emerald-100 leading-tight group-hover:text-white transition-colors">
-        ESTIMATE RELIANCE
-      </span>
-      <div className="h-0.5 w-full animate-swoosh-green mt-1 rounded-full shadow-[0_0_8px_rgba(16,185,129,0.4)] group-hover:shadow-[0_0_12px_rgba(16,185,129,0.6)] transition-all duration-300"></div>
+    <div className="flex items-center cursor-pointer select-none" onClick={() => setView(AppView.LANDING)}>
+      <div className="w-8 h-8 rounded-full bg-gradient-to-r from-cyan-500 to-blue-500 flex items-center justify-center shadow-lg shadow-cyan-500/50">
+        <span className="text-white font-bold text-sm">ER</span>
+      </div>
     </div>
   );
 
-  // Landing Nav (with Login)
+  // Landing Nav (with Login & Register)
   const renderLandingNav = () => (
     <nav className="sticky top-0 z-50 w-full backdrop-blur-md bg-slate-950/80 border-b border-white/10 px-6 py-4">
       <div className="max-w-7xl mx-auto flex justify-between items-center">
         <Logo />
-        <button 
-          onClick={() => setView(AppView.PORTAL)}
-          className="px-4 py-2 text-sm text-slate-300 hover:text-white border border-slate-700 hover:border-slate-500 rounded-lg transition-all"
-        >
-          Partner Portal
-        </button>
+        <div className="flex items-center gap-3">
+          <button
+            onClick={() => setView(AppView.REGISTER)}
+            className="px-4 py-2 text-sm text-cyan-300 hover:text-cyan-200 border border-cyan-700 hover:border-cyan-500 rounded-lg transition-all"
+          >
+            Register
+          </button>
+          <button
+            onClick={() => setView(AppView.PORTAL)}
+            className="px-4 py-2 text-sm text-slate-300 hover:text-white border border-slate-700 hover:border-slate-500 rounded-lg transition-all"
+          >
+            Partner Login
+          </button>
+        </div>
       </div>
     </nav>
   );
@@ -49,58 +62,322 @@ const App: React.FC = () => {
 
   const renderContent = () => {
     switch (view) {
+      case AppView.SERVICES:
+        return (
+          <div className="min-h-screen px-4 py-16">
+            {/* Header */}
+            <div className="max-w-7xl mx-auto text-center mb-12 animate-fadeIn">
+              <h2 className="text-4xl md:text-5xl font-thin tracking-widest text-white mb-4">
+                SELECT A SERVICE
+              </h2>
+              <div className="h-0.5 w-48 mx-auto bg-gradient-to-r from-transparent via-indigo-500 to-transparent mb-6"></div>
+              <p className="text-lg text-slate-300 max-w-2xl mx-auto">
+                Choose from our professional services. Click a service to view details and submit your inquiry.
+              </p>
+            </div>
+
+            {/* Service Cards Grid */}
+            <div className="max-w-7xl mx-auto grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+
+              {/* Service 1: Denial Appeal */}
+              <button
+                onClick={() => setView(AppView.DENIAL_APPEAL)}
+                className="card-3d hover-lift group relative rounded-2xl overflow-hidden transition-all duration-500 border border-white/10 hover:border-rose-400/60 glass-card p-6 text-left animate-fadeIn stagger-1"
+              >
+                <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 group-hover:scale-125 transition-transform duration-700">
+                  <div className="w-48 h-48 bg-rose-500/15 rounded-full blur-3xl group-hover:bg-rose-500/25 transition-all duration-500" />
+                </div>
+                <div className="relative z-20">
+                  <div className="w-12 h-12 mb-4 rounded-full bg-rose-500/10 flex items-center justify-center group-hover:bg-rose-500/20 transition-all duration-300 border border-rose-500/20 group-hover:border-rose-500/40">
+                    <FileCheck className="w-6 h-6 text-rose-300 group-hover:text-rose-200 transition-colors" />
+                  </div>
+                  <h3 className="text-xl font-medium text-white mb-2 tracking-wide group-hover:text-rose-100 transition-colors">
+                    Denial Appeal
+                  </h3>
+                  <p className="text-sm text-slate-400 mb-4 group-hover:text-slate-300 transition-colors leading-relaxed">
+                    Investigate claims, fight denials, and acquire missing information.
+                  </p>
+                  <div className="mb-3 pb-3 border-b border-white/10">
+                    <span className="text-2xl font-bold text-emerald-400">10% of Total RCV</span>
+                  </div>
+                  <div className="text-xs text-slate-400 space-y-1.5">
+                    <p className="flex items-start gap-2">
+                      <span className="text-rose-400 mt-0.5">•</span>
+                      <span>Comprehensive claim investigation & analysis</span>
+                    </p>
+                    <p className="flex items-start gap-2">
+                      <span className="text-rose-400 mt-0.5">•</span>
+                      <span>Professional appeal documentation</span>
+                    </p>
+                    <p className="flex items-start gap-2">
+                      <span className="text-rose-400 mt-0.5">•</span>
+                      <span>Insurance company negotiation support</span>
+                    </p>
+                    <p className="flex items-start gap-2">
+                      <span className="text-rose-400 mt-0.5">•</span>
+                      <span>7-10 business day turnaround</span>
+                    </p>
+                  </div>
+                </div>
+              </button>
+
+              {/* Service 2: Xactimate Estimate (Non-claim) */}
+              <button
+                onClick={() => setView(AppView.XACTIMATE_ESTIMATE)}
+                className="card-3d hover-lift group relative rounded-2xl overflow-hidden transition-all duration-500 border border-white/10 hover:border-blue-400/60 glass-card p-6 text-left animate-fadeIn stagger-2"
+              >
+                <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 group-hover:scale-125 transition-transform duration-700">
+                  <div className="w-48 h-48 bg-blue-500/15 rounded-full blur-3xl group-hover:bg-blue-500/25 transition-all duration-500" />
+                </div>
+                <div className="relative z-20">
+                  <div className="w-12 h-12 mb-4 rounded-full bg-blue-500/10 flex items-center justify-center group-hover:bg-blue-500/20 transition-all duration-300 border border-blue-500/20 group-hover:border-blue-500/40">
+                    <Calculator className="w-6 h-6 text-blue-300 group-hover:text-blue-200 transition-colors" />
+                  </div>
+                  <h3 className="text-xl font-medium text-white mb-2 tracking-wide group-hover:text-blue-100 transition-colors">
+                    Xactimate Estimate
+                  </h3>
+                  <p className="text-sm text-slate-400 mb-4 group-hover:text-slate-300 transition-colors leading-relaxed">
+                    Full estimate with supplement line items and building specifications.
+                  </p>
+                  <div className="mb-3 pb-3 border-b border-white/10">
+                    <span className="text-2xl font-bold text-emerald-400">$150</span>
+                  </div>
+                  <div className="text-xs text-slate-400 space-y-1.5">
+                    <p className="flex items-start gap-2">
+                      <span className="text-blue-400 mt-0.5">•</span>
+                      <span>Complete Xactimate estimate with line items</span>
+                    </p>
+                    <p className="flex items-start gap-2">
+                      <span className="text-blue-400 mt-0.5">•</span>
+                      <span>Building code & manufacturer specifications</span>
+                    </p>
+                    <p className="flex items-start gap-2">
+                      <span className="text-blue-400 mt-0.5">•</span>
+                      <span>Supplement items highlighted with notes</span>
+                    </p>
+                    <p className="flex items-start gap-2">
+                      <span className="text-blue-400 mt-0.5">•</span>
+                      <span>3-5 business day delivery</span>
+                    </p>
+                  </div>
+                </div>
+              </button>
+
+              {/* Service 3: Xactimate Estimating (Supplement) */}
+              <button
+                onClick={() => setView(AppView.SUPPLEMENT_CLAIM)}
+                className="card-3d hover-lift group relative rounded-2xl overflow-hidden transition-all duration-500 border border-white/10 hover:border-purple-400/60 glass-card p-6 text-left animate-fadeIn stagger-3"
+              >
+                <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 group-hover:scale-125 transition-transform duration-700">
+                  <div className="w-48 h-48 bg-purple-500/15 rounded-full blur-3xl group-hover:bg-purple-500/25 transition-all duration-500" />
+                </div>
+                <div className="relative z-20">
+                  <div className="w-12 h-12 mb-4 rounded-full bg-purple-500/10 flex items-center justify-center group-hover:bg-purple-500/20 transition-all duration-300 border border-purple-500/20 group-hover:border-purple-500/40">
+                    <FileText className="w-6 h-6 text-purple-300 group-hover:text-purple-200 transition-colors" />
+                  </div>
+                  <h3 className="text-xl font-medium text-white mb-2 tracking-wide group-hover:text-purple-100 transition-colors">
+                    Supplement Claim
+                  </h3>
+                  <p className="text-sm text-slate-400 mb-4 group-hover:text-slate-300 transition-colors leading-relaxed">
+                    Follow-up and negotiation with COC and invoice support.
+                  </p>
+                  <div className="mb-3 pb-3 border-b border-white/10">
+                    <span className="text-2xl font-bold text-emerald-400">15% of Supplement</span>
+                  </div>
+                  <div className="text-xs text-slate-400 space-y-1.5">
+                    <p className="flex items-start gap-2">
+                      <span className="text-purple-400 mt-0.5">•</span>
+                      <span>Full supplement claim preparation & review</span>
+                    </p>
+                    <p className="flex items-start gap-2">
+                      <span className="text-purple-400 mt-0.5">•</span>
+                      <span>Ongoing insurance negotiation support</span>
+                    </p>
+                    <p className="flex items-start gap-2">
+                      <span className="text-purple-400 mt-0.5">•</span>
+                      <span>COC (Certificate of Completion) assistance</span>
+                    </p>
+                    <p className="flex items-start gap-2">
+                      <span className="text-purple-400 mt-0.5">•</span>
+                      <span>Invoice generated upon carrier payment</span>
+                    </p>
+                  </div>
+                </div>
+              </button>
+
+              {/* Service 4: Commercial Bid Estimate */}
+              <button
+                onClick={() => setView(AppView.COMMERCIAL_BID)}
+                className="card-3d hover-lift group relative rounded-2xl overflow-hidden transition-all duration-500 border border-white/10 hover:border-amber-400/60 glass-card p-6 text-left animate-fadeIn stagger-4"
+              >
+                <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 group-hover:scale-125 transition-transform duration-700">
+                  <div className="w-48 h-48 bg-amber-500/15 rounded-full blur-3xl group-hover:bg-amber-500/25 transition-all duration-500" />
+                </div>
+                <div className="relative z-20">
+                  <div className="w-12 h-12 mb-4 rounded-full bg-amber-500/10 flex items-center justify-center group-hover:bg-amber-500/20 transition-all duration-300 border border-amber-500/20 group-hover:border-amber-500/40">
+                    <Building2 className="w-6 h-6 text-amber-300 group-hover:text-amber-200 transition-colors" />
+                  </div>
+                  <h3 className="text-xl font-medium text-white mb-2 tracking-wide group-hover:text-amber-100 transition-colors">
+                    Commercial Bid
+                  </h3>
+                  <p className="text-sm text-slate-400 mb-4 group-hover:text-slate-300 transition-colors leading-relaxed">
+                    Professional estimates for new development projects.
+                  </p>
+                  <div className="mb-3 pb-3 border-b border-white/10">
+                    <span className="text-2xl font-bold text-emerald-400">$250</span>
+                    <span className="text-sm text-emerald-300/70 ml-2">+ 3% if contracted</span>
+                  </div>
+                  <div className="text-xs text-slate-400 space-y-1.5">
+                    <p className="flex items-start gap-2">
+                      <span className="text-amber-400 mt-0.5">•</span>
+                      <span>Professional bid with detailed Take Offs</span>
+                    </p>
+                    <p className="flex items-start gap-2">
+                      <span className="text-amber-400 mt-0.5">•</span>
+                      <span>Material & labor cost breakdowns</span>
+                    </p>
+                    <p className="flex items-start gap-2">
+                      <span className="text-amber-400 mt-0.5">•</span>
+                      <span>$250 credit applied if job awarded</span>
+                    </p>
+                    <p className="flex items-start gap-2">
+                      <span className="text-amber-400 mt-0.5">•</span>
+                      <span>5-7 business day delivery</span>
+                    </p>
+                  </div>
+                </div>
+              </button>
+
+              {/* Service 5: Customized Documents */}
+              <button
+                onClick={() => setView(AppView.CUSTOMIZED_DOCS)}
+                className="card-3d hover-lift group relative rounded-2xl overflow-hidden transition-all duration-500 border border-white/10 hover:border-cyan-400/60 glass-card p-6 text-left animate-fadeIn stagger-5"
+              >
+                <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 group-hover:scale-125 transition-transform duration-700">
+                  <div className="w-48 h-48 bg-cyan-500/15 rounded-full blur-3xl group-hover:bg-cyan-500/25 transition-all duration-500" />
+                </div>
+                <div className="relative z-20">
+                  <div className="w-12 h-12 mb-4 rounded-full bg-cyan-500/10 flex items-center justify-center group-hover:bg-cyan-500/20 transition-all duration-300 border border-cyan-500/20 group-hover:border-cyan-500/40">
+                    <FileEdit className="w-6 h-6 text-cyan-300 group-hover:text-cyan-200 transition-colors" />
+                  </div>
+                  <h3 className="text-xl font-medium text-white mb-2 tracking-wide group-hover:text-cyan-100 transition-colors">
+                    Customized Documents
+                  </h3>
+                  <p className="text-sm text-slate-400 mb-4 group-hover:text-slate-300 transition-colors leading-relaxed">
+                    Custom agreements and documents tailored to your company.
+                  </p>
+                  <div className="mb-3 pb-3 border-b border-white/10">
+                    <span className="text-2xl font-bold text-emerald-400">$50 - $100</span>
+                  </div>
+                  <div className="text-xs text-slate-400 space-y-1.5">
+                    <p className="flex items-start gap-2">
+                      <span className="text-cyan-400 mt-0.5">•</span>
+                      <span>Custom contracts & agreements ($50)</span>
+                    </p>
+                    <p className="flex items-start gap-2">
+                      <span className="text-cyan-400 mt-0.5">•</span>
+                      <span>Digital forms with calculators ($100)</span>
+                    </p>
+                    <p className="flex items-start gap-2">
+                      <span className="text-cyan-400 mt-0.5">•</span>
+                      <span>Company branding & customization included</span>
+                    </p>
+                    <p className="flex items-start gap-2">
+                      <span className="text-cyan-400 mt-0.5">•</span>
+                      <span>2-3 business day delivery, 1 free revision</span>
+                    </p>
+                  </div>
+                </div>
+              </button>
+
+            </div>
+          </div>
+        );
+      case AppView.DENIAL_APPEAL:
+        return <DenialAppealForm />;
+      case AppView.XACTIMATE_ESTIMATE:
+        return <XactimateEstimateForm />;
+      case AppView.SUPPLEMENT_CLAIM:
+        return <SupplementClaimForm />;
+      case AppView.COMMERCIAL_BID:
+        return <CommercialBidForm />;
+      case AppView.CUSTOMIZED_DOCS:
+        return <CustomizedDocumentsForm />;
       case AppView.CLAIMS:
         return <ClaimSubmission />;
       case AppView.LABS:
         return <Labs />;
       case AppView.PORTAL:
         return <PortalLogin />;
+      case AppView.REGISTER:
+        return <PartnerRegistration />;
       default:
         return (
           <>
-            {/* Hero Section */}
-            <div className="min-h-[60vh] flex flex-col items-center justify-center px-4 py-16 relative">
-              <div className="text-center max-w-5xl mx-auto animate-float">
-                <div className="flex flex-col items-center mb-8 relative">
-                  {/* Enhanced Radiant Glow */}
-                  <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full h-32 bg-emerald-500/10 blur-[60px] rounded-full -z-10 animate-pulse-glow"></div>
+            {/* Hero Section - Future Earth Space Theme */}
+            <div className="min-h-[70vh] flex flex-col items-center justify-center px-4 py-20 relative overflow-hidden">
+              {/* Cosmic Background Elements */}
+              <div className="absolute inset-0 pointer-events-none">
+                {/* Earth Glow */}
+                <div className="absolute bottom-0 left-1/2 -translate-x-1/2 translate-y-1/2 w-[800px] h-[800px] bg-gradient-radial from-blue-500/20 via-cyan-500/10 to-transparent rounded-full blur-3xl"></div>
 
-                  <h1 className="text-5xl md:text-7xl font-thin tracking-widest text-center radiant-text relative z-20 animate-fadeInScale">
+                {/* Nebula Clouds */}
+                <div className="absolute top-20 right-10 w-96 h-96 bg-gradient-radial from-purple-500/10 via-pink-500/5 to-transparent rounded-full blur-3xl animate-pulse"></div>
+                <div className="absolute top-40 left-20 w-80 h-80 bg-gradient-radial from-indigo-500/10 via-violet-500/5 to-transparent rounded-full blur-3xl animate-pulse" style={{animationDelay: '1s'}}></div>
+
+                {/* Orbital Rings */}
+                <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] border border-cyan-500/10 rounded-full animate-spin" style={{animationDuration: '60s'}}></div>
+                <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[700px] h-[700px] border border-blue-500/5 rounded-full animate-spin" style={{animationDuration: '90s', animationDirection: 'reverse'}}></div>
+              </div>
+
+              <div className="text-center max-w-6xl mx-auto relative z-10 animate-float">
+                {/* Main Title with Holographic Effect */}
+                <div className="flex flex-col items-center mb-12 relative">
+                  {/* Enhanced Cosmic Glow */}
+                  <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full h-40 bg-gradient-radial from-cyan-500/20 via-blue-500/10 to-transparent blur-3xl -z-10 animate-pulse-glow"></div>
+
+                  {/* Geometric Accents */}
+                  <div className="absolute -top-8 left-1/2 -translate-x-1/2 w-1 h-16 bg-gradient-to-b from-transparent via-cyan-400/50 to-transparent"></div>
+
+                  <h1 className="text-6xl md:text-8xl font-thin tracking-[0.3em] text-center bg-gradient-to-r from-cyan-200 via-blue-100 to-purple-200 bg-clip-text text-transparent relative z-20 animate-fadeInScale mb-4">
                     ESTIMATE RELIANCE
                   </h1>
-                  {/* Enhanced Swoosh Line */}
-                  <div className="h-0.5 w-64 animate-swoosh-green mt-4 rounded-full shadow-[0_0_15px_rgba(16,185,129,0.5)] opacity-90 relative z-20"></div>
+
+                  {/* Futuristic Swoosh Line with Glow */}
+                  <div className="relative">
+                    <div className="h-0.5 w-96 bg-gradient-to-r from-transparent via-cyan-400 to-transparent rounded-full shadow-[0_0_20px_rgba(34,211,238,0.6)] opacity-90 relative z-20"></div>
+                    <div className="absolute top-0 left-1/2 -translate-x-1/2 w-2 h-2 bg-cyan-400 rounded-full shadow-[0_0_15px_rgba(34,211,238,0.8)] animate-pulse"></div>
+                  </div>
                 </div>
 
-                <p className="text-xl md:text-2xl text-slate-300 font-light tracking-wide mb-10 max-w-3xl mx-auto leading-relaxed animate-fadeIn stagger-2">
-                  Professional insurance restoration estimates, supplements, and creative marketing solutions—powered by AI.
+                {/* Tagline with Futuristic Styling */}
+                <p className="text-xl md:text-2xl text-cyan-100/80 font-light tracking-wider mb-6 max-w-4xl mx-auto leading-relaxed animate-fadeIn stagger-2">
+                  Professional insurance restoration estimates, supplements, and creative marketing solutions
                 </p>
-                <div className="flex flex-col sm:flex-row gap-4 justify-center items-center animate-slideUp stagger-3">
-                  <button
-                    onClick={() => setView(AppView.CLAIMS)}
-                    className="group px-10 py-5 text-lg font-medium bg-gradient-to-r from-indigo-600 to-violet-600 hover:from-indigo-500 hover:to-violet-500 rounded-xl shadow-2xl shadow-indigo-600/30 transition-all transform hover:scale-105 hover:shadow-indigo-600/50 relative overflow-hidden"
-                  >
-                    <span className="relative z-10">Inquire / Submit Task →</span>
-                    <div className="absolute inset-0 bg-gradient-to-r from-indigo-400/0 via-white/20 to-indigo-400/0 -translate-x-full group-hover:translate-x-full transition-transform duration-1000"></div>
-                  </button>
-                  <button
-                    onClick={() => setView(AppView.LABS)}
-                    className="group px-10 py-5 text-lg font-light border-2 border-teal-500/50 hover:border-teal-400 text-teal-100 hover:bg-teal-500/10 rounded-xl transition-all hover:shadow-lg hover:shadow-teal-500/20 relative overflow-hidden"
-                  >
-                    <span className="relative z-10">Explore Labs</span>
-                    <div className="absolute inset-0 bg-teal-500/5 -translate-y-full group-hover:translate-y-0 transition-transform duration-300"></div>
-                  </button>
-                </div>
+                <p className="text-sm md:text-base text-blue-300/60 font-light tracking-widest uppercase animate-fadeIn stagger-3 flex items-center justify-center gap-2">
+                  <span className="w-8 h-px bg-gradient-to-r from-transparent to-blue-400/50"></span>
+                  Powered by AI
+                  <span className="w-8 h-px bg-gradient-to-l from-transparent to-blue-400/50"></span>
+                </p>
               </div>
             </div>
 
-            {/* Service Cards Grid - 4 Cards */}
-            <div className="px-4 py-16 max-w-7xl mx-auto">
-              <div className="grid md:grid-cols-2 lg:grid-cols-2 gap-8">
-                
-                {/* Card 1: Task Inquiry */}
+            {/* Main Service Cards - 2 Cards with Enhanced Futuristic Theme */}
+            <div className="px-4 py-20 max-w-7xl mx-auto relative">
+              {/* Section Header */}
+              <div className="text-center mb-12 animate-fadeIn">
+                <div className="inline-flex items-center gap-3 px-6 py-3 bg-gradient-to-r from-cyan-500/10 via-blue-500/10 to-purple-500/10 border border-cyan-500/20 rounded-full mb-6">
+                  <div className="w-2 h-2 bg-cyan-400 rounded-full animate-pulse"></div>
+                  <span className="text-sm tracking-widest text-cyan-300/90 uppercase">Select Your Mission</span>
+                  <div className="w-2 h-2 bg-cyan-400 rounded-full animate-pulse"></div>
+                </div>
+              </div>
+
+              <div className="grid md:grid-cols-2 gap-8 max-w-5xl mx-auto">
+
+                {/* Card 1: Select Service */}
                 <button
-                  onClick={() => setView(AppView.CLAIMS)}
+                  onClick={() => setView(AppView.SERVICES)}
                   className="card-3d hover-lift group relative h-80 rounded-2xl overflow-hidden transition-all duration-500 border border-white/10 hover:border-indigo-400/60 glass-card animate-fadeIn stagger-1"
                 >
                   <div className="absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-black/80 z-10" />
@@ -111,14 +388,14 @@ const App: React.FC = () => {
                     <div className="w-16 h-16 mb-4 rounded-full bg-indigo-500/10 flex items-center justify-center group-hover:bg-indigo-500/25 transition-all duration-300 border border-indigo-500/20 group-hover:border-indigo-500/40 group-hover:scale-110">
                       <ClipboardList className="w-8 h-8 text-indigo-300 group-hover:text-indigo-200 transition-colors" />
                     </div>
-                    <h3 className="text-2xl font-medium text-white mb-2 tracking-wide group-hover:text-indigo-100 transition-colors">TASK INQUIRY</h3>
+                    <h3 className="text-2xl font-medium text-white mb-2 tracking-wide group-hover:text-indigo-100 transition-colors">SELECT SERVICE</h3>
                     <p className="text-sm text-indigo-200/70 max-w-sm group-hover:text-indigo-100/90 transition-colors">
-                      Submit measurements, insurance scopes, or estimate requests. We handle the heavy lifting.
+                      Browse our professional services including denial appeals, estimates, and custom documents.
                     </p>
                   </div>
                 </button>
 
-                {/* Card 2: Creative Labs */}
+                {/* Card 2: Explore Labs (Login Required) */}
                 <button
                   onClick={() => setView(AppView.LABS)}
                   className="card-3d hover-lift group relative h-80 rounded-2xl overflow-hidden transition-all duration-500 border border-white/10 hover:border-teal-400/60 glass-card animate-fadeIn stagger-2"
@@ -131,76 +408,14 @@ const App: React.FC = () => {
                     <div className="w-16 h-16 mb-4 rounded-full bg-teal-500/10 flex items-center justify-center group-hover:bg-teal-500/25 transition-all duration-300 border border-teal-500/20 group-hover:border-teal-500/40 group-hover:scale-110">
                       <Microscope className="w-8 h-8 text-teal-300 group-hover:text-teal-200 transition-colors" />
                     </div>
-                    <h3 className="text-2xl font-medium text-white mb-2 tracking-wide group-hover:text-teal-100 transition-colors">CREATIVE LABS</h3>
+                    <h3 className="text-2xl font-medium text-white mb-2 tracking-wide group-hover:text-teal-100 transition-colors">EXPLORE LABS</h3>
+                    <p className="text-xs text-teal-300/90 font-semibold mb-2 tracking-wide">(Login Required)</p>
                     <p className="text-sm text-teal-200/70 max-w-sm group-hover:text-teal-100/90 transition-colors">
                       Design professional logos, marketing assets, and slogans with our AI-powered studio.
                     </p>
                   </div>
                 </button>
 
-                 {/* Card 3: Partner Login */}
-                 <button
-                  onClick={() => setView(AppView.PORTAL)}
-                  className="card-3d hover-lift group relative h-80 rounded-2xl overflow-hidden transition-all duration-500 border border-white/10 hover:border-blue-400/60 glass-card animate-fadeIn stagger-3"
-                >
-                  <div className="absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-black/80 z-10" />
-                  <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 group-hover:scale-125 transition-transform duration-700">
-                    <div className="w-64 h-64 bg-blue-500/15 rounded-full blur-3xl group-hover:bg-blue-500/30 transition-all duration-500" />
-                  </div>
-                  <div className="relative z-20 h-full flex flex-col items-center justify-center p-8 text-center">
-                    <div className="w-16 h-16 mb-4 rounded-full bg-blue-500/10 flex items-center justify-center group-hover:bg-blue-500/25 transition-all duration-300 border border-blue-500/20 group-hover:border-blue-500/40 group-hover:scale-110">
-                      <LogIn className="w-8 h-8 text-blue-300 group-hover:text-blue-200 transition-colors" />
-                    </div>
-                    <h3 className="text-2xl font-medium text-white mb-2 tracking-wide group-hover:text-blue-100 transition-colors">PARTNER LOGIN</h3>
-                    <p className="text-sm text-blue-200/70 max-w-sm group-hover:text-blue-100/90 transition-colors">
-                      Access your dashboard, manage ongoing estimates, and view your business analytics.
-                    </p>
-                  </div>
-                </button>
-
-                 {/* Card 4: Sign Up / Become a Partner */}
-                 <button
-                  onClick={() => alert("Registration is currently by invitation only. Please inquire via the Task form.")}
-                  className="card-3d hover-lift group relative h-80 rounded-2xl overflow-hidden transition-all duration-500 border border-white/10 hover:border-emerald-400/60 glass-card animate-fadeIn stagger-4"
-                >
-                  <div className="absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-black/80 z-10" />
-                  <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 group-hover:scale-125 transition-transform duration-700">
-                    <div className="w-64 h-64 bg-emerald-500/15 rounded-full blur-3xl group-hover:bg-emerald-500/30 transition-all duration-500" />
-                  </div>
-                  <div className="relative z-20 h-full flex flex-col items-center justify-center p-8 text-center">
-                    <div className="w-16 h-16 mb-4 rounded-full bg-emerald-500/10 flex items-center justify-center group-hover:bg-emerald-500/25 transition-all duration-300 border border-emerald-500/20 group-hover:border-emerald-500/40 group-hover:scale-110">
-                      <UserPlus className="w-8 h-8 text-emerald-300 group-hover:text-emerald-200 transition-colors" />
-                    </div>
-                    <h3 className="text-2xl font-medium text-white mb-2 tracking-wide group-hover:text-emerald-100 transition-colors">BECOME A PARTNER</h3>
-                    <p className="text-sm text-emerald-200/70 max-w-sm group-hover:text-emerald-100/90 transition-colors">
-                      Join our network of trusted restoration professionals. Scale your business today.
-                    </p>
-                  </div>
-                </button>
-
-              </div>
-            </div>
-
-            {/* Optional: Why Estimate Reliance Section */}
-            <div className="px-4 py-16 max-w-6xl mx-auto border-t border-white/5">
-              <div className="grid md:grid-cols-3 gap-8 text-center">
-                <div className="p-6 group hover:bg-white/5 rounded-xl transition-all duration-300 animate-fadeIn stagger-1">
-                  <div className="text-4xl mb-4 group-hover:scale-110 transition-transform duration-300">⚡</div>
-                  <h3 className="text-lg font-medium text-white mb-2 group-hover:text-emerald-300 transition-colors">Fast Turnaround</h3>
-                  <p className="text-sm text-slate-400 group-hover:text-slate-300 transition-colors">AI-powered analysis delivers results in minutes, not days.</p>
-                </div>
-
-                <div className="p-6 group hover:bg-white/5 rounded-xl transition-all duration-300 animate-fadeIn stagger-2">
-                  <div className="text-4xl mb-4 group-hover:scale-110 transition-transform duration-300">🎯</div>
-                  <h3 className="text-lg font-medium text-white mb-2 group-hover:text-emerald-300 transition-colors">Expert Quality</h3>
-                  <p className="text-sm text-slate-400 group-hover:text-slate-300 transition-colors">Professional-grade estimates and supplements that adjusters respect.</p>
-                </div>
-
-                <div className="p-6 group hover:bg-white/5 rounded-xl transition-all duration-300 animate-fadeIn stagger-3">
-                  <div className="text-4xl mb-4 group-hover:scale-110 transition-transform duration-300">💰</div>
-                  <h3 className="text-lg font-medium text-white mb-2 group-hover:text-emerald-300 transition-colors">Transparent Pricing</h3>
-                  <p className="text-sm text-slate-400 group-hover:text-slate-300 transition-colors">Choose your service level—from automated to hands-on expert review.</p>
-                </div>
               </div>
             </div>
           </>
