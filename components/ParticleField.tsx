@@ -19,9 +19,9 @@ function HyperSpaceStars({ count = 1000 }: ParticleFieldProps) {
 
       // Random angle for radial distribution
       const angle = Math.random() * Math.PI * 2;
-      const radius = Math.random() * 15 + 2;
+      const radius = Math.random() * 40 + 5; // Much wider spread
 
-      // Start position (closer to center)
+      // Start position (spread across screen)
       const x = Math.cos(angle) * radius;
       const y = Math.sin(angle) * radius;
       const z = -Math.random() * 100 - 10;
@@ -91,7 +91,7 @@ function HyperSpaceStars({ count = 1000 }: ParticleFieldProps) {
         // Reset if past camera
         if (z > 10) {
           const angle = Math.random() * Math.PI * 2;
-          const radius = Math.random() * 15 + 2;
+          const radius = Math.random() * 40 + 5; // Match wider spread
           x = Math.cos(angle) * radius;
           y = Math.sin(angle) * radius;
           z = -100 - Math.random() * 50;
@@ -133,7 +133,7 @@ export default function ParticleField({ count = 1000 }: ParticleFieldProps) {
   return (
     <div className="fixed inset-0 pointer-events-none z-0">
       <Canvas
-        camera={{ position: [0, 0, 0], fov: 75 }}
+        camera={{ position: [0, 0, 0], fov: 90 }}
         dpr={[1, 2]}
         style={{ background: 'transparent' }}
       >
