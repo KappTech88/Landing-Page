@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
-import { Upload, FileText, Loader2, Send, User, Mail, Phone, FileEdit, Briefcase, ClipboardList } from 'lucide-react';
+import { Upload, FileText, Loader2, Send, User, Mail, Phone, FileEdit, Briefcase, ClipboardList, CheckCircle } from 'lucide-react';
 import { analyzeClaim } from '../services/geminiService';
+import { submitDocumentRequest, uploadDocumentFile } from '../services/documentRequestService';
 
 const CustomizedDocumentsForm: React.FC = () => {
   const [formData, setFormData] = useState({
@@ -19,6 +20,8 @@ const CustomizedDocumentsForm: React.FC = () => {
   const [sampleDocs, setSampleDocs] = useState<FileList | null>(null);
   const [loading, setLoading] = useState(false);
   const [result, setResult] = useState<string | null>(null);
+  const [submissionId, setSubmissionId] = useState<string | null>(null);
+  const [submissionSuccess, setSubmissionSuccess] = useState(false);
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
@@ -52,6 +55,7 @@ const CustomizedDocumentsForm: React.FC = () => {
 
     setLoading(true);
     setResult(null);
+    setSubmissionSuccess(false);
 
     const fullPrompt = `
       CUSTOMIZED DOCUMENT REQUEST:
@@ -86,14 +90,77 @@ const CustomizedDocumentsForm: React.FC = () => {
     try {
       let base64 = undefined;
       let fileType = undefined;
+      const uploadedFiles: any[] = [];
 
+      // Upload files to Supabase Storage (if any)
       if (sampleDocs && sampleDocs.length > 0) {
+        for (let i = 0; i < sampleDocs.length; i++) {
+          const file = sampleDocs[i];
+          try {
+            const { path, url } = await uploadDocumentFile(file);
+            uploadedFiles.push({
+              file_name: path.split('/').pop(),
+              original_file_name: file.name,
+              file_size: file.size,
+              mime_type: file.type,
+              storage_path: path,
+              public_url: url,
+            });
+          } catch (uploadError) {
+            console.error('Error uploading file:', file.name, uploadError);
+            // Continue with other files even if one fails
+          }
+        }
+
+        // Prepare first file for potential AI analysis (optional)
         base64 = await fileToBase64(sampleDocs[0]);
         fileType = sampleDocs[0].type;
       }
 
-      const response = await analyzeClaim(fullPrompt, base64, fileType);
+      // Try AI processing (optional - will skip if API key not configured)
+      let response = '';
+      const hasGeminiKey = import.meta.env.VITE_GEMINI_API_KEY &&
+                          import.meta.env.VITE_GEMINI_API_KEY !== 'PLACEHOLDER_API_KEY';
+
+      if (hasGeminiKey) {
+        try {
+          response = await analyzeClaim(fullPrompt, base64, fileType);
+        } catch (aiError) {
+          console.log('AI processing skipped:', aiError);
+          response = 'Thank you for your document request! We have received your information and will review it shortly. Our team will contact you to discuss your custom document needs.';
+        }
+      } else {
+        response = 'Thank you for your document request! We have received your information and will review it shortly. Our team will contact you to discuss your custom document needs.';
+      }
+
       setResult(response);
+
+      // Save to database (no authentication required)
+      try {
+        const { id } = await submitDocumentRequest(
+          {
+            contactName: formData.contactName,
+            email: formData.email,
+            phone: formData.phone,
+            companyName: formData.companyName,
+            documentType: formData.documentType as 'simple' | 'digital-forum',
+            documentTitle: formData.documentTitle,
+            documentDescription: formData.documentDescription,
+            specificRequirements: formData.specificRequirements,
+            useCase: formData.useCase,
+            additionalNotes: formData.additionalNotes,
+          },
+          response,
+          uploadedFiles
+        );
+
+        setSubmissionId(id);
+        setSubmissionSuccess(true);
+      } catch (dbError) {
+        console.error('Error saving to database:', dbError);
+        // Still show the AI response even if database save fails
+        setResult(response + '\n\n⚠️ Note: Your request was processed but there was an issue saving it to our records. Please contact support if needed.');
+      }
     } catch (error) {
       console.error(error);
       setResult("An error occurred while processing your document request.");
@@ -343,12 +410,34 @@ const CustomizedDocumentsForm: React.FC = () => {
 
         {/* Result Display */}
         {result && (
-          <div className="mt-8 p-6 bg-slate-900/70 border border-cyan-500/30 rounded-xl animate-fadeIn">
-            <h3 className="text-lg font-medium text-cyan-300 mb-3 flex items-center">
-              <FileText className="w-5 h-5 mr-2" />
-              Response
-            </h3>
-            <p className="text-slate-300 whitespace-pre-wrap leading-relaxed">{result}</p>
+          <div className="mt-8 space-y-4">
+            {/* Success Message */}
+            {submissionSuccess && (
+              <div className="p-4 bg-emerald-500/10 border border-emerald-500/30 rounded-xl animate-fadeIn flex items-start gap-3">
+                <CheckCircle className="w-5 h-5 text-emerald-400 mt-0.5 flex-shrink-0" />
+                <div>
+                  <h4 className="text-emerald-300 font-medium mb-1">Request Submitted Successfully!</h4>
+                  <p className="text-sm text-emerald-200/70">
+                    Your document request has been saved. We'll process your request and contact you at{' '}
+                    {formData.email || 'the provided contact information'}.
+                  </p>
+                  {submissionId && (
+                    <p className="text-xs text-emerald-300/50 mt-2">
+                      Reference ID: {submissionId}
+                    </p>
+                  )}
+                </div>
+              </div>
+            )}
+
+            {/* Response */}
+            <div className="p-6 bg-slate-900/70 border border-cyan-500/30 rounded-xl animate-fadeIn">
+              <h3 className="text-lg font-medium text-cyan-300 mb-3 flex items-center">
+                <FileText className="w-5 h-5 mr-2" />
+                Response
+              </h3>
+              <p className="text-slate-300 whitespace-pre-wrap leading-relaxed">{result}</p>
+            </div>
           </div>
         )}
       </div>
