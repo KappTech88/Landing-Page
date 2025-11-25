@@ -1,5 +1,12 @@
 import React, { useState } from 'react';
-import StarField from './components/StarField';
+import ParticleField from './components/ParticleField';
+import SmoothScroll from './components/SmoothScroll';
+import PageTransition from './components/PageTransition';
+import CursorTrail from './components/CursorTrail';
+import AmbientAudio from './components/AmbientAudio';
+import FloatingElements from './components/FloatingElements';
+import LoadingScreen from './components/LoadingScreen';
+import HolographicCard from './components/HolographicCard';
 import ClaimSubmission from './components/ClaimSubmission';
 import Labs from './components/Labs';
 import PortalLogin from './components/PortalLogin';
@@ -14,6 +21,7 @@ import { FileText, Microscope, ShieldCheck, ArrowLeft, UserPlus, LogIn, Clipboar
 
 const App: React.FC = () => {
   const [view, setView] = useState<AppView>(AppView.LANDING);
+  const [isLoading, setIsLoading] = useState(true);
 
   // Logo Component (removed text, just click area to return home)
   const Logo = () => (
@@ -376,45 +384,47 @@ const App: React.FC = () => {
               <div className="grid md:grid-cols-2 gap-8 max-w-5xl mx-auto">
 
                 {/* Card 1: Select Service */}
-                <button
+                <HolographicCard
                   onClick={() => setView(AppView.SERVICES)}
-                  className="card-3d hover-lift group relative h-80 rounded-2xl overflow-hidden transition-all duration-500 border border-white/10 hover:border-indigo-400/60 glass-card animate-fadeIn stagger-1"
+                  glowColor="cyan"
+                  delay={0.1}
                 >
                   <div className="absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-black/80 z-10" />
                   <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 group-hover:scale-125 transition-transform duration-700">
-                    <div className="w-64 h-64 bg-indigo-500/15 rounded-full blur-3xl group-hover:bg-indigo-500/30 transition-all duration-500" />
+                    <div className="w-64 h-64 bg-cyan-500/15 rounded-full blur-3xl group-hover:bg-cyan-500/30 transition-all duration-500" />
                   </div>
-                  <div className="relative z-20 h-full flex flex-col items-center justify-center p-8 text-center">
-                    <div className="w-16 h-16 mb-4 rounded-full bg-indigo-500/10 flex items-center justify-center group-hover:bg-indigo-500/25 transition-all duration-300 border border-indigo-500/20 group-hover:border-indigo-500/40 group-hover:scale-110">
-                      <ClipboardList className="w-8 h-8 text-indigo-300 group-hover:text-indigo-200 transition-colors" />
+                  <div className="relative z-20 h-80 flex flex-col items-center justify-center p-8 text-center">
+                    <div className="w-16 h-16 mb-4 rounded-full bg-cyan-500/10 flex items-center justify-center group-hover:bg-cyan-500/25 transition-all duration-300 border border-cyan-500/20 group-hover:border-cyan-500/40 group-hover:scale-110">
+                      <ClipboardList className="w-8 h-8 text-cyan-300 group-hover:text-cyan-200 transition-colors" />
                     </div>
-                    <h3 className="text-2xl font-medium text-white mb-2 tracking-wide group-hover:text-indigo-100 transition-colors">SELECT SERVICE</h3>
-                    <p className="text-sm text-indigo-200/70 max-w-sm group-hover:text-indigo-100/90 transition-colors">
+                    <h3 className="text-2xl font-medium text-white mb-2 tracking-wide group-hover:text-cyan-100 transition-colors">SELECT SERVICE</h3>
+                    <p className="text-sm text-cyan-200/70 max-w-sm group-hover:text-cyan-100/90 transition-colors">
                       Browse our professional services including denial appeals, estimates, and custom documents.
                     </p>
                   </div>
-                </button>
+                </HolographicCard>
 
                 {/* Card 2: Explore Labs (Login Required) */}
-                <button
+                <HolographicCard
                   onClick={() => setView(AppView.LABS)}
-                  className="card-3d hover-lift group relative h-80 rounded-2xl overflow-hidden transition-all duration-500 border border-white/10 hover:border-teal-400/60 glass-card animate-fadeIn stagger-2"
+                  glowColor="purple"
+                  delay={0.2}
                 >
                   <div className="absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-black/80 z-10" />
                   <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 group-hover:scale-125 transition-transform duration-700">
-                    <div className="w-64 h-64 bg-teal-500/15 rounded-full blur-3xl group-hover:bg-teal-500/30 transition-all duration-500" />
+                    <div className="w-64 h-64 bg-purple-500/15 rounded-full blur-3xl group-hover:bg-purple-500/30 transition-all duration-500" />
                   </div>
-                  <div className="relative z-20 h-full flex flex-col items-center justify-center p-8 text-center">
-                    <div className="w-16 h-16 mb-4 rounded-full bg-teal-500/10 flex items-center justify-center group-hover:bg-teal-500/25 transition-all duration-300 border border-teal-500/20 group-hover:border-teal-500/40 group-hover:scale-110">
-                      <Microscope className="w-8 h-8 text-teal-300 group-hover:text-teal-200 transition-colors" />
+                  <div className="relative z-20 h-80 flex flex-col items-center justify-center p-8 text-center">
+                    <div className="w-16 h-16 mb-4 rounded-full bg-purple-500/10 flex items-center justify-center group-hover:bg-purple-500/25 transition-all duration-300 border border-purple-500/20 group-hover:border-purple-500/40 group-hover:scale-110">
+                      <Microscope className="w-8 h-8 text-purple-300 group-hover:text-purple-200 transition-colors" />
                     </div>
-                    <h3 className="text-2xl font-medium text-white mb-2 tracking-wide group-hover:text-teal-100 transition-colors">EXPLORE LABS</h3>
-                    <p className="text-xs text-teal-300/90 font-semibold mb-2 tracking-wide">(Login Required)</p>
-                    <p className="text-sm text-teal-200/70 max-w-sm group-hover:text-teal-100/90 transition-colors">
+                    <h3 className="text-2xl font-medium text-white mb-2 tracking-wide group-hover:text-purple-100 transition-colors">EXPLORE LABS</h3>
+                    <p className="text-xs text-purple-300/90 font-semibold mb-2 tracking-wide">(Login Required)</p>
+                    <p className="text-sm text-purple-200/70 max-w-sm group-hover:text-purple-100/90 transition-colors">
                       Design professional logos, marketing assets, and slogans with our AI-powered studio.
                     </p>
                   </div>
-                </button>
+                </HolographicCard>
 
               </div>
             </div>
@@ -423,30 +433,31 @@ const App: React.FC = () => {
     }
   };
 
+  if (isLoading) {
+    return <LoadingScreen onComplete={() => setIsLoading(false)} />;
+  }
+
   return (
-    <div className="min-h-screen w-full relative bg-slate-950 noise-overlay overflow-hidden">
-      <StarField />
+    <SmoothScroll>
+      <div className="min-h-screen w-full relative bg-slate-950 noise-overlay overflow-hidden">
+        <ParticleField count={3000} />
+        <FloatingElements />
+        <CursorTrail />
+        <AmbientAudio />
 
-      {/* Animated Gradient Mesh Background */}
-      <div className="fixed inset-0 gradient-mesh pointer-events-none z-0"></div>
+        {/* Animated Gradient Mesh Background */}
+        <div className="fixed inset-0 gradient-mesh pointer-events-none z-0"></div>
 
-      {/* Ambient Music Indicator */}
-      <div className="fixed bottom-6 right-6 z-50 flex items-center space-x-4 opacity-30 hover:opacity-100 transition-opacity duration-300 pointer-events-none">
-        <div className="text-[10px] uppercase tracking-widest text-slate-400">Ambience</div>
-        <div className="flex space-x-1 h-3 items-end">
-            <div className="w-0.5 bg-emerald-500 h-1.5 animate-[pulse_1s_infinite]"></div>
-            <div className="w-0.5 bg-emerald-500 h-3 animate-[pulse_1.5s_infinite]"></div>
-            <div className="w-0.5 bg-emerald-500 h-2 animate-[pulse_1.2s_infinite]"></div>
+        <div className="relative z-10 flex flex-col min-h-screen">
+          {view === AppView.LANDING ? renderLandingNav() : renderInternalNav()}
+          <main className="flex-grow flex flex-col">
+            <PageTransition pageKey={view}>
+              {renderContent()}
+            </PageTransition>
+          </main>
         </div>
       </div>
-
-      <div className="relative z-10 flex flex-col min-h-screen">
-        {view === AppView.LANDING ? renderLandingNav() : renderInternalNav()}
-        <main className="flex-grow flex flex-col">
-          {renderContent()}
-        </main>
-      </div>
-    </div>
+    </SmoothScroll>
   );
 };
 
