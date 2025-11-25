@@ -1,7 +1,36 @@
 import { GoogleGenAI, GenerateContentResponse } from "@google/genai";
 
+// Helper to get stored API configuration
+const getStoredApiConfig = () => {
+  try {
+    const stored = localStorage.getItem('estimate-reliance-api-config');
+    return stored ? JSON.parse(stored) : null;
+  } catch {
+    return null;
+  }
+};
+
+// Helper to get active API key (prioritizes user-configured key over environment variable)
+const getActiveApiKey = (): string => {
+  const config = getStoredApiConfig();
+
+  // If user has configured Gemini API key, use it
+  if (config && config.provider === 'gemini' && config.apiKey) {
+    return config.apiKey;
+  }
+
+  // Otherwise fall back to environment variable
+  return import.meta.env.VITE_GEMINI_API_KEY || '';
+};
+
 // Helper to get AI instance. Re-instantiated to ensure fresh key if changed.
-const getAI = () => new GoogleGenAI({ apiKey: import.meta.env.VITE_GEMINI_API_KEY });
+const getAI = () => {
+  const apiKey = getActiveApiKey();
+  if (!apiKey) {
+    throw new Error('Gemini API key not configured. Please configure your API key in the settings.');
+  }
+  return new GoogleGenAI({ apiKey });
+};
 
 /**
  * Analyzes a claim document text or image/pdf.

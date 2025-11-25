@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { ArrowLeft, Key, Plus, RefreshCw, Upload, Scaling, Wand2, Loader2, Palette, Download } from 'lucide-react';
 import { generateProGraphics } from '../../services/geminiService';
+import ApiKeyManager, { getStoredApiConfig } from '../ApiKeyManager';
 
 interface LogoStudioProps {
   onBack: () => void;
@@ -8,6 +9,7 @@ interface LogoStudioProps {
 
 const LogoStudio: React.FC<LogoStudioProps> = ({ onBack }) => {
   const [hasKey, setHasKey] = useState(false);
+  const [showApiKeyManager, setShowApiKeyManager] = useState(false);
   const [creationMode, setCreationMode] = useState<'SCRATCH' | 'EDIT'>('SCRATCH');
   const [file, setFile] = useState<File | null>(null);
   const [imagePreview, setImagePreview] = useState<string | null>(null);
@@ -19,16 +21,21 @@ const LogoStudio: React.FC<LogoStudioProps> = ({ onBack }) => {
   const [generatedAssets, setGeneratedAssets] = useState<string[]>([]);
 
   useEffect(() => {
-    if (window.aistudio && window.aistudio.hasSelectedApiKey) {
-      window.aistudio.hasSelectedApiKey().then(setHasKey);
-    }
+    checkApiKey();
   }, []);
 
-  const handleSelectKey = async () => {
-    if (window.aistudio && window.aistudio.openSelectKey) {
-      await window.aistudio.openSelectKey();
-      setHasKey(await window.aistudio.hasSelectedApiKey());
-    }
+  const checkApiKey = () => {
+    const config = getStoredApiConfig();
+    setHasKey(!!config && !!config.apiKey);
+  };
+
+  const handleSelectKey = () => {
+    setShowApiKeyManager(true);
+  };
+
+  const handleApiKeySaved = () => {
+    checkApiKey();
+    setShowApiKeyManager(false);
   };
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -71,21 +78,38 @@ const LogoStudio: React.FC<LogoStudioProps> = ({ onBack }) => {
 
   return (
     <div className="animate-fadeIn">
+        {showApiKeyManager && (
+          <ApiKeyManager
+            onClose={() => setShowApiKeyManager(false)}
+            onSave={handleApiKeySaved}
+          />
+        )}
+
         <div className="glass-panel rounded-2xl shadow-2xl border border-emerald-500/50 overflow-hidden min-h-[700px]">
             <div className="bg-slate-950/40 border-b border-emerald-500/30 p-6 flex items-center justify-between">
                 <button onClick={onBack} className="flex items-center text-emerald-400 hover:text-emerald-300 transition-colors text-sm">
                     <ArrowLeft className="w-4 h-4 mr-2" /> Back
                 </button>
                 <h2 className="text-2xl font-light text-emerald-100 tracking-wide">LOGO STUDIO</h2>
-                <div className="w-16"></div>
+                {hasKey ? (
+                  <button
+                    onClick={handleSelectKey}
+                    className="text-emerald-400 hover:text-emerald-300 transition-colors text-xs flex items-center"
+                  >
+                    <Key className="w-3 h-3 mr-1" /> Change API
+                  </button>
+                ) : (
+                  <div className="w-16"></div>
+                )}
             </div>
 
             <div className="p-8">
                 {!hasKey ? (
                     <div className="text-center py-20">
                         <Key className="w-12 h-12 text-emerald-400 mx-auto mb-4" />
-                        <h3 className="text-xl font-bold text-emerald-100 mb-2">Pro Features Locked</h3>
-                        <button onClick={handleSelectKey} className="bg-emerald-600 hover:bg-emerald-500 text-white font-bold py-3 px-8 rounded-xl transition-all mt-4">Connect API Key</button>
+                        <h3 className="text-xl font-bold text-emerald-100 mb-2">API Key Required</h3>
+                        <p className="text-slate-400 mb-6 max-w-md mx-auto">Configure your LLM API key to unlock professional logo generation features</p>
+                        <button onClick={handleSelectKey} className="bg-emerald-600 hover:bg-emerald-500 text-white font-bold py-3 px-8 rounded-xl transition-all mt-4">Configure API Key</button>
                     </div>
                 ) : (
                     <div className="grid md:grid-cols-2 gap-8 items-start">
