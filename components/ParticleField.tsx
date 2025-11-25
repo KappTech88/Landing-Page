@@ -58,10 +58,10 @@ function DeepSpaceStars({ count = 3000 }: ParticleFieldProps) {
       <PointMaterial
         transparent
         color="#ffffff"
-        size={0.15}
+        size={0.5}
         sizeAttenuation={true}
         depthWrite={false}
-        opacity={0.8}
+        opacity={1.0}
         blending={THREE.AdditiveBlending}
       />
     </Points>
