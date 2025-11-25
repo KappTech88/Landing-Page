@@ -55,6 +55,16 @@ function DeepSpaceStars({ count = 3000 }: ParticleFieldProps) {
     return { positions, colors, sizes };
   }, [count]);
 
+  // Set up colors on the geometry
+  React.useEffect(() => {
+    if (ref.current) {
+      ref.current.geometry.setAttribute(
+        'color',
+        new THREE.BufferAttribute(particles.colors, 3)
+      );
+    }
+  }, [particles.colors]);
+
   // Slow, meditative forward motion through space
   useFrame(() => {
     if (ref.current) {
