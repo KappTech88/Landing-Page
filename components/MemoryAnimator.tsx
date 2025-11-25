@@ -1,5 +1,5 @@
-import React, { useState, useEffect } from 'react';
-import { Upload, Film, Loader2, Key } from 'lucide-react';
+import React, { useState } from 'react';
+import { Upload, Film, Loader2 } from 'lucide-react';
 import { generateVeoVideo } from '../services/geminiService';
 
 const MemoryAnimator: React.FC = () => {
@@ -8,25 +8,6 @@ const MemoryAnimator: React.FC = () => {
   const [prompt, setPrompt] = useState('Cinematic, slow motion animation');
   const [loading, setLoading] = useState(false);
   const [videoUrl, setVideoUrl] = useState<string | null>(null);
-  const [hasKey, setHasKey] = useState(false);
-
-  useEffect(() => {
-    checkKey();
-  }, []);
-
-  const checkKey = async () => {
-    if (window.aistudio && window.aistudio.hasSelectedApiKey) {
-      const has = await window.aistudio.hasSelectedApiKey();
-      setHasKey(has);
-    }
-  };
-
-  const handleSelectKey = async () => {
-    if (window.aistudio && window.aistudio.openSelectKey) {
-      await window.aistudio.openSelectKey();
-      checkKey();
-    }
-  };
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
@@ -57,31 +38,6 @@ const MemoryAnimator: React.FC = () => {
       setLoading(false);
     }
   };
-
-  if (!hasKey) {
-    return (
-      <div className="flex flex-col items-center justify-center h-[50vh] text-center p-6">
-        <div className="glass-panel p-12 rounded-2xl max-w-md w-full">
-            <Key className="w-12 h-12 text-pink-400 mx-auto mb-4" />
-            <h3 className="text-xl font-bold text-pink-100 mb-2">Access Required</h3>
-            <p className="text-pink-200/60 mb-6">
-                To generate high-quality video memories with Veo, you must connect your own API Key from a paid project.
-            </p>
-            <button
-                onClick={handleSelectKey}
-                className="w-full bg-pink-600 hover:bg-pink-500 text-white font-bold py-3 px-6 rounded-xl transition-all"
-            >
-                Connect API Key
-            </button>
-            <p className="mt-4 text-xs text-slate-400">
-                <a href="https://ai.google.dev/gemini-api/docs/billing" target="_blank" rel="noopener noreferrer" className="underline hover:text-white">
-                    Learn more about billing
-                </a>
-            </p>
-        </div>
-      </div>
-    );
-  }
 
   return (
     <div className="max-w-4xl mx-auto w-full p-6">

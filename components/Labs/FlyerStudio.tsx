@@ -1,5 +1,5 @@
-import React, { useState, useEffect } from 'react';
-import { ArrowLeft, Key, Upload, Wand2, Loader2, FileText } from 'lucide-react';
+import React, { useState } from 'react';
+import { ArrowLeft, Upload, Wand2, Loader2, FileText } from 'lucide-react';
 import { generateProGraphics } from '../../services/geminiService';
 
 interface FlyerStudioProps {
@@ -7,7 +7,6 @@ interface FlyerStudioProps {
 }
 
 const FlyerStudio: React.FC<FlyerStudioProps> = ({ onBack }) => {
-  const [hasKey, setHasKey] = useState(false);
   const [file, setFile] = useState<File | null>(null);
   const [imagePreview, setImagePreview] = useState<string | null>(null);
   const [companyName, setCompanyName] = useState('');
@@ -17,17 +16,6 @@ const FlyerStudio: React.FC<FlyerStudioProps> = ({ onBack }) => {
   const [contact, setContact] = useState('');
   const [loading, setLoading] = useState(false);
   const [generatedAsset, setGeneratedAsset] = useState<string | null>(null);
-
-  useEffect(() => {
-    if (window.aistudio && window.aistudio.hasSelectedApiKey) window.aistudio.hasSelectedApiKey().then(setHasKey);
-  }, []);
-
-  const handleSelectKey = async () => {
-    if (window.aistudio && window.aistudio.openSelectKey) {
-        await window.aistudio.openSelectKey();
-        setHasKey(await window.aistudio.hasSelectedApiKey());
-    }
-  };
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
@@ -67,8 +55,7 @@ const FlyerStudio: React.FC<FlyerStudioProps> = ({ onBack }) => {
                 <div className="w-16"></div>
             </div>
             <div className="p-8">
-                {!hasKey ? <div className="text-center py-20"><Key className="w-12 h-12 text-pink-400 mx-auto" /><button onClick={handleSelectKey} className="bg-pink-600 text-white font-bold py-3 px-8 rounded-xl mt-4">Connect Key</button></div> : (
-                    <div className="grid md:grid-cols-2 gap-8 items-start">
+                <div className="grid md:grid-cols-2 gap-8 items-start">
                         <div className="space-y-4">
                              <div className="p-4 bg-pink-900/10 rounded-xl border border-pink-500/20">
                                 <label className="text-pink-200 text-xs font-bold mb-2 block">Upload Logo (Required)</label>
@@ -91,7 +78,6 @@ const FlyerStudio: React.FC<FlyerStudioProps> = ({ onBack }) => {
                             ) : <div className="text-center text-pink-500/30">{loading ? <Loader2 className="w-12 h-12 animate-spin mx-auto" /> : <FileText className="w-16 h-16 mx-auto" />}<p className="mt-4">Flyer appears here</p></div>}
                         </div>
                     </div>
-                )}
             </div>
         </div>
     </div>

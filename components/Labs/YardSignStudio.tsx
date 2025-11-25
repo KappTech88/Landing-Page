@@ -1,5 +1,5 @@
-import React, { useState, useEffect } from 'react';
-import { ArrowLeft, Key, Upload, Wand2, Loader2, Download, Megaphone, Phone, Globe } from 'lucide-react';
+import React, { useState } from 'react';
+import { ArrowLeft, Upload, Wand2, Loader2, Download, Megaphone, Phone, Globe } from 'lucide-react';
 import { generateProGraphics } from '../../services/geminiService';
 
 interface YardSignStudioProps {
@@ -7,7 +7,6 @@ interface YardSignStudioProps {
 }
 
 const YardSignStudio: React.FC<YardSignStudioProps> = ({ onBack }) => {
-  const [hasKey, setHasKey] = useState(false);
   const [file, setFile] = useState<File | null>(null);
   const [imagePreview, setImagePreview] = useState<string | null>(null);
   const [companyName, setCompanyName] = useState('');
@@ -18,17 +17,6 @@ const YardSignStudio: React.FC<YardSignStudioProps> = ({ onBack }) => {
   const [prompt, setPrompt] = useState('');
   const [loading, setLoading] = useState(false);
   const [generatedAsset, setGeneratedAsset] = useState<string | null>(null);
-
-  useEffect(() => {
-    if (window.aistudio && window.aistudio.hasSelectedApiKey) window.aistudio.hasSelectedApiKey().then(setHasKey);
-  }, []);
-
-  const handleSelectKey = async () => {
-    if (window.aistudio && window.aistudio.openSelectKey) {
-      await window.aistudio.openSelectKey();
-      setHasKey(await window.aistudio.hasSelectedApiKey());
-    }
-  };
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
@@ -72,10 +60,7 @@ const YardSignStudio: React.FC<YardSignStudioProps> = ({ onBack }) => {
             </div>
 
             <div className="p-8">
-                {!hasKey ? (
-                    <div className="text-center py-20"><Key className="w-12 h-12 text-orange-400 mx-auto mb-4" /><button onClick={handleSelectKey} className="bg-orange-600 text-white font-bold py-3 px-8 rounded-xl">Connect Key</button></div>
-                ) : (
-                    <div className="grid md:grid-cols-2 gap-8 items-start">
+                <div className="grid md:grid-cols-2 gap-8 items-start">
                         <div className="space-y-4">
                             <div className="p-4 bg-orange-900/10 rounded-xl border border-orange-500/20">
                                 <label className="text-orange-200 text-xs font-bold mb-2 block">Upload Logo (Required)</label>
@@ -115,7 +100,6 @@ const YardSignStudio: React.FC<YardSignStudioProps> = ({ onBack }) => {
                             )}
                         </div>
                     </div>
-                )}
             </div>
         </div>
     </div>

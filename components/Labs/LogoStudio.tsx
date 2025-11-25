@@ -1,5 +1,5 @@
-import React, { useState, useEffect } from 'react';
-import { ArrowLeft, Key, Plus, RefreshCw, Upload, Scaling, Wand2, Loader2, Palette, Download } from 'lucide-react';
+import React, { useState } from 'react';
+import { ArrowLeft, Plus, RefreshCw, Upload, Scaling, Wand2, Loader2, Palette, Download } from 'lucide-react';
 import { generateProGraphics } from '../../services/geminiService';
 
 interface LogoStudioProps {
@@ -7,7 +7,6 @@ interface LogoStudioProps {
 }
 
 const LogoStudio: React.FC<LogoStudioProps> = ({ onBack }) => {
-  const [hasKey, setHasKey] = useState(false);
   const [creationMode, setCreationMode] = useState<'SCRATCH' | 'EDIT'>('SCRATCH');
   const [file, setFile] = useState<File | null>(null);
   const [imagePreview, setImagePreview] = useState<string | null>(null);
@@ -17,19 +16,6 @@ const LogoStudio: React.FC<LogoStudioProps> = ({ onBack }) => {
   const [aspectRatio, setAspectRatio] = useState('1:1');
   const [loading, setLoading] = useState(false);
   const [generatedAssets, setGeneratedAssets] = useState<string[]>([]);
-
-  useEffect(() => {
-    if (window.aistudio && window.aistudio.hasSelectedApiKey) {
-      window.aistudio.hasSelectedApiKey().then(setHasKey);
-    }
-  }, []);
-
-  const handleSelectKey = async () => {
-    if (window.aistudio && window.aistudio.openSelectKey) {
-      await window.aistudio.openSelectKey();
-      setHasKey(await window.aistudio.hasSelectedApiKey());
-    }
-  };
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
@@ -81,14 +67,7 @@ const LogoStudio: React.FC<LogoStudioProps> = ({ onBack }) => {
             </div>
 
             <div className="p-8">
-                {!hasKey ? (
-                    <div className="text-center py-20">
-                        <Key className="w-12 h-12 text-emerald-400 mx-auto mb-4" />
-                        <h3 className="text-xl font-bold text-emerald-100 mb-2">Pro Features Locked</h3>
-                        <button onClick={handleSelectKey} className="bg-emerald-600 hover:bg-emerald-500 text-white font-bold py-3 px-8 rounded-xl transition-all mt-4">Connect API Key</button>
-                    </div>
-                ) : (
-                    <div className="grid md:grid-cols-2 gap-8 items-start">
+                <div className="grid md:grid-cols-2 gap-8 items-start">
                         <div className="space-y-6">
                             <div className="flex bg-slate-900/50 p-1 rounded-xl border border-emerald-500/20 w-fit">
                                 <button onClick={() => setCreationMode('SCRATCH')} className={`flex items-center px-4 py-2 rounded-lg text-sm font-medium transition-all ${creationMode === 'SCRATCH' ? 'bg-emerald-600 text-white' : 'text-emerald-400'}`}>
@@ -149,7 +128,6 @@ const LogoStudio: React.FC<LogoStudioProps> = ({ onBack }) => {
                             )}
                         </div>
                     </div>
-                )}
             </div>
         </div>
     </div>
