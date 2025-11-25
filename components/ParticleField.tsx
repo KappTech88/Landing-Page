@@ -1,143 +1,154 @@
 import React, { useRef, useMemo } from 'react';
 import { Canvas, useFrame } from '@react-three/fiber';
+import { Points, PointMaterial } from '@react-three/drei';
 import * as THREE from 'three';
+import StarTrails from './StarTrails';
 
 interface ParticleFieldProps {
   count?: number;
 }
 
-function HyperSpaceStars({ count = 1000 }: ParticleFieldProps) {
-  const linesRef = useRef<THREE.LineSegments>(null);
+function DeepSpaceStars({ count = 3000 }: ParticleFieldProps) {
+  const ref = useRef<THREE.Points>(null);
 
-  // Generate star streak data
-  const { geometry, colors } = useMemo(() => {
-    const positions = new Float32Array(count * 6); // 2 points per line (start and end)
-    const colors = new Float32Array(count * 6); // colors for both points
+  // Generate star positions with depth variation
+  const particles = useMemo(() => {
+    const positions = new Float32Array(count * 3);
+    const colors = new Float32Array(count * 3);
+    const sizes = new Float32Array(count);
 
     for (let i = 0; i < count; i++) {
-      const i6 = i * 6;
+      const i3 = i * 3;
 
-      // Random angle for radial distribution
-      const angle = Math.random() * Math.PI * 2;
-      const radius = Math.random() * 40 + 5; // Much wider spread
+      // Distribute stars in a large volume
+      positions[i3] = (Math.random() - 0.5) * 100;     // X
+      positions[i3 + 1] = (Math.random() - 0.5) * 100; // Y
+      positions[i3 + 2] = -Math.random() * 200 - 10;   // Z (depth)
 
-      // Start position (spread across screen)
-      const x = Math.cos(angle) * radius;
-      const y = Math.sin(angle) * radius;
-      const z = -Math.random() * 100 - 10;
-
-      positions[i6] = x;
-      positions[i6 + 1] = y;
-      positions[i6 + 2] = z;
-
-      // End position (creates the streak)
-      positions[i6 + 3] = x * 1.1;
-      positions[i6 + 4] = y * 1.1;
-      positions[i6 + 5] = z - 2;
-
-      // Vibrant color palette inspired by No Man's Sky
-      const colorChoice = Math.random();
-      let r, g, b;
-
-      if (colorChoice < 0.25) {
-        // Bright cyan
-        r = 0.3; g = 0.9; b = 1;
-      } else if (colorChoice < 0.5) {
-        // Bright magenta/pink
-        r = 1; g = 0.3; b = 0.9;
-      } else if (colorChoice < 0.75) {
-        // Bright white
-        r = 1; g = 1; b = 1;
+      // Assign random star colors
+      const colorType = Math.random();
+      if (colorType < 0.5) {
+        // White stars (50%)
+        colors[i3] = 1.0;
+        colors[i3 + 1] = 1.0;
+        colors[i3 + 2] = 1.0;
+      } else if (colorType < 0.7) {
+        // Blue stars (20%)
+        colors[i3] = 0.5;
+        colors[i3 + 1] = 0.7;
+        colors[i3 + 2] = 1.0;
+      } else if (colorType < 0.85) {
+        // Yellow stars (15%)
+        colors[i3] = 1.0;
+        colors[i3 + 1] = 0.95;
+        colors[i3 + 2] = 0.6;
       } else {
-        // Bright purple
-        r = 0.7; g = 0.3; b = 1;
+        // Red/Orange stars (15%)
+        colors[i3] = 1.0;
+        colors[i3 + 1] = 0.6;
+        colors[i3 + 2] = 0.4;
       }
 
-      // Apply color to both points of the line
-      colors[i6] = r;
-      colors[i6 + 1] = g;
-      colors[i6 + 2] = b;
-      colors[i6 + 3] = r * 0.5; // Fade the tail
-      colors[i6 + 4] = g * 0.5;
-      colors[i6 + 5] = b * 0.5;
+      // Vary star sizes for depth perception
+      sizes[i] = Math.random() * 2 + 0.5;
     }
 
-    const geometry = new THREE.BufferGeometry();
-    geometry.setAttribute('position', new THREE.BufferAttribute(positions, 3));
-    geometry.setAttribute('color', new THREE.BufferAttribute(colors, 3));
-
-    return { geometry, colors: new Float32Array(colors) };
+    return { positions, colors, sizes };
   }, [count]);
 
-  // Animate the hyperspace warp effect
+  // Set up colors on the geometry
+  React.useEffect(() => {
+    if (ref.current) {
+      ref.current.geometry.setAttribute(
+        'color',
+        new THREE.BufferAttribute(particles.colors, 3)
+      );
+    }
+  }, [particles.colors]);
+
+  // Slow, meditative forward motion through space with motion blur
   useFrame(() => {
-    if (linesRef.current) {
-      const positions = linesRef.current.geometry.attributes.position.array as Float32Array;
+    if (ref.current) {
+      const positions = ref.current.geometry.attributes.position.array as Float32Array;
+      const colors = ref.current.geometry.attributes.color.array as Float32Array;
 
       for (let i = 0; i < count; i++) {
-        const i6 = i * 6;
+        const i3 = i * 3;
 
-        // Get current position
-        let x = positions[i6];
-        let y = positions[i6 + 1];
-        let z = positions[i6 + 2];
+        // Move stars toward camera slowly (meditative speed)
+        positions[i3 + 2] += 0.15;
 
-        // Move toward camera (increase z) and expand outward
-        const speed = 0.3;
-        const expandFactor = 1.005;
+        // Calculate distance-based motion blur
+        const z = positions[i3 + 2];
 
-        z += speed;
+        // As stars get closer (z increases), make them brighter and add blur effect
+        if (z > -20) {
+          // Stars close to camera - increase opacity
+          const blurFactor = Math.min((z + 20) / 30, 1); // 0 to 1 as it approaches
 
-        // Reset if past camera
-        if (z > 10) {
-          const angle = Math.random() * Math.PI * 2;
-          const radius = Math.random() * 40 + 5; // Match wider spread
-          x = Math.cos(angle) * radius;
-          y = Math.sin(angle) * radius;
-          z = -100 - Math.random() * 50;
-        } else {
-          // Expand outward as approaching
-          x *= expandFactor;
-          y *= expandFactor;
+          // Store original color
+          const origR = particles.colors[i3];
+          const origG = particles.colors[i3 + 1];
+          const origB = particles.colors[i3 + 2];
+
+          // Brighten as it approaches
+          colors[i3] = origR * (1 + blurFactor * 0.3);
+          colors[i3 + 1] = origG * (1 + blurFactor * 0.3);
+          colors[i3 + 2] = origB * (1 + blurFactor * 0.3);
         }
 
-        // Update start point
-        positions[i6] = x;
-        positions[i6 + 1] = y;
-        positions[i6 + 2] = z;
+        // Reset stars that pass the camera
+        if (positions[i3 + 2] > 10) {
+          positions[i3 + 2] = -210;
+          positions[i3] = (Math.random() - 0.5) * 100;
+          positions[i3 + 1] = (Math.random() - 0.5) * 100;
 
-        // Update end point (creates streak)
-        positions[i6 + 3] = x * 1.1;
-        positions[i6 + 4] = y * 1.1;
-        positions[i6 + 5] = z - 3;
+          // Reset color to original
+          colors[i3] = particles.colors[i3];
+          colors[i3 + 1] = particles.colors[i3 + 1];
+          colors[i3 + 2] = particles.colors[i3 + 2];
+        }
       }
 
-      linesRef.current.geometry.attributes.position.needsUpdate = true;
+      ref.current.geometry.attributes.position.needsUpdate = true;
+      ref.current.geometry.attributes.color.needsUpdate = true;
     }
   });
 
   return (
-    <lineSegments ref={linesRef} geometry={geometry}>
-      <lineBasicMaterial
-        vertexColors
+    <Points ref={ref} positions={particles.positions} stride={3}>
+      <PointMaterial
         transparent
-        opacity={0.9}
+        vertexColors
+        size={0.35}
+        sizeAttenuation={true}
+        depthWrite={false}
+        opacity={1.0}
         blending={THREE.AdditiveBlending}
-        linewidth={2}
       />
-    </lineSegments>
+    </Points>
   );
 }
 
-export default function ParticleField({ count = 1000 }: ParticleFieldProps) {
+export default function ParticleField({ count = 3000 }: ParticleFieldProps) {
   return (
-    <div className="fixed inset-0 pointer-events-none z-0">
+    <div className="fixed inset-0 pointer-events-none z-0 w-full h-full">
       <Canvas
-        camera={{ position: [0, 0, 0], fov: 90 }}
+        camera={{ position: [0, 0, 0], fov: 75, near: 0.1, far: 1000 }}
         dpr={[1, 2]}
-        style={{ background: 'transparent' }}
+        style={{ background: 'transparent', width: '100%', height: '100%' }}
       >
-        <HyperSpaceStars count={count} />
+        {/* Nebula fog effect with deep purple and dark blue */}
+        <fog attach="fog" args={['#110022', 10, 150]} />
+
+        {/* Ambient nebula glow */}
+        <ambientLight intensity={0.2} color="#220033" />
+
+        {/* Motion blur trails */}
+        <StarTrails count={1000} />
+
+        {/* Main stars */}
+        <DeepSpaceStars count={count} />
       </Canvas>
     </div>
   );
