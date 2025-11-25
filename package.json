@@ -12,6 +12,8 @@
     "@google/genai": "^1.30.0",
     "@react-three/drei": "^10.7.7",
     "@react-three/fiber": "^9.4.0",
+    "@supabase/ssr": "^0.0.10",
+    "@supabase/supabase-js": "^2.39.0",
     "@tsparticles/engine": "^3.9.1",
     "@tsparticles/react": "^3.0.0",
     "@tsparticles/slim": "^3.9.1",
@@ -21,10 +23,7 @@
     "lucide-react": "^0.554.0",
     "react": "^19.2.0",
     "react-dom": "^19.2.0",
-    "@google/genai": "^1.30.0",
-    "@supabase/supabase-js": "^2.39.0",
-    "@supabase/ssr": "^0.0.10",
-    "lucide-react": "^0.554.0"
+    "react-parallax-tilt": "^1.7.314"
   },
   "devDependencies": {
     "@types/node": "^22.14.0",
