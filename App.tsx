@@ -440,7 +440,7 @@ const App: React.FC = () => {
   return (
     <SmoothScroll>
       <div className="min-h-screen w-full relative bg-slate-950 noise-overlay overflow-hidden">
-        <ParticleField count={1500} />
+        <ParticleField count={500} />
         <FloatingElements />
         <CursorTrail />
         <AmbientAudio />

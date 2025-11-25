@@ -83,8 +83,8 @@ function HyperSpaceStars({ count = 1000 }: ParticleFieldProps) {
         let z = positions[i6 + 2];
 
         // Move toward camera (increase z) and expand outward
-        const speed = 1.5;
-        const expandFactor = 1.02;
+        const speed = 0.3;
+        const expandFactor = 1.005;
 
         z += speed;
 
