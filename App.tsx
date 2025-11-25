@@ -243,44 +243,65 @@ const App: React.FC = () => {
       default:
         return (
           <>
-            {/* Hero Section */}
-            <div className="min-h-[60vh] flex flex-col items-center justify-center px-4 py-16 relative">
-              <div className="text-center max-w-5xl mx-auto animate-float">
-                <div className="flex flex-col items-center mb-8 relative">
-                  {/* Enhanced Radiant Glow */}
-                  <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full h-32 bg-emerald-500/10 blur-[60px] rounded-full -z-10 animate-pulse-glow"></div>
+            {/* Hero Section - Future Earth Space Theme */}
+            <div className="min-h-[70vh] flex flex-col items-center justify-center px-4 py-20 relative overflow-hidden">
+              {/* Cosmic Background Elements */}
+              <div className="absolute inset-0 pointer-events-none">
+                {/* Earth Glow */}
+                <div className="absolute bottom-0 left-1/2 -translate-x-1/2 translate-y-1/2 w-[800px] h-[800px] bg-gradient-radial from-blue-500/20 via-cyan-500/10 to-transparent rounded-full blur-3xl"></div>
 
-                  <h1 className="text-5xl md:text-7xl font-thin tracking-widest text-center radiant-text relative z-20 animate-fadeInScale">
+                {/* Nebula Clouds */}
+                <div className="absolute top-20 right-10 w-96 h-96 bg-gradient-radial from-purple-500/10 via-pink-500/5 to-transparent rounded-full blur-3xl animate-pulse"></div>
+                <div className="absolute top-40 left-20 w-80 h-80 bg-gradient-radial from-indigo-500/10 via-violet-500/5 to-transparent rounded-full blur-3xl animate-pulse" style={{animationDelay: '1s'}}></div>
+
+                {/* Orbital Rings */}
+                <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] border border-cyan-500/10 rounded-full animate-spin" style={{animationDuration: '60s'}}></div>
+                <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[700px] h-[700px] border border-blue-500/5 rounded-full animate-spin" style={{animationDuration: '90s', animationDirection: 'reverse'}}></div>
+              </div>
+
+              <div className="text-center max-w-6xl mx-auto relative z-10 animate-float">
+                {/* Main Title with Holographic Effect */}
+                <div className="flex flex-col items-center mb-12 relative">
+                  {/* Enhanced Cosmic Glow */}
+                  <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full h-40 bg-gradient-radial from-cyan-500/20 via-blue-500/10 to-transparent blur-3xl -z-10 animate-pulse-glow"></div>
+
+                  {/* Geometric Accents */}
+                  <div className="absolute -top-8 left-1/2 -translate-x-1/2 w-1 h-16 bg-gradient-to-b from-transparent via-cyan-400/50 to-transparent"></div>
+
+                  <h1 className="text-6xl md:text-8xl font-thin tracking-[0.3em] text-center bg-gradient-to-r from-cyan-200 via-blue-100 to-purple-200 bg-clip-text text-transparent relative z-20 animate-fadeInScale mb-4">
                     ESTIMATE RELIANCE
                   </h1>
-                  {/* Enhanced Swoosh Line */}
-                  <div className="h-0.5 w-64 animate-swoosh-green mt-4 rounded-full shadow-[0_0_15px_rgba(16,185,129,0.5)] opacity-90 relative z-20"></div>
+
+                  {/* Futuristic Swoosh Line with Glow */}
+                  <div className="relative">
+                    <div className="h-0.5 w-96 bg-gradient-to-r from-transparent via-cyan-400 to-transparent rounded-full shadow-[0_0_20px_rgba(34,211,238,0.6)] opacity-90 relative z-20"></div>
+                    <div className="absolute top-0 left-1/2 -translate-x-1/2 w-2 h-2 bg-cyan-400 rounded-full shadow-[0_0_15px_rgba(34,211,238,0.8)] animate-pulse"></div>
+                  </div>
                 </div>
 
-                <p className="text-xl md:text-2xl text-slate-300 font-light tracking-wide mb-10 max-w-3xl mx-auto leading-relaxed animate-fadeIn stagger-2">
-                  Professional insurance restoration estimates, supplements, and creative marketing solutions—powered by AI.
+                {/* Tagline with Futuristic Styling */}
+                <p className="text-xl md:text-2xl text-cyan-100/80 font-light tracking-wider mb-6 max-w-4xl mx-auto leading-relaxed animate-fadeIn stagger-2">
+                  Professional insurance restoration estimates, supplements, and creative marketing solutions
                 </p>
-                <div className="flex flex-col sm:flex-row gap-4 justify-center items-center animate-slideUp stagger-3">
-                  <button
-                    onClick={() => setView(AppView.CLAIMS)}
-                    className="group px-10 py-5 text-lg font-medium bg-gradient-to-r from-indigo-600 to-violet-600 hover:from-indigo-500 hover:to-violet-500 rounded-xl shadow-2xl shadow-indigo-600/30 transition-all transform hover:scale-105 hover:shadow-indigo-600/50 relative overflow-hidden"
-                  >
-                    <span className="relative z-10">Inquire / Submit Task →</span>
-                    <div className="absolute inset-0 bg-gradient-to-r from-indigo-400/0 via-white/20 to-indigo-400/0 -translate-x-full group-hover:translate-x-full transition-transform duration-1000"></div>
-                  </button>
-                  <button
-                    onClick={() => setView(AppView.LABS)}
-                    className="group px-10 py-5 text-lg font-light border-2 border-teal-500/50 hover:border-teal-400 text-teal-100 hover:bg-teal-500/10 rounded-xl transition-all hover:shadow-lg hover:shadow-teal-500/20 relative overflow-hidden"
-                  >
-                    <span className="relative z-10">Explore Labs</span>
-                    <div className="absolute inset-0 bg-teal-500/5 -translate-y-full group-hover:translate-y-0 transition-transform duration-300"></div>
-                  </button>
-                </div>
+                <p className="text-sm md:text-base text-blue-300/60 font-light tracking-widest uppercase animate-fadeIn stagger-3 flex items-center justify-center gap-2">
+                  <span className="w-8 h-px bg-gradient-to-r from-transparent to-blue-400/50"></span>
+                  Powered by AI
+                  <span className="w-8 h-px bg-gradient-to-l from-transparent to-blue-400/50"></span>
+                </p>
               </div>
             </div>
 
-            {/* Main Service Cards - 2 Cards */}
-            <div className="px-4 py-16 max-w-7xl mx-auto">
+            {/* Main Service Cards - 2 Cards with Enhanced Futuristic Theme */}
+            <div className="px-4 py-20 max-w-7xl mx-auto relative">
+              {/* Section Header */}
+              <div className="text-center mb-12 animate-fadeIn">
+                <div className="inline-flex items-center gap-3 px-6 py-3 bg-gradient-to-r from-cyan-500/10 via-blue-500/10 to-purple-500/10 border border-cyan-500/20 rounded-full mb-6">
+                  <div className="w-2 h-2 bg-cyan-400 rounded-full animate-pulse"></div>
+                  <span className="text-sm tracking-widest text-cyan-300/90 uppercase">Select Your Mission</span>
+                  <div className="w-2 h-2 bg-cyan-400 rounded-full animate-pulse"></div>
+                </div>
+              </div>
+
               <div className="grid md:grid-cols-2 gap-8 max-w-5xl mx-auto">
 
                 {/* Card 1: Select Service */}
@@ -324,29 +345,6 @@ const App: React.FC = () => {
                   </div>
                 </button>
 
-              </div>
-            </div>
-
-            {/* Optional: Why Estimate Reliance Section */}
-            <div className="px-4 py-16 max-w-6xl mx-auto border-t border-white/5">
-              <div className="grid md:grid-cols-3 gap-8 text-center">
-                <div className="p-6 group hover:bg-white/5 rounded-xl transition-all duration-300 animate-fadeIn stagger-1">
-                  <div className="text-4xl mb-4 group-hover:scale-110 transition-transform duration-300">⚡</div>
-                  <h3 className="text-lg font-medium text-white mb-2 group-hover:text-emerald-300 transition-colors">Fast Turnaround</h3>
-                  <p className="text-sm text-slate-400 group-hover:text-slate-300 transition-colors">AI-powered analysis delivers results in minutes, not days.</p>
-                </div>
-
-                <div className="p-6 group hover:bg-white/5 rounded-xl transition-all duration-300 animate-fadeIn stagger-2">
-                  <div className="text-4xl mb-4 group-hover:scale-110 transition-transform duration-300">🎯</div>
-                  <h3 className="text-lg font-medium text-white mb-2 group-hover:text-emerald-300 transition-colors">Expert Quality</h3>
-                  <p className="text-sm text-slate-400 group-hover:text-slate-300 transition-colors">Professional-grade estimates and supplements that adjusters respect.</p>
-                </div>
-
-                <div className="p-6 group hover:bg-white/5 rounded-xl transition-all duration-300 animate-fadeIn stagger-3">
-                  <div className="text-4xl mb-4 group-hover:scale-110 transition-transform duration-300">💰</div>
-                  <h3 className="text-lg font-medium text-white mb-2 group-hover:text-emerald-300 transition-colors">Transparent Pricing</h3>
-                  <p className="text-sm text-slate-400 group-hover:text-slate-300 transition-colors">Choose your service level—from automated to hands-on expert review.</p>
-                </div>
               </div>
             </div>
           </>
