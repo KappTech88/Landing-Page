@@ -6,8 +6,8 @@
 -- Estimated execution time: 10-15 seconds
 -- =====================================================
 
-\echo '===== Starting Database Setup ====='
-\echo '===== Step 1/8: Organizations, Users, Roles ====='
+-- ===== Starting Database Setup =====
+-- ===== Step 1/8: Organizations, Users, Roles =====
 
 -- Enable UUID extension
 CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
@@ -176,7 +176,7 @@ INSERT INTO roles (name, display_name, description, is_system_role, permissions)
 ('client', 'Client', 'View their own claims only', true,
     '{"claims": {"create": false, "read": true, "update": false, "delete": false}, "estimates": {"create": false, "read": true, "update": false, "delete": false}, "invoices": {"create": false, "read": true, "update": false, "delete": false}, "users": {"create": false, "read": false, "update": false, "delete": false}, "reports": {"read": false, "export": false}, "settings": {"read": true, "update": true}}'::jsonb);
 
-\echo '===== Step 2/8: Claims and Properties ====='
+-- ===== Step 2/8: Claims and Properties =====
 
 -- =====================================================
 -- CLAIMS TABLE
@@ -510,7 +510,7 @@ COMMENT ON TABLE claims IS 'Core table tracking restoration projects from start 
 COMMENT ON TABLE properties IS 'Property details for each claim (one-to-one relationship)';
 COMMENT ON TABLE claim_contractors IS 'Junction table for multiple contractors per claim';
 
-\echo '===== Step 3/8: Estimates and Line Items ====='
+-- ===== Step 3/8: Estimates and Line Items =====
 -- =====================================================
 -- ESTIMATES TABLE
 -- =====================================================
@@ -916,7 +916,7 @@ COMMENT ON COLUMN estimates.acv_total IS 'Actual Cash Value - RCV minus deprecia
 COMMENT ON COLUMN estimate_line_items.xactimate_code IS 'Xactimate standard item code for compatibility';
 COMMENT ON COLUMN estimate_line_items.is_contested IS 'Insurance company disputed this line item';
 
-\echo '===== Step 4/8: Photos and Documents ====='
+-- ===== Step 4/8: Photos and Documents =====
 -- =====================================================
 -- PHOTOS TABLE
 -- =====================================================
@@ -1240,7 +1240,7 @@ COMMENT ON COLUMN photos.exif_data IS 'Full EXIF metadata from camera/phone';
 COMMENT ON COLUMN documents.related_to_table IS 'Generic relation - table name of related record';
 COMMENT ON COLUMN documents.related_to_id IS 'Generic relation - ID of related record';
 
-\echo '===== Step 5/8: Invoices and Payments ====='
+-- ===== Step 5/8: Invoices and Payments =====
 -- =====================================================
 -- INVOICES TABLE
 -- =====================================================
@@ -1608,7 +1608,7 @@ COMMENT ON COLUMN invoices.amount_due IS 'Computed column: total_amount - amount
 COMMENT ON COLUMN payments.processor_fee IS 'Fee charged by payment processor (Stripe, Square, etc.)';
 COMMENT ON COLUMN payments.net_amount IS 'Computed column: amount - processor_fee';
 
-\echo '===== Step 6/8: Insurance Companies and Adjusters ====='
+-- ===== Step 6/8: Insurance Companies and Adjusters =====
 -- =====================================================
 -- INSURANCE_COMPANIES TABLE
 -- =====================================================
@@ -1976,7 +1976,7 @@ COMMENT ON COLUMN claim_insurers.is_primary IS 'Primary vs secondary/excess insu
 COMMENT ON COLUMN claim_insurers.depreciation_withheld IS 'RCV vs ACV difference - recoverable after work completion';
 COMMENT ON COLUMN correspondence.requires_response IS 'Flag items requiring follow-up action';
 
-\echo '===== Step 7/8: Status History and Audit Logging ====='
+-- ===== Step 7/8: Status History and Audit Logging =====
 -- =====================================================
 -- STATUS_HISTORY TABLE
 -- =====================================================
@@ -2364,7 +2364,7 @@ COMMENT ON COLUMN status_history.automated IS 'Was this change triggered automat
 COMMENT ON COLUMN notes.mentioned_users IS 'Array of user IDs mentioned with @ in the note';
 COMMENT ON COLUMN notifications.expires_at IS 'Auto-delete notification after this date';
 
-\echo '===== Step 8/8: Row Level Security (RLS) Policies ====='
+-- ===== Step 8/8: Row Level Security (RLS) Policies =====
 -- =====================================================
 -- IMPORTANT: RLS OVERVIEW
 -- =====================================================
@@ -2908,11 +2908,11 @@ COMMENT ON FUNCTION auth.user_has_permission(UUID, VARCHAR, VARCHAR) IS 'Checks 
 -- RESET request.jwt.claim.sub;
 -- =====================================================
 
-\echo ''
-\echo '===== Database Setup Complete! ====='
-\echo 'All tables, indexes, triggers, and RLS policies have been created.'
-\echo 'Next steps:'
-\echo '  1. Create storage buckets for photos and documents'
-\echo '  2. Set up Vercel environment variables'
-\echo '  3. Test database connection'
-\echo ''
+-- 
+-- ===== Database Setup Complete! =====
+-- All tables, indexes, triggers, and RLS policies have been created.
+-- Next steps:
+--   1. Create storage buckets for photos and documents
+--   2. Set up Vercel environment variables
+--   3. Test database connection
+-- 
