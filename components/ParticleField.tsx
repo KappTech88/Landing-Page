@@ -2,6 +2,7 @@ import React, { useRef, useMemo } from 'react';
 import { Canvas, useFrame } from '@react-three/fiber';
 import { Points, PointMaterial } from '@react-three/drei';
 import * as THREE from 'three';
+import StarTrails from './StarTrails';
 
 interface ParticleFieldProps {
   count?: number;
@@ -65,10 +66,11 @@ function DeepSpaceStars({ count = 3000 }: ParticleFieldProps) {
     }
   }, [particles.colors]);
 
-  // Slow, meditative forward motion through space
+  // Slow, meditative forward motion through space with motion blur
   useFrame(() => {
     if (ref.current) {
       const positions = ref.current.geometry.attributes.position.array as Float32Array;
+      const colors = ref.current.geometry.attributes.color.array as Float32Array;
 
       for (let i = 0; i < count; i++) {
         const i3 = i * 3;
@@ -76,15 +78,40 @@ function DeepSpaceStars({ count = 3000 }: ParticleFieldProps) {
         // Move stars toward camera slowly (meditative speed)
         positions[i3 + 2] += 0.15;
 
+        // Calculate distance-based motion blur
+        const z = positions[i3 + 2];
+
+        // As stars get closer (z increases), make them brighter and add blur effect
+        if (z > -20) {
+          // Stars close to camera - increase opacity
+          const blurFactor = Math.min((z + 20) / 30, 1); // 0 to 1 as it approaches
+
+          // Store original color
+          const origR = particles.colors[i3];
+          const origG = particles.colors[i3 + 1];
+          const origB = particles.colors[i3 + 2];
+
+          // Brighten as it approaches
+          colors[i3] = origR * (1 + blurFactor * 0.3);
+          colors[i3 + 1] = origG * (1 + blurFactor * 0.3);
+          colors[i3 + 2] = origB * (1 + blurFactor * 0.3);
+        }
+
         // Reset stars that pass the camera
         if (positions[i3 + 2] > 10) {
           positions[i3 + 2] = -210;
           positions[i3] = (Math.random() - 0.5) * 100;
           positions[i3 + 1] = (Math.random() - 0.5) * 100;
+
+          // Reset color to original
+          colors[i3] = particles.colors[i3];
+          colors[i3 + 1] = particles.colors[i3 + 1];
+          colors[i3 + 2] = particles.colors[i3 + 2];
         }
       }
 
       ref.current.geometry.attributes.position.needsUpdate = true;
+      ref.current.geometry.attributes.color.needsUpdate = true;
     }
   });
 
@@ -117,6 +144,10 @@ export default function ParticleField({ count = 3000 }: ParticleFieldProps) {
         {/* Ambient nebula glow */}
         <ambientLight intensity={0.2} color="#220033" />
 
+        {/* Motion blur trails */}
+        <StarTrails count={1000} />
+
+        {/* Main stars */}
         <DeepSpaceStars count={count} />
       </Canvas>
     </div>
