@@ -13,6 +13,7 @@ function DeepSpaceStars({ count = 3000 }: ParticleFieldProps) {
   // Generate star positions with depth variation
   const particles = useMemo(() => {
     const positions = new Float32Array(count * 3);
+    const colors = new Float32Array(count * 3);
     const sizes = new Float32Array(count);
 
     for (let i = 0; i < count; i++) {
@@ -23,11 +24,35 @@ function DeepSpaceStars({ count = 3000 }: ParticleFieldProps) {
       positions[i3 + 1] = (Math.random() - 0.5) * 100; // Y
       positions[i3 + 2] = -Math.random() * 200 - 10;   // Z (depth)
 
+      // Assign random star colors
+      const colorType = Math.random();
+      if (colorType < 0.5) {
+        // White stars (50%)
+        colors[i3] = 1.0;
+        colors[i3 + 1] = 1.0;
+        colors[i3 + 2] = 1.0;
+      } else if (colorType < 0.7) {
+        // Blue stars (20%)
+        colors[i3] = 0.5;
+        colors[i3 + 1] = 0.7;
+        colors[i3 + 2] = 1.0;
+      } else if (colorType < 0.85) {
+        // Yellow stars (15%)
+        colors[i3] = 1.0;
+        colors[i3 + 1] = 0.95;
+        colors[i3 + 2] = 0.6;
+      } else {
+        // Red/Orange stars (15%)
+        colors[i3] = 1.0;
+        colors[i3 + 1] = 0.6;
+        colors[i3 + 2] = 0.4;
+      }
+
       // Vary star sizes for depth perception
       sizes[i] = Math.random() * 2 + 0.5;
     }
 
-    return { positions, sizes };
+    return { positions, colors, sizes };
   }, [count]);
 
   // Slow, meditative forward motion through space
@@ -57,8 +82,8 @@ function DeepSpaceStars({ count = 3000 }: ParticleFieldProps) {
     <Points ref={ref} positions={particles.positions} stride={3}>
       <PointMaterial
         transparent
-        color="#ffffff"
-        size={0.5}
+        vertexColors
+        size={0.35}
         sizeAttenuation={true}
         depthWrite={false}
         opacity={1.0}
