@@ -112,13 +112,27 @@ const CustomizedDocumentsForm: React.FC = () => {
           }
         }
 
-        // Use first file for AI analysis
+        // Prepare first file for potential AI analysis (optional)
         base64 = await fileToBase64(sampleDocs[0]);
         fileType = sampleDocs[0].type;
       }
 
-      // Process with AI
-      const response = await analyzeClaim(fullPrompt, base64, fileType);
+      // Try AI processing (optional - will skip if API key not configured)
+      let response = '';
+      const hasGeminiKey = import.meta.env.VITE_GEMINI_API_KEY &&
+                          import.meta.env.VITE_GEMINI_API_KEY !== 'PLACEHOLDER_API_KEY';
+
+      if (hasGeminiKey) {
+        try {
+          response = await analyzeClaim(fullPrompt, base64, fileType);
+        } catch (aiError) {
+          console.log('AI processing skipped:', aiError);
+          response = 'Thank you for your document request! We have received your information and will review it shortly. Our team will contact you to discuss your custom document needs.';
+        }
+      } else {
+        response = 'Thank you for your document request! We have received your information and will review it shortly. Our team will contact you to discuss your custom document needs.';
+      }
+
       setResult(response);
 
       // Save to database (no authentication required)
@@ -416,11 +430,11 @@ const CustomizedDocumentsForm: React.FC = () => {
               </div>
             )}
 
-            {/* AI Response */}
+            {/* Response */}
             <div className="p-6 bg-slate-900/70 border border-cyan-500/30 rounded-xl animate-fadeIn">
               <h3 className="text-lg font-medium text-cyan-300 mb-3 flex items-center">
                 <FileText className="w-5 h-5 mr-2" />
-                AI Analysis
+                Response
               </h3>
               <p className="text-slate-300 whitespace-pre-wrap leading-relaxed">{result}</p>
             </div>
