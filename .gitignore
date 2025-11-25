@@ -22,3 +22,9 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+.vercel
+
+# API Keys and sensitive files
+Website API Keys.txt
+*.env
+.env

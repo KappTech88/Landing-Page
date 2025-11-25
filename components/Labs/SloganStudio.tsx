@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { ArrowLeft, Bot, CheckSquare, Square, Loader2 } from 'lucide-react';
-import { generateGrokSlogans, SloganFormData } from '../../services/geminiService';
+import { generateGrokSlogans, SloganFormData } from '../../services/grokService';
 
 interface SloganStudioProps {
   onBack: () => void;

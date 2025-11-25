@@ -1,7 +1,7 @@
 import { GoogleGenAI, GenerateContentResponse } from "@google/genai";
 
 // Helper to get AI instance. Re-instantiated to ensure fresh key if changed.
-const getAI = () => new GoogleGenAI({ apiKey: process.env.API_KEY });
+const getAI = () => new GoogleGenAI({ apiKey: import.meta.env.VITE_GEMINI_API_KEY });
 
 /**
  * Analyzes a claim document text or image/pdf.
@@ -311,7 +311,7 @@ export const generateVeoVideo = async (imageBase64: string, prompt: string = "An
   if (operation.response?.generatedVideos?.[0]?.video?.uri) {
     const downloadLink = operation.response.generatedVideos[0].video.uri;
     // Proxy fetch to get blob url
-    const response = await fetch(`${downloadLink}&key=${process.env.API_KEY}`);
+    const response = await fetch(`${downloadLink}&key=${import.meta.env.VITE_GEMINI_API_KEY}`);
     const blob = await response.blob();
     return URL.createObjectURL(blob);
   }

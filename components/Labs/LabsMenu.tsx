@@ -59,28 +59,38 @@ const LabsMenu: React.FC<LabsMenuProps> = ({ onSelectService }) => {
 
   return (
     <div className="max-w-7xl mx-auto animate-fadeIn">
-       <div className="text-center mb-12">
-            <h2 className="text-3xl font-light text-slate-100 tracking-wide mb-2">ESTIMATE RELIANCE LABS</h2>
-            <p className="text-slate-400">Select a creative service to begin</p>
+       <div className="text-center mb-12 animate-fadeInScale">
+            <h2 className="text-4xl font-light text-slate-100 tracking-widest mb-3 neon-text">ESTIMATE RELIANCE LABS</h2>
+            <div className="h-0.5 w-32 mx-auto animate-swoosh-green mb-4 rounded-full"></div>
+            <p className="text-slate-300 text-lg">Select a creative service to begin</p>
        </div>
 
        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
-          {services.map((service) => (
-            <button 
+          {services.map((service, index) => (
+            <button
                 key={service.id}
                 onClick={() => onSelectService(service.id)}
-                className={`group relative h-72 bg-slate-900/40 border border-${service.color}-500/30 hover:border-${service.color}-500/80 rounded-2xl p-6 transition-all hover:bg-slate-900/60 overflow-hidden text-left`}
+                className={`card-3d hover-lift group relative h-72 glass-card border border-${service.color}-500/30 hover:border-${service.color}-500/70 rounded-2xl p-6 transition-all overflow-hidden text-left animate-fadeIn stagger-${index + 1}`}
             >
-                <div className="absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-30 transition-opacity">
+                {/* Animated Background Glow */}
+                <div className={`absolute inset-0 bg-gradient-to-br from-${service.color}-500/0 via-${service.color}-500/5 to-${service.color}-500/10 opacity-0 group-hover:opacity-100 transition-opacity duration-500`}></div>
+
+                {/* Background Icon */}
+                <div className="absolute top-0 right-0 p-4 opacity-5 group-hover:opacity-20 transition-all duration-500 group-hover:scale-110">
                     {service.bgIcon}
                 </div>
+
+                {/* Content */}
                 <div className="relative z-10 flex flex-col h-full justify-end">
-                    <div className={`bg-${service.color}-500/10 w-16 h-16 rounded-2xl flex items-center justify-center mb-6 group-hover:bg-${service.color}-500/20 transition-colors border border-${service.color}-500/20`}>
+                    <div className={`bg-${service.color}-500/10 w-16 h-16 rounded-2xl flex items-center justify-center mb-6 group-hover:bg-${service.color}-500/25 transition-all duration-300 border border-${service.color}-500/20 group-hover:border-${service.color}-500/40 group-hover:scale-110 group-hover:rotate-3`}>
                         {service.icon}
                     </div>
-                    <h3 className="text-2xl font-medium text-white mb-2">{service.title}</h3>
-                    <p className={`text-sm text-${service.color}-200/60 leading-relaxed`}>{service.desc}</p>
+                    <h3 className="text-2xl font-medium text-white mb-2 group-hover:text-${service.color}-100 transition-colors">{service.title}</h3>
+                    <p className={`text-sm text-${service.color}-200/60 leading-relaxed group-hover:text-${service.color}-100/80 transition-colors`}>{service.desc}</p>
                 </div>
+
+                {/* Shimmer Effect on Hover */}
+                <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/5 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-1000 pointer-events-none"></div>
             </button>
           ))}
        </div>
