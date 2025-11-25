@@ -28,33 +28,32 @@ function GalaxyStars({ count = 5000 }: ParticleFieldProps) {
       positions[i3 + 1] = (Math.random() - 0.5) * 40; // Y
       positions[i3 + 2] = (Math.random() - 0.5) * 100; // Z (depth)
 
-      // Star colors - mostly white with hints of blue, yellow, and red
+      // Star colors - bright and vibrant
       const colorType = Math.random();
       if (colorType < 0.7) {
-        // White stars (most common)
-        const brightness = 0.8 + Math.random() * 0.2;
-        colors[i3] = brightness;
-        colors[i3 + 1] = brightness;
-        colors[i3 + 2] = brightness;
+        // Bright white stars (most common)
+        colors[i3] = 1;
+        colors[i3 + 1] = 1;
+        colors[i3 + 2] = 1;
       } else if (colorType < 0.85) {
-        // Blue-white stars
-        colors[i3] = 0.7 + Math.random() * 0.3;
-        colors[i3 + 1] = 0.8 + Math.random() * 0.2;
+        // Bright blue-white stars
+        colors[i3] = 0.8;
+        colors[i3 + 1] = 0.9;
         colors[i3 + 2] = 1;
       } else if (colorType < 0.95) {
-        // Yellow-white stars
+        // Bright yellow-white stars
         colors[i3] = 1;
-        colors[i3 + 1] = 0.9 + Math.random() * 0.1;
-        colors[i3 + 2] = 0.7 + Math.random() * 0.2;
+        colors[i3 + 1] = 1;
+        colors[i3 + 2] = 0.8;
       } else {
-        // Red-orange stars (rare)
-        colors[i3] = 1;
-        colors[i3 + 1] = 0.5 + Math.random() * 0.3;
-        colors[i3 + 2] = 0.3 + Math.random() * 0.2;
+        // Cyan stars
+        colors[i3] = 0.4;
+        colors[i3 + 1] = 0.9;
+        colors[i3 + 2] = 1;
       }
 
-      // Vary star sizes for depth perception
-      sizes[i] = Math.random() * 2 + 0.5;
+      // Vary star sizes for depth perception - much larger
+      sizes[i] = Math.random() * 3 + 1;
 
       // Different velocities for parallax effect
       velocities[i] = Math.random() * 0.5 + 0.2;
@@ -98,10 +97,10 @@ function GalaxyStars({ count = 5000 }: ParticleFieldProps) {
       <PointMaterial
         transparent
         vertexColors
-        size={0.08}
+        size={0.25}
         sizeAttenuation={true}
         depthWrite={false}
-        opacity={0.9}
+        opacity={1}
         blending={THREE.AdditiveBlending}
       />
     </Points>
