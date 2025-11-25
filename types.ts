@@ -2,6 +2,7 @@ import React from 'react';
 
 export enum AppView {
   LANDING = 'LANDING',
+  SERVICES = 'SERVICES',
   CLAIMS = 'CLAIMS',
   LABS = 'LABS',
   PORTAL = 'PORTAL',
