@@ -1,0 +1,12 @@
+#!/bin/bash
+echo "Setting up Vercel environment variables..."
+echo ""
+echo "Run these commands (requires vercel CLI installed):"
+echo ""
+echo "vercel env add VITE_SUPABASE_URL"
+echo "# Paste: https://qxswelavrvfgtpyukijb.supabase.co"
+echo ""
+echo "vercel env add VITE_SUPABASE_ANON_KEY"
+echo "# Paste: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InF4c3dlbGF2cnZmZ3RweXVraWpiIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjQwMTc4OTMsImV4cCI6MjA3OTU5Mzg5M30.YH0Kxil6gSKLak4oRqW7ihrpQEtnj-sKLlyx8Dac4HA"
+echo ""
+echo "Then redeploy: vercel --prod"
