@@ -11,6 +11,7 @@ export enum AppView {
   CLAIMS = 'CLAIMS',
   LABS = 'LABS',
   PORTAL = 'PORTAL',
+  REGISTER = 'REGISTER',
 }
 
 export interface NavItem {

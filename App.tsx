@@ -3,6 +3,7 @@ import StarField from './components/StarField';
 import ClaimSubmission from './components/ClaimSubmission';
 import Labs from './components/Labs';
 import PortalLogin from './components/PortalLogin';
+import PartnerRegistration from './components/PartnerRegistration';
 import DenialAppealForm from './components/DenialAppealForm';
 import XactimateEstimateForm from './components/XactimateEstimateForm';
 import SupplementClaimForm from './components/SupplementClaimForm';
@@ -14,27 +15,34 @@ import { FileText, Microscope, ShieldCheck, ArrowLeft, UserPlus, LogIn, Clipboar
 const App: React.FC = () => {
   const [view, setView] = useState<AppView>(AppView.LANDING);
 
-  // Logo Component
+  // Logo Component (removed text, just click area to return home)
   const Logo = () => (
-    <div className="flex flex-col group cursor-pointer select-none" onClick={() => setView(AppView.LANDING)}>
-      <span className="text-xl font-bold tracking-widest text-emerald-100 leading-tight group-hover:text-white transition-colors">
-        ESTIMATE RELIANCE
-      </span>
-      <div className="h-0.5 w-full animate-swoosh-green mt-1 rounded-full shadow-[0_0_8px_rgba(16,185,129,0.4)] group-hover:shadow-[0_0_12px_rgba(16,185,129,0.6)] transition-all duration-300"></div>
+    <div className="flex items-center cursor-pointer select-none" onClick={() => setView(AppView.LANDING)}>
+      <div className="w-8 h-8 rounded-full bg-gradient-to-r from-cyan-500 to-blue-500 flex items-center justify-center shadow-lg shadow-cyan-500/50">
+        <span className="text-white font-bold text-sm">ER</span>
+      </div>
     </div>
   );
 
-  // Landing Nav (with Login)
+  // Landing Nav (with Login & Register)
   const renderLandingNav = () => (
     <nav className="sticky top-0 z-50 w-full backdrop-blur-md bg-slate-950/80 border-b border-white/10 px-6 py-4">
       <div className="max-w-7xl mx-auto flex justify-between items-center">
         <Logo />
-        <button 
-          onClick={() => setView(AppView.PORTAL)}
-          className="px-4 py-2 text-sm text-slate-300 hover:text-white border border-slate-700 hover:border-slate-500 rounded-lg transition-all"
-        >
-          Partner Portal
-        </button>
+        <div className="flex items-center gap-3">
+          <button
+            onClick={() => setView(AppView.REGISTER)}
+            className="px-4 py-2 text-sm text-cyan-300 hover:text-cyan-200 border border-cyan-700 hover:border-cyan-500 rounded-lg transition-all"
+          >
+            Register
+          </button>
+          <button
+            onClick={() => setView(AppView.PORTAL)}
+            className="px-4 py-2 text-sm text-slate-300 hover:text-white border border-slate-700 hover:border-slate-500 rounded-lg transition-all"
+          >
+            Partner Login
+          </button>
+        </div>
       </div>
     </nav>
   );
@@ -301,6 +309,8 @@ const App: React.FC = () => {
         return <Labs />;
       case AppView.PORTAL:
         return <PortalLogin />;
+      case AppView.REGISTER:
+        return <PartnerRegistration />;
       default:
         return (
           <>
