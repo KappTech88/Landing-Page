@@ -89,14 +89,26 @@ const App: React.FC = () => {
                   <p className="text-sm text-slate-400 mb-4 group-hover:text-slate-300 transition-colors leading-relaxed">
                     Investigate claims, fight denials, and acquire missing information.
                   </p>
-                  <div className="flex items-baseline gap-2 mb-3">
-                    <DollarSign className="w-4 h-4 text-emerald-400" />
-                    <span className="text-lg font-semibold text-emerald-400">10% of Total RCV</span>
+                  <div className="mb-3 pb-3 border-b border-white/10">
+                    <span className="text-2xl font-bold text-emerald-400">10% of Total RCV</span>
                   </div>
-                  <div className="text-xs text-slate-500 space-y-1">
-                    <p>• Property/Claim Information</p>
-                    <p>• Inspection Report</p>
-                    <p>• Denial Letter</p>
+                  <div className="text-xs text-slate-400 space-y-1.5">
+                    <p className="flex items-start gap-2">
+                      <span className="text-rose-400 mt-0.5">•</span>
+                      <span>Comprehensive claim investigation & analysis</span>
+                    </p>
+                    <p className="flex items-start gap-2">
+                      <span className="text-rose-400 mt-0.5">•</span>
+                      <span>Professional appeal documentation</span>
+                    </p>
+                    <p className="flex items-start gap-2">
+                      <span className="text-rose-400 mt-0.5">•</span>
+                      <span>Insurance company negotiation support</span>
+                    </p>
+                    <p className="flex items-start gap-2">
+                      <span className="text-rose-400 mt-0.5">•</span>
+                      <span>7-10 business day turnaround</span>
+                    </p>
                   </div>
                 </div>
               </button>
@@ -119,14 +131,26 @@ const App: React.FC = () => {
                   <p className="text-sm text-slate-400 mb-4 group-hover:text-slate-300 transition-colors leading-relaxed">
                     Full estimate with supplement line items and building specifications.
                   </p>
-                  <div className="flex items-baseline gap-2 mb-3">
-                    <DollarSign className="w-4 h-4 text-emerald-400" />
-                    <span className="text-lg font-semibold text-emerald-400">$150</span>
+                  <div className="mb-3 pb-3 border-b border-white/10">
+                    <span className="text-2xl font-bold text-emerald-400">$150</span>
                   </div>
-                  <div className="text-xs text-slate-500 space-y-1">
-                    <p>• Property/Claim Information</p>
-                    <p>• Initial Insurance Estimate</p>
-                    <p>• Inspection or Completion Photos</p>
+                  <div className="text-xs text-slate-400 space-y-1.5">
+                    <p className="flex items-start gap-2">
+                      <span className="text-blue-400 mt-0.5">•</span>
+                      <span>Complete Xactimate estimate with line items</span>
+                    </p>
+                    <p className="flex items-start gap-2">
+                      <span className="text-blue-400 mt-0.5">•</span>
+                      <span>Building code & manufacturer specifications</span>
+                    </p>
+                    <p className="flex items-start gap-2">
+                      <span className="text-blue-400 mt-0.5">•</span>
+                      <span>Supplement items highlighted with notes</span>
+                    </p>
+                    <p className="flex items-start gap-2">
+                      <span className="text-blue-400 mt-0.5">•</span>
+                      <span>3-5 business day delivery</span>
+                    </p>
                   </div>
                 </div>
               </button>
@@ -149,14 +173,26 @@ const App: React.FC = () => {
                   <p className="text-sm text-slate-400 mb-4 group-hover:text-slate-300 transition-colors leading-relaxed">
                     Follow-up and negotiation with COC and invoice support.
                   </p>
-                  <div className="flex items-baseline gap-2 mb-3">
-                    <DollarSign className="w-4 h-4 text-emerald-400" />
-                    <span className="text-lg font-semibold text-emerald-400">15% of Supplement</span>
+                  <div className="mb-3 pb-3 border-b border-white/10">
+                    <span className="text-2xl font-bold text-emerald-400">15% of Supplement</span>
                   </div>
-                  <div className="text-xs text-slate-500 space-y-1">
-                    <p>• Property/Claim Information</p>
-                    <p>• Initial Insurance Estimate</p>
-                    <p>• Inspection or Completion Photos</p>
+                  <div className="text-xs text-slate-400 space-y-1.5">
+                    <p className="flex items-start gap-2">
+                      <span className="text-purple-400 mt-0.5">•</span>
+                      <span>Full supplement claim preparation & review</span>
+                    </p>
+                    <p className="flex items-start gap-2">
+                      <span className="text-purple-400 mt-0.5">•</span>
+                      <span>Ongoing insurance negotiation support</span>
+                    </p>
+                    <p className="flex items-start gap-2">
+                      <span className="text-purple-400 mt-0.5">•</span>
+                      <span>COC (Certificate of Completion) assistance</span>
+                    </p>
+                    <p className="flex items-start gap-2">
+                      <span className="text-purple-400 mt-0.5">•</span>
+                      <span>Invoice generated upon carrier payment</span>
+                    </p>
                   </div>
                 </div>
               </button>
@@ -179,14 +215,27 @@ const App: React.FC = () => {
                   <p className="text-sm text-slate-400 mb-4 group-hover:text-slate-300 transition-colors leading-relaxed">
                     Professional estimates for new development projects.
                   </p>
-                  <div className="flex items-baseline gap-2 mb-3">
-                    <DollarSign className="w-4 h-4 text-emerald-400" />
-                    <span className="text-lg font-semibold text-emerald-400">$250 + 3% if contracted</span>
+                  <div className="mb-3 pb-3 border-b border-white/10">
+                    <span className="text-2xl font-bold text-emerald-400">$250</span>
+                    <span className="text-sm text-emerald-300/70 ml-2">+ 3% if contracted</span>
                   </div>
-                  <div className="text-xs text-slate-500 space-y-1">
-                    <p>• Blueprints and Plans</p>
-                    <p>• Property Information</p>
-                    <p>• Measurements</p>
+                  <div className="text-xs text-slate-400 space-y-1.5">
+                    <p className="flex items-start gap-2">
+                      <span className="text-amber-400 mt-0.5">•</span>
+                      <span>Professional bid with detailed Take Offs</span>
+                    </p>
+                    <p className="flex items-start gap-2">
+                      <span className="text-amber-400 mt-0.5">•</span>
+                      <span>Material & labor cost breakdowns</span>
+                    </p>
+                    <p className="flex items-start gap-2">
+                      <span className="text-amber-400 mt-0.5">•</span>
+                      <span>$250 credit applied if job awarded</span>
+                    </p>
+                    <p className="flex items-start gap-2">
+                      <span className="text-amber-400 mt-0.5">•</span>
+                      <span>5-7 business day delivery</span>
+                    </p>
                   </div>
                 </div>
               </button>
@@ -209,14 +258,26 @@ const App: React.FC = () => {
                   <p className="text-sm text-slate-400 mb-4 group-hover:text-slate-300 transition-colors leading-relaxed">
                     Custom agreements and documents tailored to your company.
                   </p>
-                  <div className="flex items-baseline gap-2 mb-3">
-                    <DollarSign className="w-4 h-4 text-emerald-400" />
-                    <span className="text-lg font-semibold text-emerald-400">$50 - $100</span>
+                  <div className="mb-3 pb-3 border-b border-white/10">
+                    <span className="text-2xl font-bold text-emerald-400">$50 - $100</span>
                   </div>
-                  <div className="text-xs text-slate-500 space-y-1">
-                    <p>• Description of document needed</p>
-                    <p>• Simple Docs: $50</p>
-                    <p>• Digital Forums with calculator: $100</p>
+                  <div className="text-xs text-slate-400 space-y-1.5">
+                    <p className="flex items-start gap-2">
+                      <span className="text-cyan-400 mt-0.5">•</span>
+                      <span>Custom contracts & agreements ($50)</span>
+                    </p>
+                    <p className="flex items-start gap-2">
+                      <span className="text-cyan-400 mt-0.5">•</span>
+                      <span>Digital forms with calculators ($100)</span>
+                    </p>
+                    <p className="flex items-start gap-2">
+                      <span className="text-cyan-400 mt-0.5">•</span>
+                      <span>Company branding & customization included</span>
+                    </p>
+                    <p className="flex items-start gap-2">
+                      <span className="text-cyan-400 mt-0.5">•</span>
+                      <span>2-3 business day delivery, 1 free revision</span>
+                    </p>
                   </div>
                 </div>
               </button>
