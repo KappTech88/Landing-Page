@@ -3,6 +3,11 @@ import StarField from './components/StarField';
 import ClaimSubmission from './components/ClaimSubmission';
 import Labs from './components/Labs';
 import PortalLogin from './components/PortalLogin';
+import DenialAppealForm from './components/DenialAppealForm';
+import XactimateEstimateForm from './components/XactimateEstimateForm';
+import SupplementClaimForm from './components/SupplementClaimForm';
+import CommercialBidForm from './components/CommercialBidForm';
+import CustomizedDocumentsForm from './components/CustomizedDocumentsForm';
 import { AppView } from './types';
 import { FileText, Microscope, ShieldCheck, ArrowLeft, UserPlus, LogIn, ClipboardList, FileCheck, Calculator, Building2, FileEdit, DollarSign } from 'lucide-react';
 
@@ -68,7 +73,7 @@ const App: React.FC = () => {
 
               {/* Service 1: Denial Appeal */}
               <button
-                onClick={() => setView(AppView.CLAIMS)}
+                onClick={() => setView(AppView.DENIAL_APPEAL)}
                 className="card-3d hover-lift group relative rounded-2xl overflow-hidden transition-all duration-500 border border-white/10 hover:border-rose-400/60 glass-card p-6 text-left animate-fadeIn stagger-1"
               >
                 <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 group-hover:scale-125 transition-transform duration-700">
@@ -98,7 +103,7 @@ const App: React.FC = () => {
 
               {/* Service 2: Xactimate Estimate (Non-claim) */}
               <button
-                onClick={() => setView(AppView.CLAIMS)}
+                onClick={() => setView(AppView.XACTIMATE_ESTIMATE)}
                 className="card-3d hover-lift group relative rounded-2xl overflow-hidden transition-all duration-500 border border-white/10 hover:border-blue-400/60 glass-card p-6 text-left animate-fadeIn stagger-2"
               >
                 <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 group-hover:scale-125 transition-transform duration-700">
@@ -128,7 +133,7 @@ const App: React.FC = () => {
 
               {/* Service 3: Xactimate Estimating (Supplement) */}
               <button
-                onClick={() => setView(AppView.CLAIMS)}
+                onClick={() => setView(AppView.SUPPLEMENT_CLAIM)}
                 className="card-3d hover-lift group relative rounded-2xl overflow-hidden transition-all duration-500 border border-white/10 hover:border-purple-400/60 glass-card p-6 text-left animate-fadeIn stagger-3"
               >
                 <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 group-hover:scale-125 transition-transform duration-700">
@@ -158,7 +163,7 @@ const App: React.FC = () => {
 
               {/* Service 4: Commercial Bid Estimate */}
               <button
-                onClick={() => setView(AppView.CLAIMS)}
+                onClick={() => setView(AppView.COMMERCIAL_BID)}
                 className="card-3d hover-lift group relative rounded-2xl overflow-hidden transition-all duration-500 border border-white/10 hover:border-amber-400/60 glass-card p-6 text-left animate-fadeIn stagger-4"
               >
                 <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 group-hover:scale-125 transition-transform duration-700">
@@ -188,7 +193,7 @@ const App: React.FC = () => {
 
               {/* Service 5: Customized Documents */}
               <button
-                onClick={() => setView(AppView.CLAIMS)}
+                onClick={() => setView(AppView.CUSTOMIZED_DOCS)}
                 className="card-3d hover-lift group relative rounded-2xl overflow-hidden transition-all duration-500 border border-white/10 hover:border-cyan-400/60 glass-card p-6 text-left animate-fadeIn stagger-5"
               >
                 <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 group-hover:scale-125 transition-transform duration-700">
@@ -219,6 +224,16 @@ const App: React.FC = () => {
             </div>
           </div>
         );
+      case AppView.DENIAL_APPEAL:
+        return <DenialAppealForm />;
+      case AppView.XACTIMATE_ESTIMATE:
+        return <XactimateEstimateForm />;
+      case AppView.SUPPLEMENT_CLAIM:
+        return <SupplementClaimForm />;
+      case AppView.COMMERCIAL_BID:
+        return <CommercialBidForm />;
+      case AppView.CUSTOMIZED_DOCS:
+        return <CustomizedDocumentsForm />;
       case AppView.CLAIMS:
         return <ClaimSubmission />;
       case AppView.LABS:
