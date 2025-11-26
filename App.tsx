@@ -16,12 +16,35 @@ import XactimateEstimateForm from './components/XactimateEstimateForm';
 import SupplementClaimForm from './components/SupplementClaimForm';
 import CommercialBidForm from './components/CommercialBidForm';
 import CustomizedDocumentsForm from './components/CustomizedDocumentsForm';
+// Dashboard Components
+import DashboardLayout from './components/Dashboard/DashboardLayout';
+import DashboardHome from './components/Dashboard/DashboardHome';
+import JobsList from './components/Dashboard/JobsList';
+import JobDetail from './components/Dashboard/JobDetail';
 import { AppView } from './types';
 import { FileText, Microscope, ShieldCheck, ArrowLeft, UserPlus, LogIn, ClipboardList, FileCheck, Calculator, Building2, FileEdit, DollarSign } from 'lucide-react';
 
 const App: React.FC = () => {
   const [view, setView] = useState<AppView>(AppView.LANDING);
   const [isLoading, setIsLoading] = useState(true);
+  const [selectedJobId, setSelectedJobId] = useState<string | null>(null);
+
+  // Check if current view is a dashboard view
+  const isDashboardView = view.toString().startsWith('DASHBOARD');
+
+  // Handle job selection from jobs list
+  const handleSelectJob = (jobId: string) => {
+    setSelectedJobId(jobId);
+    setView(AppView.DASHBOARD_JOB_DETAIL);
+  };
+
+  // Handle navigation within dashboard
+  const handleDashboardNavigate = (newView: AppView) => {
+    if (newView !== AppView.DASHBOARD_JOB_DETAIL) {
+      setSelectedJobId(null);
+    }
+    setView(newView);
+  };
 
   // Logo Component (removed text, just click area to return home)
   const Logo = () => (
@@ -316,9 +339,22 @@ const App: React.FC = () => {
       case AppView.LABS:
         return <Labs />;
       case AppView.PORTAL:
-        return <PortalLogin />;
+        return <PortalLogin onNavigate={setView} />;
       case AppView.REGISTER:
         return <PartnerRegistration />;
+      // Dashboard Views - No popups, full page views
+      case AppView.DASHBOARD:
+      case AppView.DASHBOARD_HOME:
+      case AppView.DASHBOARD_CONTACTS:
+      case AppView.DASHBOARD_JOBS:
+      case AppView.DASHBOARD_JOB_DETAIL:
+      case AppView.DASHBOARD_CALENDAR:
+      case AppView.DASHBOARD_INBOX:
+      case AppView.DASHBOARD_TASKS:
+      case AppView.DASHBOARD_WORKFLOWS:
+      case AppView.DASHBOARD_REPORTS:
+      case AppView.DASHBOARD_SETTINGS:
+        return null; // Handled separately with DashboardLayout
       default:
         return (
           <>
@@ -427,6 +463,31 @@ const App: React.FC = () => {
 
   if (isLoading) {
     return <LoadingScreen onComplete={() => setIsLoading(false)} />;
+  }
+
+  // Render Dashboard Layout for dashboard views (no popups, full page)
+  if (isDashboardView) {
+    const renderDashboardContent = () => {
+      switch (view) {
+        case AppView.DASHBOARD_JOBS:
+          return <JobsList onSelectJob={handleSelectJob} />;
+        case AppView.DASHBOARD_JOB_DETAIL:
+          return <JobDetail onBack={() => setView(AppView.DASHBOARD_JOBS)} />;
+        case AppView.DASHBOARD:
+        case AppView.DASHBOARD_HOME:
+        default:
+          return <DashboardHome />;
+      }
+    };
+
+    return (
+      <DashboardLayout
+        currentView={view}
+        onNavigate={handleDashboardNavigate}
+      >
+        {renderDashboardContent()}
+      </DashboardLayout>
+    );
   }
 
   return (
