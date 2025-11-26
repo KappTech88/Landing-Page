@@ -16,12 +16,35 @@ import XactimateEstimateForm from './components/XactimateEstimateForm';
 import SupplementClaimForm from './components/SupplementClaimForm';
 import CommercialBidForm from './components/CommercialBidForm';
 import CustomizedDocumentsForm from './components/CustomizedDocumentsForm';
+// Dashboard Components
+import DashboardLayout from './components/Dashboard/DashboardLayout';
+import DashboardHome from './components/Dashboard/DashboardHome';
+import JobsList from './components/Dashboard/JobsList';
+import JobDetail from './components/Dashboard/JobDetail';
 import { AppView } from './types';
 import { FileText, Microscope, ShieldCheck, ArrowLeft, UserPlus, LogIn, ClipboardList, FileCheck, Calculator, Building2, FileEdit, DollarSign } from 'lucide-react';
 
 const App: React.FC = () => {
   const [view, setView] = useState<AppView>(AppView.LANDING);
   const [isLoading, setIsLoading] = useState(true);
+  const [selectedJobId, setSelectedJobId] = useState<string | null>(null);
+
+  // Check if current view is a dashboard view
+  const isDashboardView = view.toString().startsWith('DASHBOARD');
+
+  // Handle job selection from jobs list
+  const handleSelectJob = (jobId: string) => {
+    setSelectedJobId(jobId);
+    setView(AppView.DASHBOARD_JOB_DETAIL);
+  };
+
+  // Handle navigation within dashboard
+  const handleDashboardNavigate = (newView: AppView) => {
+    if (newView !== AppView.DASHBOARD_JOB_DETAIL) {
+      setSelectedJobId(null);
+    }
+    setView(newView);
+  };
 
   // Logo Component (removed text, just click area to return home)
   const Logo = () => (
@@ -316,31 +339,39 @@ const App: React.FC = () => {
       case AppView.LABS:
         return <Labs />;
       case AppView.PORTAL:
-        return <PortalLogin />;
+        return <PortalLogin onNavigate={setView} />;
       case AppView.REGISTER:
         return <PartnerRegistration />;
+      // Dashboard Views - No popups, full page views
+      case AppView.DASHBOARD:
+      case AppView.DASHBOARD_HOME:
+      case AppView.DASHBOARD_CONTACTS:
+      case AppView.DASHBOARD_JOBS:
+      case AppView.DASHBOARD_JOB_DETAIL:
+      case AppView.DASHBOARD_CALENDAR:
+      case AppView.DASHBOARD_INBOX:
+      case AppView.DASHBOARD_TASKS:
+      case AppView.DASHBOARD_WORKFLOWS:
+      case AppView.DASHBOARD_REPORTS:
+      case AppView.DASHBOARD_SETTINGS:
+        return null; // Handled separately with DashboardLayout
       default:
         return (
           <>
             {/* Hero Section - Future Earth Space Theme - Compact on Mobile */}
             <div className="min-h-[40vh] md:min-h-[50vh] flex flex-col items-center justify-center px-4 py-8 md:py-16 relative overflow-hidden">
-              {/* Cosmic Background Elements - Hidden on mobile for performance */}
-              <div className="absolute inset-0 pointer-events-none hidden md:block">
-                {/* Earth Glow */}
-                <div className="absolute bottom-0 left-1/2 -translate-x-1/2 translate-y-1/2 w-[800px] h-[800px] bg-gradient-radial from-blue-500/20 via-cyan-500/10 to-transparent rounded-full blur-3xl"></div>
+              {/* Cosmic Background Elements */}
+              <div className="absolute inset-0 pointer-events-none">
+                {/* Earth Glow - smaller on mobile */}
+                <div className="absolute bottom-0 left-1/2 -translate-x-1/2 translate-y-1/2 w-[400px] md:w-[800px] h-[400px] md:h-[800px] bg-gradient-radial from-blue-500/20 via-cyan-500/10 to-transparent rounded-full blur-2xl md:blur-3xl"></div>
 
-                {/* Nebula Clouds */}
-                <div className="absolute top-20 right-10 w-96 h-96 bg-gradient-radial from-purple-500/10 via-pink-500/5 to-transparent rounded-full blur-3xl animate-pulse"></div>
-                <div className="absolute top-40 left-20 w-80 h-80 bg-gradient-radial from-indigo-500/10 via-violet-500/5 to-transparent rounded-full blur-3xl animate-pulse" style={{animationDelay: '1s'}}></div>
+                {/* Nebula Clouds - smaller on mobile */}
+                <div className="absolute top-10 md:top-20 right-5 md:right-10 w-48 md:w-96 h-48 md:h-96 bg-gradient-radial from-purple-500/10 via-pink-500/5 to-transparent rounded-full blur-2xl md:blur-3xl animate-pulse"></div>
+                <div className="absolute top-20 md:top-40 left-5 md:left-20 w-40 md:w-80 h-40 md:h-80 bg-gradient-radial from-indigo-500/10 via-violet-500/5 to-transparent rounded-full blur-2xl md:blur-3xl animate-pulse" style={{animationDelay: '1s'}}></div>
 
-                {/* Orbital Rings */}
-                <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] border border-cyan-500/10 rounded-full animate-spin" style={{animationDuration: '60s'}}></div>
-                <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[700px] h-[700px] border border-blue-500/5 rounded-full animate-spin" style={{animationDuration: '90s', animationDirection: 'reverse'}}></div>
-              </div>
-
-              {/* Simplified mobile background glow */}
-              <div className="absolute inset-0 pointer-events-none md:hidden">
-                <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-64 h-64 bg-gradient-radial from-cyan-500/15 via-blue-500/5 to-transparent rounded-full blur-2xl"></div>
+                {/* Orbital Rings - smaller on mobile */}
+                <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[300px] md:w-[600px] h-[300px] md:h-[600px] border border-cyan-500/10 rounded-full animate-spin" style={{animationDuration: '60s'}}></div>
+                <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[350px] md:w-[700px] h-[350px] md:h-[700px] border border-blue-500/5 rounded-full animate-spin" style={{animationDuration: '90s', animationDirection: 'reverse'}}></div>
               </div>
 
               <div className="text-center max-w-6xl mx-auto relative z-10">
@@ -377,14 +408,6 @@ const App: React.FC = () => {
 
             {/* Main Service Cards - 2 Cards with Enhanced Futuristic Theme */}
             <div className="px-4 py-8 md:py-16 max-w-7xl mx-auto relative">
-              {/* Section Header - More compact on mobile */}
-              <div className="text-center mb-6 md:mb-10 animate-fadeIn">
-                <div className="inline-flex items-center gap-2 md:gap-3 px-4 md:px-6 py-2 md:py-3 bg-gradient-to-r from-cyan-500/10 via-blue-500/10 to-purple-500/10 border border-cyan-500/20 rounded-full mb-4 md:mb-6">
-                  <div className="w-1.5 md:w-2 h-1.5 md:h-2 bg-cyan-400 rounded-full animate-pulse"></div>
-                  <span className="text-xs md:text-sm tracking-widest text-cyan-300/90 uppercase">Select Your Mission</span>
-                  <div className="w-1.5 md:w-2 h-1.5 md:h-2 bg-cyan-400 rounded-full animate-pulse"></div>
-                </div>
-              </div>
 
               <div className="grid grid-cols-2 gap-3 sm:gap-4 md:gap-8 max-w-5xl mx-auto">
 
@@ -440,6 +463,31 @@ const App: React.FC = () => {
 
   if (isLoading) {
     return <LoadingScreen onComplete={() => setIsLoading(false)} />;
+  }
+
+  // Render Dashboard Layout for dashboard views (no popups, full page)
+  if (isDashboardView) {
+    const renderDashboardContent = () => {
+      switch (view) {
+        case AppView.DASHBOARD_JOBS:
+          return <JobsList onSelectJob={handleSelectJob} />;
+        case AppView.DASHBOARD_JOB_DETAIL:
+          return <JobDetail onBack={() => setView(AppView.DASHBOARD_JOBS)} />;
+        case AppView.DASHBOARD:
+        case AppView.DASHBOARD_HOME:
+        default:
+          return <DashboardHome />;
+      }
+    };
+
+    return (
+      <DashboardLayout
+        currentView={view}
+        onNavigate={handleDashboardNavigate}
+      >
+        {renderDashboardContent()}
+      </DashboardLayout>
+    );
   }
 
   return (
