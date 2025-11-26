@@ -322,10 +322,10 @@ const App: React.FC = () => {
       default:
         return (
           <>
-            {/* Hero Section - Future Earth Space Theme */}
-            <div className="min-h-[70vh] flex flex-col items-center justify-center px-4 py-20 relative overflow-hidden">
-              {/* Cosmic Background Elements */}
-              <div className="absolute inset-0 pointer-events-none">
+            {/* Hero Section - Future Earth Space Theme - Compact on Mobile */}
+            <div className="min-h-[40vh] md:min-h-[50vh] flex flex-col items-center justify-center px-4 py-8 md:py-16 relative overflow-hidden">
+              {/* Cosmic Background Elements - Hidden on mobile for performance */}
+              <div className="absolute inset-0 pointer-events-none hidden md:block">
                 {/* Earth Glow */}
                 <div className="absolute bottom-0 left-1/2 -translate-x-1/2 translate-y-1/2 w-[800px] h-[800px] bg-gradient-radial from-blue-500/20 via-cyan-500/10 to-transparent rounded-full blur-3xl"></div>
 
@@ -338,50 +338,55 @@ const App: React.FC = () => {
                 <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[700px] h-[700px] border border-blue-500/5 rounded-full animate-spin" style={{animationDuration: '90s', animationDirection: 'reverse'}}></div>
               </div>
 
-              <div className="text-center max-w-6xl mx-auto relative z-10 animate-float">
+              {/* Simplified mobile background glow */}
+              <div className="absolute inset-0 pointer-events-none md:hidden">
+                <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-64 h-64 bg-gradient-radial from-cyan-500/15 via-blue-500/5 to-transparent rounded-full blur-2xl"></div>
+              </div>
+
+              <div className="text-center max-w-6xl mx-auto relative z-10">
                 {/* Main Title with Holographic Effect */}
-                <div className="flex flex-col items-center mb-12 relative">
-                  {/* Enhanced Cosmic Glow */}
-                  <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full h-40 bg-gradient-radial from-cyan-500/20 via-blue-500/10 to-transparent blur-3xl -z-10 animate-pulse-glow"></div>
+                <div className="flex flex-col items-center mb-6 md:mb-12 relative">
+                  {/* Enhanced Cosmic Glow - smaller on mobile */}
+                  <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full h-20 md:h-40 bg-gradient-radial from-cyan-500/20 via-blue-500/10 to-transparent blur-2xl md:blur-3xl -z-10"></div>
 
-                  {/* Geometric Accents */}
-                  <div className="absolute -top-8 left-1/2 -translate-x-1/2 w-1 h-16 bg-gradient-to-b from-transparent via-cyan-400/50 to-transparent"></div>
+                  {/* Geometric Accents - hidden on mobile */}
+                  <div className="absolute -top-8 left-1/2 -translate-x-1/2 w-1 h-16 bg-gradient-to-b from-transparent via-cyan-400/50 to-transparent hidden md:block"></div>
 
-                  <h1 className="text-6xl md:text-8xl font-thin tracking-[0.3em] text-center bg-gradient-to-r from-cyan-200 via-blue-100 to-purple-200 bg-clip-text text-transparent relative z-20 animate-fadeInScale mb-4">
+                  <h1 className="text-3xl sm:text-4xl md:text-6xl lg:text-8xl font-thin tracking-[0.15em] sm:tracking-[0.2em] md:tracking-[0.3em] text-center bg-gradient-to-r from-cyan-200 via-blue-100 to-purple-200 bg-clip-text text-transparent relative z-20 animate-fadeInScale mb-3 md:mb-4">
                     ESTIMATE RELIANCE
                   </h1>
 
                   {/* Futuristic Swoosh Line with Glow */}
                   <div className="relative">
-                    <div className="h-0.5 w-96 bg-gradient-to-r from-transparent via-cyan-400 to-transparent rounded-full shadow-[0_0_20px_rgba(34,211,238,0.6)] opacity-90 relative z-20"></div>
+                    <div className="h-0.5 w-48 sm:w-64 md:w-96 bg-gradient-to-r from-transparent via-cyan-400 to-transparent rounded-full shadow-[0_0_20px_rgba(34,211,238,0.6)] opacity-90 relative z-20"></div>
                     <div className="absolute top-0 left-1/2 -translate-x-1/2 w-2 h-2 bg-cyan-400 rounded-full shadow-[0_0_15px_rgba(34,211,238,0.8)] animate-pulse"></div>
                   </div>
                 </div>
 
-                {/* Tagline with Futuristic Styling */}
-                <p className="text-xl md:text-2xl text-cyan-100/80 font-light tracking-wider mb-6 max-w-4xl mx-auto leading-relaxed animate-fadeIn stagger-2">
+                {/* Tagline with Futuristic Styling - More compact on mobile */}
+                <p className="text-base sm:text-lg md:text-xl lg:text-2xl text-cyan-100/80 font-light tracking-wide md:tracking-wider mb-4 md:mb-6 max-w-4xl mx-auto leading-relaxed animate-fadeIn stagger-2 px-2">
                   Professional insurance restoration estimates, supplements, and creative marketing solutions
                 </p>
-                <p className="text-sm md:text-base text-blue-300/60 font-light tracking-widest uppercase animate-fadeIn stagger-3 flex items-center justify-center gap-2">
-                  <span className="w-8 h-px bg-gradient-to-r from-transparent to-blue-400/50"></span>
+                <p className="text-xs sm:text-sm md:text-base text-blue-300/60 font-light tracking-widest uppercase animate-fadeIn stagger-3 flex items-center justify-center gap-2">
+                  <span className="w-6 md:w-8 h-px bg-gradient-to-r from-transparent to-blue-400/50"></span>
                   Powered by AI
-                  <span className="w-8 h-px bg-gradient-to-l from-transparent to-blue-400/50"></span>
+                  <span className="w-6 md:w-8 h-px bg-gradient-to-l from-transparent to-blue-400/50"></span>
                 </p>
               </div>
             </div>
 
             {/* Main Service Cards - 2 Cards with Enhanced Futuristic Theme */}
-            <div className="px-4 py-20 max-w-7xl mx-auto relative">
-              {/* Section Header */}
-              <div className="text-center mb-12 animate-fadeIn">
-                <div className="inline-flex items-center gap-3 px-6 py-3 bg-gradient-to-r from-cyan-500/10 via-blue-500/10 to-purple-500/10 border border-cyan-500/20 rounded-full mb-6">
-                  <div className="w-2 h-2 bg-cyan-400 rounded-full animate-pulse"></div>
-                  <span className="text-sm tracking-widest text-cyan-300/90 uppercase">Select Your Mission</span>
-                  <div className="w-2 h-2 bg-cyan-400 rounded-full animate-pulse"></div>
+            <div className="px-4 py-8 md:py-16 max-w-7xl mx-auto relative">
+              {/* Section Header - More compact on mobile */}
+              <div className="text-center mb-6 md:mb-10 animate-fadeIn">
+                <div className="inline-flex items-center gap-2 md:gap-3 px-4 md:px-6 py-2 md:py-3 bg-gradient-to-r from-cyan-500/10 via-blue-500/10 to-purple-500/10 border border-cyan-500/20 rounded-full mb-4 md:mb-6">
+                  <div className="w-1.5 md:w-2 h-1.5 md:h-2 bg-cyan-400 rounded-full animate-pulse"></div>
+                  <span className="text-xs md:text-sm tracking-widest text-cyan-300/90 uppercase">Select Your Mission</span>
+                  <div className="w-1.5 md:w-2 h-1.5 md:h-2 bg-cyan-400 rounded-full animate-pulse"></div>
                 </div>
               </div>
 
-              <div className="grid md:grid-cols-2 gap-8 max-w-5xl mx-auto">
+              <div className="grid grid-cols-2 gap-3 sm:gap-4 md:gap-8 max-w-5xl mx-auto">
 
                 {/* Card 1: Select Service */}
                 <HolographicCard
@@ -391,14 +396,14 @@ const App: React.FC = () => {
                 >
                   <div className="absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-black/80 z-10" />
                   <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 group-hover:scale-125 transition-transform duration-700">
-                    <div className="w-64 h-64 bg-cyan-500/15 rounded-full blur-3xl group-hover:bg-cyan-500/30 transition-all duration-500" />
+                    <div className="w-32 md:w-64 h-32 md:h-64 bg-cyan-500/15 rounded-full blur-2xl md:blur-3xl group-hover:bg-cyan-500/30 transition-all duration-500" />
                   </div>
-                  <div className="relative z-20 h-80 flex flex-col items-center justify-center p-8 text-center">
-                    <div className="w-16 h-16 mb-4 rounded-full bg-cyan-500/10 flex items-center justify-center group-hover:bg-cyan-500/25 transition-all duration-300 border border-cyan-500/20 group-hover:border-cyan-500/40 group-hover:scale-110">
-                      <ClipboardList className="w-8 h-8 text-cyan-300 group-hover:text-cyan-200 transition-colors" />
+                  <div className="relative z-20 h-48 sm:h-56 md:h-72 flex flex-col items-center justify-center p-4 sm:p-6 md:p-8 text-center">
+                    <div className="w-10 h-10 sm:w-12 sm:h-12 md:w-16 md:h-16 mb-2 md:mb-4 rounded-full bg-cyan-500/10 flex items-center justify-center group-hover:bg-cyan-500/25 transition-all duration-300 border border-cyan-500/20 group-hover:border-cyan-500/40 group-hover:scale-110">
+                      <ClipboardList className="w-5 h-5 sm:w-6 sm:h-6 md:w-8 md:h-8 text-cyan-300 group-hover:text-cyan-200 transition-colors" />
                     </div>
-                    <h3 className="text-2xl font-medium text-white mb-2 tracking-wide group-hover:text-cyan-100 transition-colors">SELECT SERVICE</h3>
-                    <p className="text-sm text-cyan-200/70 max-w-sm group-hover:text-cyan-100/90 transition-colors">
+                    <h3 className="text-sm sm:text-base md:text-xl lg:text-2xl font-medium text-white mb-1 md:mb-2 tracking-wide group-hover:text-cyan-100 transition-colors">SELECT SERVICE</h3>
+                    <p className="text-[10px] sm:text-xs md:text-sm text-cyan-200/70 max-w-sm group-hover:text-cyan-100/90 transition-colors leading-tight md:leading-relaxed">
                       Browse our professional services including denial appeals, estimates, and custom documents.
                     </p>
                   </div>
@@ -412,15 +417,15 @@ const App: React.FC = () => {
                 >
                   <div className="absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-black/80 z-10" />
                   <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 group-hover:scale-125 transition-transform duration-700">
-                    <div className="w-64 h-64 bg-purple-500/15 rounded-full blur-3xl group-hover:bg-purple-500/30 transition-all duration-500" />
+                    <div className="w-32 md:w-64 h-32 md:h-64 bg-purple-500/15 rounded-full blur-2xl md:blur-3xl group-hover:bg-purple-500/30 transition-all duration-500" />
                   </div>
-                  <div className="relative z-20 h-80 flex flex-col items-center justify-center p-8 text-center">
-                    <div className="w-16 h-16 mb-4 rounded-full bg-purple-500/10 flex items-center justify-center group-hover:bg-purple-500/25 transition-all duration-300 border border-purple-500/20 group-hover:border-purple-500/40 group-hover:scale-110">
-                      <Microscope className="w-8 h-8 text-purple-300 group-hover:text-purple-200 transition-colors" />
+                  <div className="relative z-20 h-48 sm:h-56 md:h-72 flex flex-col items-center justify-center p-4 sm:p-6 md:p-8 text-center">
+                    <div className="w-10 h-10 sm:w-12 sm:h-12 md:w-16 md:h-16 mb-2 md:mb-4 rounded-full bg-purple-500/10 flex items-center justify-center group-hover:bg-purple-500/25 transition-all duration-300 border border-purple-500/20 group-hover:border-purple-500/40 group-hover:scale-110">
+                      <Microscope className="w-5 h-5 sm:w-6 sm:h-6 md:w-8 md:h-8 text-purple-300 group-hover:text-purple-200 transition-colors" />
                     </div>
-                    <h3 className="text-2xl font-medium text-white mb-2 tracking-wide group-hover:text-purple-100 transition-colors">EXPLORE LABS</h3>
-                    <p className="text-xs text-purple-300/90 font-semibold mb-2 tracking-wide">(Login Required)</p>
-                    <p className="text-sm text-purple-200/70 max-w-sm group-hover:text-purple-100/90 transition-colors">
+                    <h3 className="text-sm sm:text-base md:text-xl lg:text-2xl font-medium text-white mb-1 md:mb-2 tracking-wide group-hover:text-purple-100 transition-colors">EXPLORE LABS</h3>
+                    <p className="text-[10px] sm:text-xs text-purple-300/90 font-semibold mb-1 md:mb-2 tracking-wide">(Login Required)</p>
+                    <p className="text-[10px] sm:text-xs md:text-sm text-purple-200/70 max-w-sm group-hover:text-purple-100/90 transition-colors leading-tight md:leading-relaxed">
                       Design professional logos, marketing assets, and slogans with our AI-powered studio.
                     </p>
                   </div>
