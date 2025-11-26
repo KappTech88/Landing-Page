@@ -1,4 +1,4 @@
-import React, { useRef, useMemo } from 'react';
+import React, { useRef, useMemo, useEffect, useState } from 'react';
 import { Canvas, useFrame } from '@react-three/fiber';
 import { Points, PointMaterial } from '@react-three/drei';
 import * as THREE from 'three';
@@ -6,6 +6,22 @@ import StarTrails from './StarTrails';
 
 interface ParticleFieldProps {
   count?: number;
+}
+
+// Hook to detect mobile devices for performance optimization
+function useIsMobile() {
+  const [isMobile, setIsMobile] = useState(false);
+
+  useEffect(() => {
+    const checkMobile = () => {
+      setIsMobile(window.innerWidth < 768 || 'ontouchstart' in window);
+    };
+    checkMobile();
+    window.addEventListener('resize', checkMobile);
+    return () => window.removeEventListener('resize', checkMobile);
+  }, []);
+
+  return isMobile;
 }
 
 function DeepSpaceStars({ count = 3000 }: ParticleFieldProps) {
@@ -131,12 +147,19 @@ function DeepSpaceStars({ count = 3000 }: ParticleFieldProps) {
 }
 
 export default function ParticleField({ count = 3000 }: ParticleFieldProps) {
+  const isMobile = useIsMobile();
+
+  // Significantly reduce particle counts on mobile for better performance
+  const mobileStarCount = isMobile ? Math.min(count, 500) : count;
+  const mobileTrailCount = isMobile ? 200 : 1000;
+
   return (
     <div className="fixed inset-0 pointer-events-none z-0 w-full h-full">
       <Canvas
         camera={{ position: [0, 0, 0], fov: 75, near: 0.1, far: 1000 }}
-        dpr={[1, 2]}
+        dpr={isMobile ? [1, 1] : [1, 2]} // Lower DPR on mobile
         style={{ background: 'transparent', width: '100%', height: '100%' }}
+        frameloop={isMobile ? 'demand' : 'always'} // Reduce frame updates on mobile
       >
         {/* Nebula fog effect with deep purple and dark blue */}
         <fog attach="fog" args={['#110022', 10, 150]} />
@@ -144,11 +167,11 @@ export default function ParticleField({ count = 3000 }: ParticleFieldProps) {
         {/* Ambient nebula glow */}
         <ambientLight intensity={0.2} color="#220033" />
 
-        {/* Motion blur trails */}
-        <StarTrails count={1000} />
+        {/* Motion blur trails - reduced on mobile */}
+        <StarTrails count={mobileTrailCount} />
 
-        {/* Main stars */}
-        <DeepSpaceStars count={count} />
+        {/* Main stars - reduced on mobile */}
+        <DeepSpaceStars count={mobileStarCount} />
       </Canvas>
     </div>
   );

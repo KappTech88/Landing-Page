@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { motion, useMotionValue, useSpring } from 'framer-motion';
 
 export default function CursorTrail() {
@@ -10,8 +10,24 @@ export default function CursorTrail() {
   const cursorYSpring = useSpring(cursorY, springConfig);
 
   const [isHovering, setIsHovering] = useState(false);
+  const [isMobile, setIsMobile] = useState(true); // Default to true to avoid flash
 
   useEffect(() => {
+    // Check if device is mobile/touch - disable cursor trail
+    const checkMobile = () => {
+      const isTouchDevice = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
+      const isSmallScreen = window.innerWidth < 768;
+      setIsMobile(isTouchDevice || isSmallScreen);
+    };
+    checkMobile();
+    window.addEventListener('resize', checkMobile);
+    return () => window.removeEventListener('resize', checkMobile);
+  }, []);
+
+  useEffect(() => {
+    // Don't add event listeners on mobile
+    if (isMobile) return;
+
     const moveCursor = (e: MouseEvent) => {
       cursorX.set(e.clientX);
       cursorY.set(e.clientY);
@@ -33,7 +49,10 @@ export default function CursorTrail() {
       window.removeEventListener('mousemove', moveCursor);
       window.removeEventListener('mouseover', handleMouseOver);
     };
-  }, [cursorX, cursorY]);
+  }, [cursorX, cursorY, isMobile]);
+
+  // Don't render on mobile/touch devices
+  if (isMobile) return null;
 
   return (
     <>

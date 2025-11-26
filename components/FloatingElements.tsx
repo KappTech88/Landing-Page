@@ -1,16 +1,31 @@
-import React from 'react';
+import React, { useEffect, useState, useMemo } from 'react';
 import { motion } from 'framer-motion';
 
 export default function FloatingElements() {
-  const elements = Array.from({ length: 15 }, (_, i) => ({
-    id: i,
-    size: Math.random() * 100 + 50,
-    x: Math.random() * 100,
-    y: Math.random() * 100,
-    duration: Math.random() * 20 + 10,
-    delay: Math.random() * 5,
-    opacity: Math.random() * 0.3 + 0.1,
-  }));
+  const [isMobile, setIsMobile] = useState(false);
+
+  useEffect(() => {
+    const checkMobile = () => {
+      setIsMobile(window.innerWidth < 768 || 'ontouchstart' in window);
+    };
+    checkMobile();
+    window.addEventListener('resize', checkMobile);
+    return () => window.removeEventListener('resize', checkMobile);
+  }, []);
+
+  // Reduce elements on mobile for better performance (15 -> 5)
+  const elementCount = isMobile ? 5 : 15;
+
+  const elements = useMemo(() =>
+    Array.from({ length: elementCount }, (_, i) => ({
+      id: i,
+      size: isMobile ? Math.random() * 60 + 40 : Math.random() * 100 + 50, // Smaller on mobile
+      x: Math.random() * 100,
+      y: Math.random() * 100,
+      duration: isMobile ? Math.random() * 30 + 20 : Math.random() * 20 + 10, // Slower on mobile
+      delay: Math.random() * 5,
+      opacity: Math.random() * 0.2 + 0.05, // Lower opacity for subtlety
+    })), [elementCount, isMobile]);
 
   return (
     <div className="fixed inset-0 pointer-events-none z-[1] overflow-hidden">
@@ -32,9 +47,12 @@ export default function FloatingElements() {
                   : 'rgba(236, 72, 153, 0.15)'
               } 0%,
               transparent 70%)`,
-            filter: 'blur(40px)',
+            filter: isMobile ? 'blur(30px)' : 'blur(40px)', // Less blur on mobile
           }}
-          animate={{
+          animate={isMobile ? {
+            // Simpler animation on mobile - just opacity pulse
+            opacity: [el.opacity, el.opacity * 1.3, el.opacity],
+          } : {
             y: [0, -30, 0],
             x: [0, Math.sin(el.id) * 20, 0],
             scale: [1, 1.2, 1],

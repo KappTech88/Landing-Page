@@ -58,35 +58,37 @@ const LabsMenu: React.FC<LabsMenuProps> = ({ onSelectService }) => {
   ];
 
   return (
-    <div className="max-w-7xl mx-auto animate-fadeIn">
-       <div className="text-center mb-12 animate-fadeInScale">
-            <h2 className="text-4xl font-light text-slate-100 tracking-widest mb-3 neon-text">ESTIMATE RELIANCE LABS</h2>
-            <div className="h-0.5 w-32 mx-auto animate-swoosh-green mb-4 rounded-full"></div>
-            <p className="text-slate-300 text-lg">Select a creative service to begin</p>
+    <div className="max-w-7xl mx-auto animate-fadeIn px-4 md:px-0">
+       {/* Header - More compact on mobile */}
+       <div className="text-center mb-6 md:mb-12 animate-fadeInScale">
+            <h2 className="text-2xl sm:text-3xl md:text-4xl font-light text-slate-100 tracking-widest mb-2 md:mb-3 neon-text">ESTIMATE RELIANCE LABS</h2>
+            <div className="h-0.5 w-24 md:w-32 mx-auto animate-swoosh-green mb-3 md:mb-4 rounded-full"></div>
+            <p className="text-slate-300 text-sm md:text-lg">Select a creative service to begin</p>
        </div>
 
-       <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
+       {/* Grid: 2 columns on mobile, 2 on tablet, 3 on desktop */}
+       <div className="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4 md:gap-8">
           {services.map((service, index) => (
             <button
                 key={service.id}
                 onClick={() => onSelectService(service.id)}
-                className={`card-3d hover-lift group relative h-72 glass-card border border-${service.color}-500/30 hover:border-${service.color}-500/70 rounded-2xl p-6 transition-all overflow-hidden text-left animate-fadeIn stagger-${index + 1}`}
+                className={`card-3d hover-lift group relative h-44 sm:h-52 md:h-72 glass-card border border-${service.color}-500/30 hover:border-${service.color}-500/70 rounded-xl md:rounded-2xl p-3 sm:p-4 md:p-6 transition-all overflow-hidden text-left animate-fadeIn stagger-${index + 1}`}
             >
                 {/* Animated Background Glow */}
                 <div className={`absolute inset-0 bg-gradient-to-br from-${service.color}-500/0 via-${service.color}-500/5 to-${service.color}-500/10 opacity-0 group-hover:opacity-100 transition-opacity duration-500`}></div>
 
-                {/* Background Icon */}
-                <div className="absolute top-0 right-0 p-4 opacity-5 group-hover:opacity-20 transition-all duration-500 group-hover:scale-110">
+                {/* Background Icon - Hidden on mobile for cleaner look */}
+                <div className="absolute top-0 right-0 p-2 md:p-4 opacity-5 group-hover:opacity-20 transition-all duration-500 group-hover:scale-110 hidden sm:block">
                     {service.bgIcon}
                 </div>
 
                 {/* Content */}
                 <div className="relative z-10 flex flex-col h-full justify-end">
-                    <div className={`bg-${service.color}-500/10 w-16 h-16 rounded-2xl flex items-center justify-center mb-6 group-hover:bg-${service.color}-500/25 transition-all duration-300 border border-${service.color}-500/20 group-hover:border-${service.color}-500/40 group-hover:scale-110 group-hover:rotate-3`}>
-                        {service.icon}
+                    <div className={`bg-${service.color}-500/10 w-10 h-10 sm:w-12 sm:h-12 md:w-16 md:h-16 rounded-xl md:rounded-2xl flex items-center justify-center mb-2 sm:mb-3 md:mb-6 group-hover:bg-${service.color}-500/25 transition-all duration-300 border border-${service.color}-500/20 group-hover:border-${service.color}-500/40 group-hover:scale-110 group-hover:rotate-3`}>
+                        {React.cloneElement(service.icon, { className: `w-5 h-5 sm:w-6 sm:h-6 md:w-12 md:h-12 text-${service.color}-400` })}
                     </div>
-                    <h3 className="text-2xl font-medium text-white mb-2 group-hover:text-${service.color}-100 transition-colors">{service.title}</h3>
-                    <p className={`text-sm text-${service.color}-200/60 leading-relaxed group-hover:text-${service.color}-100/80 transition-colors`}>{service.desc}</p>
+                    <h3 className={`text-sm sm:text-base md:text-2xl font-medium text-white mb-1 md:mb-2 group-hover:text-${service.color}-100 transition-colors leading-tight`}>{service.title}</h3>
+                    <p className={`text-[10px] sm:text-xs md:text-sm text-${service.color}-200/60 leading-tight md:leading-relaxed group-hover:text-${service.color}-100/80 transition-colors line-clamp-2 md:line-clamp-none`}>{service.desc}</p>
                 </div>
 
                 {/* Shimmer Effect on Hover */}
