@@ -1,0 +1,170 @@
+{
+  "name": "Document Request Email Notifications (HTTP)",
+  "nodes": [
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "minutes",
+              "minutesInterval": 2
+            }
+          ]
+        }
+      },
+      "id": "1",
+      "name": "Poll Queue Every 2 Minutes",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.1,
+      "position": [250, 300]
+    },
+    {
+      "parameters": {
+        "url": "https://qxswelavrvfgtpyukijb.supabase.co/rest/v1/rpc/get_pending_notifications",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "batch_size",
+              "value": "10"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "2",
+      "name": "Get Pending Notifications",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.1,
+      "position": [470, 300],
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "3",
+          "name": "Supabase API"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict"
+          },
+          "conditions": [
+            {
+              "id": "1",
+              "leftValue": "={{ $json.id }}",
+              "rightValue": "",
+              "operator": {
+                "type": "string",
+                "operation": "exists"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "3",
+      "name": "Has Notifications?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [690, 300]
+    },
+    {
+      "parameters": {
+        "fromEmail": "bryant@estimatereliance.com",
+        "toEmail": "={{ $json.recipient_email }}",
+        "subject": "={{ $json.subject }}",
+        "emailType": "html",
+        "message": "<h2>New Document Request</h2>\n<p><strong>Request ID:</strong> {{ $json.body_data.request_id }}</p>\n<p><strong>Contact Name:</strong> {{ $json.body_data.contact_name }}</p>\n<p><strong>Email:</strong> {{ $json.body_data.email }}</p>\n<p><strong>Phone:</strong> {{ $json.body_data.phone }}</p>\n<p><strong>Company:</strong> {{ $json.body_data.company_name }}</p>\n<hr>\n<p><strong>Document Type:</strong> {{ $json.body_data.document_type }}</p>\n<p><strong>Pricing:</strong> {{ $json.body_data.pricing_tier }}</p>\n<p><strong>Title:</strong> {{ $json.body_data.document_title }}</p>\n<p><strong>Description:</strong></p>\n<p>{{ $json.body_data.document_description }}</p>\n<p><strong>Requirements:</strong></p>\n<p>{{ $json.body_data.specific_requirements }}</p>\n<p><strong>Use Case:</strong></p>\n<p>{{ $json.body_data.use_case }}</p>\n<p><strong>Notes:</strong></p>\n<p>{{ $json.body_data.additional_notes }}</p>\n<hr>\n<p><strong>Submitted:</strong> {{ $json.created_at }}</p>",
+        "options": {}
+      },
+      "id": "4",
+      "name": "Send Email",
+      "type": "n8n-nodes-base.emailSend",
+      "typeVersion": 2.1,
+      "position": [910, 200],
+      "credentials": {
+        "smtp": {
+          "id": "2",
+          "name": "SendGrid SMTP"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "url": "https://qxswelavrvfgtpyukijb.supabase.co/rest/v1/rpc/mark_notification_sent",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={ \"notification_id\": \"{{ $('Get Pending Notifications').item.json.id }}\" }",
+        "options": {}
+      },
+      "id": "5",
+      "name": "Mark as Sent",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.1,
+      "position": [1130, 200],
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "3",
+          "name": "Supabase API"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "url": "https://qxswelavrvfgtpyukijb.supabase.co/rest/v1/rpc/mark_notification_failed",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={ \"notification_id\": \"{{ $('Get Pending Notifications').item.json.id }}\", \"error_message\": \"{{ $json.message }}\" }",
+        "options": {}
+      },
+      "id": "6",
+      "name": "Mark as Failed",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.1,
+      "position": [1130, 400],
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "3",
+          "name": "Supabase API"
+        }
+      }
+    }
+  ],
+  "connections": {
+    "Poll Queue Every 2 Minutes": {
+      "main": [[{ "node": "Get Pending Notifications", "type": "main", "index": 0 }]]
+    },
+    "Get Pending Notifications": {
+      "main": [[{ "node": "Has Notifications?", "type": "main", "index": 0 }]]
+    },
+    "Has Notifications?": {
+      "main": [
+        [{ "node": "Send Email", "type": "main", "index": 0 }],
+        []
+      ]
+    },
+    "Send Email": {
+      "main": [[{ "node": "Mark as Sent", "type": "main", "index": 0 }]],
+      "error": [[{ "node": "Mark as Failed", "type": "main", "index": 0 }]]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "staticData": null,
+  "tags": [],
+  "triggerCount": 1,
+  "updatedAt": "2024-01-25T00:00:00.000Z",
+  "versionId": "1"
+}
