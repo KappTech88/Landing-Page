@@ -16,8 +16,9 @@ import XactimateEstimateForm from './components/XactimateEstimateForm';
 import SupplementClaimForm from './components/SupplementClaimForm';
 import CommercialBidForm from './components/CommercialBidForm';
 import CustomizedDocumentsForm from './components/CustomizedDocumentsForm';
+import CRMLayout from './components/CRM/CRMLayout';
 import { AppView } from './types';
-import { FileText, Microscope, ShieldCheck, ArrowLeft, UserPlus, LogIn, ClipboardList, FileCheck, Calculator, Building2, FileEdit, DollarSign } from 'lucide-react';
+import { FileText, Microscope, ShieldCheck, ArrowLeft, UserPlus, LogIn, ClipboardList, FileCheck, Calculator, Building2, FileEdit, DollarSign, LayoutDashboard } from 'lucide-react';
 
 const App: React.FC = () => {
   const [view, setView] = useState<AppView>(AppView.LANDING);
@@ -38,6 +39,13 @@ const App: React.FC = () => {
       <div className="max-w-7xl mx-auto flex justify-between items-center">
         <Logo />
         <div className="flex items-center gap-3">
+          <button
+            onClick={() => setView(AppView.CRM)}
+            className="flex items-center gap-2 px-4 py-2 text-sm bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 text-white rounded-lg transition-all shadow-lg shadow-cyan-500/25"
+          >
+            <LayoutDashboard className="w-4 h-4" />
+            CRM Dashboard
+          </button>
           <button
             onClick={() => setView(AppView.REGISTER)}
             className="px-4 py-2 text-sm text-cyan-300 hover:text-cyan-200 border border-cyan-700 hover:border-cyan-500 rounded-lg transition-all"
@@ -319,6 +327,8 @@ const App: React.FC = () => {
         return <PortalLogin />;
       case AppView.REGISTER:
         return <PartnerRegistration />;
+      case AppView.CRM:
+        return <CRMLayout onExit={() => setView(AppView.LANDING)} />;
       default:
         return (
           <>
@@ -440,6 +450,11 @@ const App: React.FC = () => {
 
   if (isLoading) {
     return <LoadingScreen onComplete={() => setIsLoading(false)} />;
+  }
+
+  // CRM has its own full-page layout
+  if (view === AppView.CRM) {
+    return <CRMLayout onExit={() => setView(AppView.LANDING)} />;
   }
 
   return (

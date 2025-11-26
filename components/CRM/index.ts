@@ -1,0 +1,10 @@
+export { default as CRMLayout } from './CRMLayout';
+export { default as CRMDashboard } from './CRMDashboard';
+export { default as CRMContacts } from './CRMContacts';
+export { default as CRMBoard } from './CRMBoard';
+export { default as CRMCalendar } from './CRMCalendar';
+export { default as CRMInbox } from './CRMInbox';
+export { default as CRMTasks } from './CRMTasks';
+export { default as CRMWorkflows } from './CRMWorkflows';
+export { default as CRMSettings } from './CRMSettings';
+export { default as CRMReports } from './CRMReports';

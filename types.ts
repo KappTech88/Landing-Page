@@ -17,6 +17,220 @@ export enum AppView {
   LABS = 'LABS',
   PORTAL = 'PORTAL',
   REGISTER = 'REGISTER',
+  CRM = 'CRM',
+}
+
+// ============= CRM ENUMS =============
+
+export type CRMView =
+  | 'dashboard'
+  | 'contacts'
+  | 'jobs'
+  | 'calendar'
+  | 'inbox'
+  | 'tasks'
+  | 'workflows'
+  | 'reports'
+  | 'settings';
+
+export type ContactType = 'lead' | 'customer' | 'vendor' | 'adjuster' | 'insurance_company';
+export type ContactStatus = 'new' | 'contacted' | 'qualified' | 'proposal_sent' | 'negotiating' | 'won' | 'lost';
+export type TaskPriorityLevel = 'low' | 'medium' | 'high' | 'urgent';
+export type TaskStatus = 'pending' | 'in_progress' | 'completed' | 'cancelled';
+export type WorkflowTrigger = 'claim_created' | 'status_changed' | 'task_completed' | 'email_received' | 'appointment_scheduled' | 'payment_received';
+export type WorkflowAction = 'send_email' | 'create_task' | 'update_status' | 'send_sms' | 'add_note' | 'assign_user' | 'create_calendar_event';
+
+// ============= CRM INTERFACES =============
+
+export interface CRMContact {
+  id: string;
+  organization_id: string;
+  contact_type: ContactType;
+  status: ContactStatus;
+  first_name: string;
+  last_name: string;
+  full_name: string;
+  email: string;
+  phone: string;
+  phone_alt?: string;
+  company?: string;
+  job_title?: string;
+  address_line1?: string;
+  address_line2?: string;
+  city?: string;
+  state?: string;
+  zip_code?: string;
+  source?: string;
+  assigned_to?: string;
+  tags?: string[];
+  notes?: string;
+  last_contacted?: string;
+  total_value?: number;
+  avatar_url?: string;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface CRMJob {
+  id: string;
+  organization_id: string;
+  contact_id: string;
+  claim_id?: string;
+  job_number: string;
+  title: string;
+  description?: string;
+  status: ClaimStatus;
+  priority: ClaimPriority;
+  job_type: ClaimType;
+  estimated_value?: number;
+  actual_value?: number;
+  start_date?: string;
+  end_date?: string;
+  assigned_to?: string;
+  property_address: string;
+  city: string;
+  state: string;
+  zip_code: string;
+  insurance_company?: string;
+  adjuster_name?: string;
+  adjuster_phone?: string;
+  adjuster_email?: string;
+  policy_number?: string;
+  date_of_loss?: string;
+  tags?: string[];
+  photos_count?: number;
+  notes_count?: number;
+  tasks_count?: number;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface CRMTask {
+  id: string;
+  organization_id: string;
+  job_id?: string;
+  contact_id?: string;
+  assigned_to?: string;
+  created_by: string;
+  title: string;
+  description?: string;
+  priority: TaskPriorityLevel;
+  status: TaskStatus;
+  due_date?: string;
+  due_time?: string;
+  completed_at?: string;
+  reminder_at?: string;
+  tags?: string[];
+  created_at: string;
+  updated_at: string;
+}
+
+export interface CRMCalendarEvent {
+  id: string;
+  organization_id: string;
+  job_id?: string;
+  contact_id?: string;
+  google_event_id?: string;
+  title: string;
+  description?: string;
+  location?: string;
+  start_time: string;
+  end_time: string;
+  all_day: boolean;
+  color?: string;
+  event_type: 'appointment' | 'inspection' | 'follow_up' | 'meeting' | 'deadline' | 'other';
+  attendees?: { email: string; name?: string; status?: string }[];
+  reminder_minutes?: number;
+  is_synced: boolean;
+  created_by: string;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface CRMEmail {
+  id: string;
+  organization_id: string;
+  gmail_message_id?: string;
+  gmail_thread_id?: string;
+  contact_id?: string;
+  job_id?: string;
+  from_email: string;
+  from_name?: string;
+  to_emails: string[];
+  cc_emails?: string[];
+  bcc_emails?: string[];
+  subject: string;
+  body_text?: string;
+  body_html?: string;
+  snippet?: string;
+  is_read: boolean;
+  is_starred: boolean;
+  is_sent: boolean;
+  is_draft: boolean;
+  has_attachments: boolean;
+  attachments?: { name: string; size: number; mime_type: string; url?: string }[];
+  labels?: string[];
+  received_at: string;
+  sent_at?: string;
+  created_at: string;
+}
+
+export interface CRMWorkflow {
+  id: string;
+  organization_id: string;
+  name: string;
+  description?: string;
+  is_active: boolean;
+  trigger: WorkflowTrigger;
+  trigger_conditions?: Record<string, any>;
+  actions: CRMWorkflowAction[];
+  created_by: string;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface CRMWorkflowAction {
+  id: string;
+  action_type: WorkflowAction;
+  action_config: Record<string, any>;
+  delay_minutes?: number;
+  order: number;
+}
+
+export interface CRMNote {
+  id: string;
+  organization_id: string;
+  job_id?: string;
+  contact_id?: string;
+  created_by: string;
+  content: string;
+  is_pinned: boolean;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface CRMDashboardMetrics {
+  total_leads: number;
+  new_leads_this_week: number;
+  total_jobs: number;
+  active_jobs: number;
+  jobs_by_status: Record<string, number>;
+  total_revenue: number;
+  revenue_this_month: number;
+  pending_tasks: number;
+  overdue_tasks: number;
+  upcoming_appointments: number;
+  unread_emails: number;
+  conversion_rate: number;
+  avg_job_value: number;
+}
+
+export interface GoogleWorkspaceCredentials {
+  access_token: string;
+  refresh_token?: string;
+  expires_at?: number;
+  scope: string;
+  email: string;
 }
 
 export type SubscriptionTier = 'free' | 'basic' | 'professional' | 'enterprise';
