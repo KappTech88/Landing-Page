@@ -1,9 +1,13 @@
 import React, { useState } from 'react';
-import { Lock, ArrowRight, User, Shield, Loader2, AlertCircle } from 'lucide-react';
+import { Lock, ArrowRight, User, Shield, Loader2, AlertCircle, LayoutDashboard } from 'lucide-react';
 import { signIn } from '../lib/supabase';
-import { LoginFormData } from '../types';
+import { LoginFormData, AppView } from '../types';
 
-const PortalLogin: React.FC = () => {
+interface PortalLoginProps {
+  onNavigate?: (view: AppView) => void;
+}
+
+const PortalLogin: React.FC<PortalLoginProps> = ({ onNavigate }) => {
   const [formData, setFormData] = useState<LoginFormData>({
     email: '',
     password: '',
@@ -142,8 +146,25 @@ const PortalLogin: React.FC = () => {
             </p>
           </div>
 
+          {/* Demo Dashboard Access */}
+          {onNavigate && (
+            <div className="mt-6 p-4 bg-cyan-500/10 border border-cyan-500/30 rounded-xl">
+              <p className="text-cyan-400/80 text-xs text-center mb-3">
+                <strong>Demo Mode:</strong> Access the CRM dashboard without authentication.
+              </p>
+              <button
+                type="button"
+                onClick={() => onNavigate(AppView.DASHBOARD)}
+                className="w-full bg-gradient-to-r from-cyan-600/50 to-blue-600/50 hover:from-cyan-500/50 hover:to-blue-500/50 text-white font-medium py-3 rounded-lg flex items-center justify-center gap-2 transition-all border border-cyan-500/30"
+              >
+                <LayoutDashboard className="w-4 h-4" />
+                Enter Demo Dashboard
+              </button>
+            </div>
+          )}
+
           {/* Setup Notice */}
-          <div className="mt-6 p-4 bg-yellow-500/10 border border-yellow-500/30 rounded-xl">
+          <div className="mt-4 p-4 bg-yellow-500/10 border border-yellow-500/30 rounded-xl">
             <p className="text-yellow-400/80 text-xs text-center">
               <strong>Setup Required:</strong> Configure Supabase credentials in <code className="bg-slate-900/50 px-1 py-0.5 rounded">.env.local</code> to enable authentication.
             </p>
