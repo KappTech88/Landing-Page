@@ -21,6 +21,8 @@ import DashboardLayout from './components/Dashboard/DashboardLayout';
 import DashboardHome from './components/Dashboard/DashboardHome';
 import JobsList from './components/Dashboard/JobsList';
 import JobDetail from './components/Dashboard/JobDetail';
+// Estimate Builder
+import EstimateBuilder from './components/EstimateBuilder';
 import { AppView } from './types';
 import { FileText, Microscope, ShieldCheck, ArrowLeft, UserPlus, LogIn, ClipboardList, FileCheck, Calculator, Building2, FileEdit, DollarSign } from 'lucide-react';
 
@@ -342,12 +344,15 @@ const App: React.FC = () => {
         return <PortalLogin onNavigate={setView} />;
       case AppView.REGISTER:
         return <PartnerRegistration />;
+      case AppView.ESTIMATE_BUILDER:
+        return <EstimateBuilder onBack={() => setView(AppView.LANDING)} />;
       // Dashboard Views - No popups, full page views
       case AppView.DASHBOARD:
       case AppView.DASHBOARD_HOME:
       case AppView.DASHBOARD_CONTACTS:
       case AppView.DASHBOARD_JOBS:
       case AppView.DASHBOARD_JOB_DETAIL:
+      case AppView.DASHBOARD_ESTIMATES:
       case AppView.DASHBOARD_CALENDAR:
       case AppView.DASHBOARD_INBOX:
       case AppView.DASHBOARD_TASKS:
@@ -473,6 +478,8 @@ const App: React.FC = () => {
           return <JobsList onSelectJob={handleSelectJob} />;
         case AppView.DASHBOARD_JOB_DETAIL:
           return <JobDetail onBack={() => setView(AppView.DASHBOARD_JOBS)} />;
+        case AppView.DASHBOARD_ESTIMATES:
+          return <EstimateBuilder onBack={() => setView(AppView.DASHBOARD_HOME)} />;
         case AppView.DASHBOARD:
         case AppView.DASHBOARD_HOME:
         default:
