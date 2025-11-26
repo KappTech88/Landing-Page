@@ -312,34 +312,17 @@
         overflow: hidden;
       }
 
-      /* Reduce motion on mobile for better performance */
+      /* Mobile optimizations - keep animations but optimize for performance */
       @media (max-width: 768px) {
-        /* Disable heavy animations on mobile */
-        .animate-float,
-        .animate-float-slow,
-        .animate-tilt {
-          animation: none !important;
-        }
-
-        /* Reduce blur effects which are GPU intensive */
-        .blur-3xl {
-          filter: blur(32px) !important;
-        }
-
         /* Simplify card 3D effects */
         .card-3d:hover {
           transform: scale(1.01) !important;
         }
 
-        /* Reduce backdrop blur for performance */
+        /* Reduce backdrop blur slightly for performance */
         .glass-card,
         .glass-panel {
-          backdrop-filter: blur(10px) saturate(150%) !important;
-        }
-
-        /* Disable gradient rotation animation */
-        .gradient-mesh {
-          animation: none !important;
+          backdrop-filter: blur(12px) saturate(160%) !important;
         }
 
         /* Reduce hover lift effect */
