@@ -58,6 +58,71 @@ export type ClaimPriority = 'low' | 'normal' | 'high' | 'urgent';
 
 export type PropertyType = 'residential' | 'commercial' | 'multi_family' | 'industrial';
 
+// ============= JOB TYPES =============
+
+export type JobStatus =
+  | 'lead'
+  | 'appointment_set'
+  | 'quoted'
+  | 'negotiating'
+  | 'sold'
+  | 'pending_permit'
+  | 'permit_approved'
+  | 'materials_ordered'
+  | 'scheduled'
+  | 'in_progress'
+  | 'on_hold'
+  | 'punch_list'
+  | 'complete'
+  | 'closed'
+  | 'cancelled'
+  | 'lost';
+
+export type JobType =
+  | 'roofing'
+  | 'siding'
+  | 'gutters'
+  | 'windows'
+  | 'doors'
+  | 'painting'
+  | 'decking'
+  | 'fencing'
+  | 'insulation'
+  | 'ventilation'
+  | 'general'
+  | 'other';
+
+export type JobCategory =
+  | 'residential_retail'
+  | 'residential_insurance'
+  | 'commercial';
+
+export type JobPriority = 'low' | 'normal' | 'high' | 'urgent' | 'emergency';
+
+export type JobWorkType =
+  | 'replacement'
+  | 'repair'
+  | 'new_construction'
+  | 'maintenance'
+  | 'inspection'
+  | 'emergency'
+  | 'warranty'
+  | 'other';
+
+// ============= JOB NOTES TYPES =============
+
+export type NoteType = 'general' | 'mention' | 'reply' | 'system' | 'status_change';
+
+export type JobAccessLevel = 'view' | 'comment' | 'edit' | 'manage' | 'owner';
+
+// ============= CONTACT TYPES =============
+
+export type ContactType = 'lead' | 'prospect' | 'customer' | 'past_customer' | 'vendor' | 'other';
+
+export type CustomerStatus = 'active' | 'inactive' | 'do_not_contact' | 'deceased';
+
+export type AccountType = 'homeowner' | 'property_manager' | 'business' | 'hoa' | 'government' | 'referral_partner' | 'other';
+
 export type EstimateType = 'initial' | 'supplement' | 'revision' | 'final' | 'change_order';
 export type EstimateStatus =
   | 'draft'
@@ -270,6 +335,325 @@ export interface Property {
   deleted_at?: string;
 }
 
+// ============= CONTACT (Customer) =============
+
+export interface Contact {
+  id: string;
+  organization_id: string;
+  contact_number: string;
+
+  // Type
+  contact_type: ContactType;
+  customer_status: CustomerStatus;
+  account_type: AccountType;
+
+  // Name
+  first_name?: string;
+  last_name?: string;
+  full_name?: string;
+  company_name?: string;
+  job_title?: string;
+
+  // Contact
+  email?: string;
+  phone_primary?: string;
+  phone_secondary?: string;
+  phone_primary_type?: 'mobile' | 'home' | 'work' | 'other';
+  preferred_contact_method: 'phone' | 'email' | 'text' | 'mail';
+  best_time_to_contact?: string;
+
+  // Address
+  address_line1?: string;
+  address_line2?: string;
+  city?: string;
+  state?: string;
+  zip_code?: string;
+  county?: string;
+  full_address?: string;
+  latitude?: number;
+  longitude?: number;
+
+  // Property Details
+  property_type?: string;
+  year_built?: number;
+  square_footage?: number;
+  stories?: number;
+  roof_type?: string;
+  roof_age_years?: number;
+  roof_squares?: number;
+
+  // Sales
+  lead_source?: string;
+  lead_source_detail?: string;
+  assigned_sales_rep_id?: string;
+  lead_score?: number;
+  lead_temperature?: 'cold' | 'warm' | 'hot';
+
+  // Relationship
+  first_contact_date?: string;
+  first_job_date?: string;
+  last_job_date?: string;
+  last_contact_date?: string;
+  total_jobs?: number;
+  total_revenue?: number;
+  lifetime_value?: number;
+
+  // Notes
+  internal_notes?: string;
+  property_access_notes?: string;
+
+  // Metadata
+  tags?: string[];
+  custom_fields?: Record<string, any>;
+
+  // Audit
+  created_by?: string;
+  created_at: string;
+  updated_at: string;
+  deleted_at?: string;
+}
+
+// ============= JOB (Central Work Entity) =============
+
+export interface Job {
+  id: string;
+  organization_id: string;
+
+  // Identification
+  job_number: string;
+  job_name: string;
+
+  // Customer Link
+  contact_id: string;
+  property_id?: string;
+  customer_name: string;
+  customer_phone?: string;
+  customer_email?: string;
+  service_address?: string;
+
+  // Classification
+  job_type: JobType;
+  job_category: JobCategory;
+  work_type: JobWorkType;
+  project_size?: 'small' | 'standard' | 'large' | 'complex';
+
+  // Status
+  status: JobStatus;
+  substatus?: string;
+  priority: JobPriority;
+  is_active: boolean;
+  completion_percentage: number;
+
+  // Flags
+  is_insurance_job: boolean;
+  is_warranty_job: boolean;
+  is_repeat_customer: boolean;
+  requires_permit: boolean;
+  requires_hoa_approval: boolean;
+
+  // Team
+  sales_rep_id?: string;
+  project_manager_id?: string;
+  estimator_id?: string;
+
+  // Important Dates
+  date_created?: string;
+  date_lead_received?: string;
+  date_appointment?: string;
+  date_quoted?: string;
+  date_sold?: string;
+  date_permit_submitted?: string;
+  date_permit_approved?: string;
+  date_materials_ordered?: string;
+  date_materials_delivered?: string;
+  date_scheduled?: string;
+  date_started?: string;
+  date_completed?: string;
+  date_final_inspection?: string;
+  date_closed?: string;
+  target_start_date?: string;
+  target_completion_date?: string;
+
+  // Financials
+  contract_amount?: number;
+  contract_signed?: boolean;
+  contract_signed_date?: string;
+  estimated_cost?: number;
+  actual_cost?: number;
+  material_cost?: number;
+  labor_cost?: number;
+  gross_profit?: number;
+  profit_margin?: number;
+  total_invoiced?: number;
+  total_paid?: number;
+  balance_due?: number;
+
+  // Roofing Specifics
+  roof_squares?: number;
+  roof_pitch?: string;
+  roof_type?: string;
+  roof_layers?: number;
+  shingle_manufacturer?: string;
+  shingle_product_line?: string;
+  shingle_color?: string;
+
+  // Insurance (only if is_insurance_job)
+  insurance_company?: string;
+  insurance_claim_number?: string;
+  insurance_policy_number?: string;
+  date_of_loss?: string;
+  adjuster_name?: string;
+  adjuster_phone?: string;
+  adjuster_email?: string;
+  insurance_rcv?: number;
+  insurance_acv?: number;
+  insurance_deductible?: number;
+  deductible_collected?: boolean;
+  deductible_collected_date?: string;
+  depreciation_amount?: number;
+  depreciation_recoverable?: boolean;
+  supplement_amount?: number;
+  supplement_approved?: boolean;
+
+  // Permit
+  permit_number?: string;
+  permit_status?: string;
+  permit_jurisdiction?: string;
+  permit_fee?: number;
+
+  // Warranty
+  warranty_type?: string;
+  warranty_years?: number;
+  warranty_registered?: boolean;
+  warranty_certificate_number?: string;
+
+  // Notes
+  scope_of_work?: string;
+  production_notes?: string;
+  internal_notes?: string;
+  customer_notes?: string;
+  access_notes?: string;
+
+  // Metadata
+  tags?: string[];
+  custom_fields?: Record<string, any>;
+  lead_source?: string;
+  lead_source_detail?: string;
+
+  // Audit
+  created_by?: string;
+  created_at: string;
+  updated_at: string;
+  deleted_at?: string;
+}
+
+// ============= JOB NOTES =============
+
+export interface NoteAttachment {
+  id: string;
+  name: string;
+  url: string;
+  type: string;
+  size?: number;
+}
+
+export interface JobNote {
+  id: string;
+  job_id: string;
+  organization_id: string;
+
+  // Content
+  content: string;
+  note_type: NoteType;
+
+  // Threading
+  parent_note_id?: string;
+  thread_id?: string;
+
+  // Author
+  created_by: string;
+
+  // Flags
+  is_pinned: boolean;
+  is_internal: boolean;
+
+  // Attachments
+  attachments?: NoteAttachment[];
+
+  // Audit
+  created_at: string;
+  updated_at: string;
+  edited_at?: string;
+  deleted_at?: string;
+
+  // Relations (populated by query)
+  author?: User;
+  mentions?: JobNoteMention[];
+  replies?: JobNote[];
+  reply_count?: number;
+}
+
+export interface JobNoteMention {
+  id: string;
+  note_id: string;
+  mentioned_user_id: string;
+  organization_id: string;
+
+  // Notification
+  notification_sent: boolean;
+  notification_sent_at?: string;
+  notification_channel?: 'in_app' | 'email' | 'sms';
+
+  // Status
+  is_read: boolean;
+  read_at?: string;
+  has_responded: boolean;
+  response_note_id?: string;
+
+  created_at: string;
+
+  // Relations
+  mentioned_user?: User;
+}
+
+// ============= JOB ACCESS =============
+
+export interface JobAccess {
+  id: string;
+  job_id: string;
+  user_id: string;
+  organization_id: string;
+  access_level: JobAccessLevel;
+  assigned_by?: string;
+  assigned_reason?: string;
+  is_active: boolean;
+  created_at: string;
+  updated_at: string;
+
+  // Relations
+  user?: User;
+}
+
+// ============= JOB TEAM =============
+
+export type JobTeamRole = 'project_manager' | 'sales_rep' | 'estimator' | 'production_manager' | 'coordinator';
+
+export interface JobTeamMember {
+  id: string;
+  job_id: string;
+  user_id: string;
+  organization_id: string;
+  role: JobTeamRole;
+  is_active: boolean;
+  assigned_by?: string;
+  assigned_at: string;
+  notes?: string;
+  created_at: string;
+
+  // Relations
+  user?: User;
+}
+
 export interface Estimate {
   id: string;
   claim_id: string;
@@ -425,6 +809,51 @@ export interface ClaimWithDetails extends Claim {
   assigned_contractor?: User;
   assigned_estimator?: User;
 }
+
+// ============= JOB WITH RELATIONS =============
+
+export interface JobWithDetails extends Job {
+  contact?: Contact;
+  claim?: Claim;
+  estimates?: Estimate[];
+  photos?: Photo[];
+  notes?: JobNote[];
+  team_members?: JobTeamMember[];
+  access_users?: JobAccess[];
+  organization?: Organization;
+  sales_rep?: User;
+  project_manager?: User;
+  estimator?: User;
+}
+
+// ============= JOB STATUS CONFIG =============
+
+export interface JobStatusConfig {
+  label: string;
+  progress: number;
+  color: string;
+  bgColor: string;
+  icon: string;
+}
+
+export const JOB_STATUS_CONFIG: Record<JobStatus, JobStatusConfig> = {
+  lead: { label: 'Lead', progress: 5, color: '#9CA3AF', bgColor: 'bg-gray-500/20', icon: 'UserPlus' },
+  appointment_set: { label: 'Appointment Set', progress: 10, color: '#60A5FA', bgColor: 'bg-blue-500/20', icon: 'Calendar' },
+  quoted: { label: 'Quoted', progress: 20, color: '#FBBF24', bgColor: 'bg-yellow-500/20', icon: 'FileText' },
+  negotiating: { label: 'Negotiating', progress: 25, color: '#F97316', bgColor: 'bg-orange-500/20', icon: 'MessageSquare' },
+  sold: { label: 'Sold', progress: 30, color: '#34D399', bgColor: 'bg-emerald-500/20', icon: 'CheckCircle' },
+  pending_permit: { label: 'Pending Permit', progress: 40, color: '#A78BFA', bgColor: 'bg-purple-500/20', icon: 'FileCheck' },
+  permit_approved: { label: 'Permit Approved', progress: 45, color: '#8B5CF6', bgColor: 'bg-violet-500/20', icon: 'BadgeCheck' },
+  materials_ordered: { label: 'Materials Ordered', progress: 50, color: '#EC4899', bgColor: 'bg-pink-500/20', icon: 'Package' },
+  scheduled: { label: 'Scheduled', progress: 55, color: '#14B8A6', bgColor: 'bg-teal-500/20', icon: 'CalendarCheck' },
+  in_progress: { label: 'In Progress', progress: 70, color: '#06B6D4', bgColor: 'bg-cyan-500/20', icon: 'Hammer' },
+  on_hold: { label: 'On Hold', progress: 70, color: '#EF4444', bgColor: 'bg-red-500/20', icon: 'PauseCircle' },
+  punch_list: { label: 'Punch List', progress: 85, color: '#F59E0B', bgColor: 'bg-amber-500/20', icon: 'ClipboardList' },
+  complete: { label: 'Complete', progress: 95, color: '#10B981', bgColor: 'bg-emerald-500/20', icon: 'CheckCircle2' },
+  closed: { label: 'Closed', progress: 100, color: '#059669', bgColor: 'bg-green-600/20', icon: 'Lock' },
+  cancelled: { label: 'Cancelled', progress: 0, color: '#6B7280', bgColor: 'bg-gray-500/20', icon: 'XCircle' },
+  lost: { label: 'Lost', progress: 0, color: '#6B7280', bgColor: 'bg-gray-500/20', icon: 'XCircle' },
+};
 
 // ============= SUPABASE SPECIFIC =============
 
