@@ -20,7 +20,9 @@ import {
   Clock,
   CheckCircle,
   Package,
-  ClipboardList
+  ClipboardList,
+  ChevronDown,
+  ChevronUp
 } from 'lucide-react';
 import { ClaimWithDetails, Property, JOB_STATUS_CONFIG } from '../../types';
 import { CommunicationsPanel } from './JobDetail/Communications';
@@ -172,6 +174,21 @@ const JobDetail: React.FC<JobDetailProps> = ({ job = mockJob, onBack, activeTab 
   const [notesFilesTab, setNotesFilesTab] = useState<'notes' | 'files' | 'photos'>('notes');
   const [bannerImage, setBannerImage] = useState<string | null>(job.bannerUrl || null);
 
+  // Panel expanded states
+  const [expandedPanels, setExpandedPanels] = useState<Record<string, boolean>>({
+    jobInfo: false,
+    customerProperty: false,
+    insuranceClaim: false,
+    team: false,
+    keyDates: false,
+    permit: false,
+    financials: false,
+  });
+
+  const togglePanel = (panel: string) => {
+    setExpandedPanels(prev => ({ ...prev, [panel]: !prev[panel] }));
+  };
+
   const handleBannerUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
@@ -292,330 +309,455 @@ const JobDetail: React.FC<JobDetailProps> = ({ job = mockJob, onBack, activeTab 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
           {/* Left Column - Job, Property & Claim Info */}
           <div className="space-y-3">
-            {/* Job Info - NEW */}
-            <div className="bg-slate-800/50 backdrop-blur-sm rounded-xl border border-slate-700/50 p-3">
-              <div className="flex items-center justify-between mb-2">
-                <h2 className="text-xs font-semibold text-white flex items-center gap-2">
-                  <ClipboardList className="w-3.5 h-3.5 text-cyan-400" />
+            {/* Job Info */}
+            <div className="bg-slate-800/50 backdrop-blur-sm rounded-xl border border-slate-700/50 p-4">
+              <div className="flex items-center justify-between mb-3">
+                <h2 className="text-sm font-semibold text-white flex items-center gap-2">
+                  <ClipboardList className="w-4 h-4 text-cyan-400" />
                   Job Information
                 </h2>
-                <button className="text-xs text-cyan-400 hover:text-cyan-300">
-                  <Edit3 className="w-3 h-3" />
-                </button>
+                <div className="flex items-center gap-2">
+                  <button className="text-cyan-400 hover:text-cyan-300">
+                    <Edit3 className="w-3.5 h-3.5" />
+                  </button>
+                  <button
+                    onClick={() => togglePanel('jobInfo')}
+                    className="text-slate-400 hover:text-white transition-colors"
+                  >
+                    {expandedPanels.jobInfo ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
+                  </button>
+                </div>
               </div>
-              <div className="grid grid-cols-4 gap-x-4 gap-y-1.5 text-xs">
+              <div className="grid grid-cols-4 gap-x-4 gap-y-2 text-sm">
                 <div>
-                  <p className="text-slate-500">Job #</p>
+                  <p className="text-slate-500 text-xs">Job #</p>
                   <p className="text-slate-200">{displayValue(job.job_number)}</p>
                 </div>
                 <div>
-                  <p className="text-slate-500">Job Type</p>
+                  <p className="text-slate-500 text-xs">Job Type</p>
                   <p className="text-slate-200 capitalize">{displayValue(job.job_type)}</p>
                 </div>
                 <div>
-                  <p className="text-slate-500">Work Type</p>
+                  <p className="text-slate-500 text-xs">Work Type</p>
                   <p className="text-slate-200 capitalize">{displayValue(job.work_type)}</p>
                 </div>
                 <div>
-                  <p className="text-slate-500">Priority</p>
+                  <p className="text-slate-500 text-xs">Priority</p>
                   <p className="text-slate-200 capitalize">{displayValue(job.priority)}</p>
                 </div>
               </div>
+              {/* Expanded content */}
+              {expandedPanels.jobInfo && (
+                <div className="mt-3 pt-3 border-t border-slate-700/50 grid grid-cols-4 gap-x-4 gap-y-2 text-sm">
+                  <div>
+                    <p className="text-slate-500 text-xs">Job Category</p>
+                    <p className="text-slate-200 capitalize">{displayValue(job.job_category?.replace('_', ' '))}</p>
+                  </div>
+                  <div>
+                    <p className="text-slate-500 text-xs">Internal Ref</p>
+                    <p className="text-slate-200">{displayValue(job.internal_reference)}</p>
+                  </div>
+                  <div>
+                    <p className="text-slate-500 text-xs">Created</p>
+                    <p className="text-slate-200">{job.created_at ? new Date(job.created_at).toLocaleDateString() : '--'}</p>
+                  </div>
+                  <div>
+                    <p className="text-slate-500 text-xs">Updated</p>
+                    <p className="text-slate-200">{job.updated_at ? new Date(job.updated_at).toLocaleDateString() : '--'}</p>
+                  </div>
+                </div>
+              )}
             </div>
 
-            {/* Customer & Property - Combined & Compact */}
-            <div className="bg-slate-800/50 backdrop-blur-sm rounded-xl border border-slate-700/50 p-3">
-              <div className="flex items-center justify-between mb-2">
-                <h2 className="text-xs font-semibold text-white flex items-center gap-2">
-                  <User className="w-3.5 h-3.5 text-cyan-400" />
+            {/* Customer & Property - Combined with Roof Details */}
+            <div className="bg-slate-800/50 backdrop-blur-sm rounded-xl border border-slate-700/50 p-4">
+              <div className="flex items-center justify-between mb-3">
+                <h2 className="text-sm font-semibold text-white flex items-center gap-2">
+                  <User className="w-4 h-4 text-cyan-400" />
                   Customer & Property
                 </h2>
-                <button className="text-xs text-cyan-400 hover:text-cyan-300">
-                  <Edit3 className="w-3 h-3" />
-                </button>
+                <div className="flex items-center gap-2">
+                  <button className="text-cyan-400 hover:text-cyan-300">
+                    <Edit3 className="w-3.5 h-3.5" />
+                  </button>
+                  <button
+                    onClick={() => togglePanel('customerProperty')}
+                    className="text-slate-400 hover:text-white transition-colors"
+                  >
+                    {expandedPanels.customerProperty ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
+                  </button>
+                </div>
               </div>
-              <div className="grid grid-cols-4 gap-x-4 gap-y-1.5 text-xs">
+              <div className="grid grid-cols-4 gap-x-4 gap-y-2 text-sm">
                 <div className="col-span-2">
-                  <p className="text-slate-500">Customer Name</p>
+                  <p className="text-slate-500 text-xs">Customer Name</p>
                   <p className="text-slate-200">{displayValue(job.property?.owner_full_name)}</p>
                 </div>
                 <div>
-                  <p className="text-slate-500">Phone</p>
+                  <p className="text-slate-500 text-xs">Phone</p>
                   <p className="text-cyan-400">{displayValue(job.property?.owner_phone)}</p>
                 </div>
                 <div>
-                  <p className="text-slate-500">Email</p>
+                  <p className="text-slate-500 text-xs">Email</p>
                   <p className="text-cyan-400 truncate">{displayValue(job.property?.owner_email)}</p>
                 </div>
                 <div className="col-span-2">
-                  <p className="text-slate-500">Address</p>
+                  <p className="text-slate-500 text-xs">Address</p>
                   <p className="text-slate-200">{displayValue(job.property?.address_line1)}</p>
                 </div>
                 <div>
-                  <p className="text-slate-500">City</p>
+                  <p className="text-slate-500 text-xs">City</p>
                   <p className="text-slate-200">{displayValue(job.property?.city)}</p>
                 </div>
                 <div>
-                  <p className="text-slate-500">State / Zip</p>
+                  <p className="text-slate-500 text-xs">State / Zip</p>
                   <p className="text-slate-200">{displayValue(job.property?.state)} {displayValue(job.property?.zip_code)}</p>
                 </div>
-                <div>
-                  <p className="text-slate-500">Property Type</p>
-                  <p className="text-slate-200 capitalize">{displayValue(job.property?.property_type)}</p>
-                </div>
-                <div>
-                  <p className="text-slate-500">Year Built</p>
-                  <p className="text-slate-200">{displayValue(job.property?.year_built)}</p>
-                </div>
-                <div>
-                  <p className="text-slate-500">Sq Footage</p>
-                  <p className="text-slate-200">{job.property?.square_footage ? `${job.property.square_footage.toLocaleString()} sf` : '--'}</p>
-                </div>
-                <div>
-                  <p className="text-slate-500">Stories</p>
-                  <p className="text-slate-200">{displayValue(job.property?.stories)}</p>
-                </div>
               </div>
+              {/* Expanded content - Property & Roof Details */}
+              {expandedPanels.customerProperty && (
+                <div className="mt-3 pt-3 border-t border-slate-700/50">
+                  <p className="text-xs text-slate-400 mb-2 font-medium">Property Details</p>
+                  <div className="grid grid-cols-4 gap-x-4 gap-y-2 text-sm">
+                    <div>
+                      <p className="text-slate-500 text-xs">Property Type</p>
+                      <p className="text-slate-200 capitalize">{displayValue(job.property?.property_type)}</p>
+                    </div>
+                    <div>
+                      <p className="text-slate-500 text-xs">Year Built</p>
+                      <p className="text-slate-200">{displayValue(job.property?.year_built)}</p>
+                    </div>
+                    <div>
+                      <p className="text-slate-500 text-xs">Sq Footage</p>
+                      <p className="text-slate-200">{job.property?.square_footage ? `${job.property.square_footage.toLocaleString()} sf` : '--'}</p>
+                    </div>
+                    <div>
+                      <p className="text-slate-500 text-xs">Stories</p>
+                      <p className="text-slate-200">{displayValue(job.property?.stories)}</p>
+                    </div>
+                  </div>
+                  <p className="text-xs text-slate-400 mb-2 mt-3 font-medium">Roof Details</p>
+                  <div className="grid grid-cols-4 gap-x-4 gap-y-2 text-sm">
+                    <div>
+                      <p className="text-slate-500 text-xs">Roof Type</p>
+                      <p className="text-slate-200">{displayValue(job.roof_type)}</p>
+                    </div>
+                    <div>
+                      <p className="text-slate-500 text-xs">Squares</p>
+                      <p className="text-slate-200">{job.roof_squares ? `${job.roof_squares} SQ` : '--'}</p>
+                    </div>
+                    <div>
+                      <p className="text-slate-500 text-xs">Pitch</p>
+                      <p className="text-slate-200">{displayValue(job.roof_pitch)}</p>
+                    </div>
+                    <div>
+                      <p className="text-slate-500 text-xs">Shingle Color</p>
+                      <p className="text-slate-200">{displayValue(job.shingle_color)}</p>
+                    </div>
+                  </div>
+                </div>
+              )}
             </div>
 
-            {/* Insurance & Claim Info - Combined */}
-            <div className="bg-slate-800/50 backdrop-blur-sm rounded-xl border border-slate-700/50 p-3">
-              <div className="flex items-center justify-between mb-2">
-                <h2 className="text-xs font-semibold text-white flex items-center gap-2">
-                  <FileText className="w-3.5 h-3.5 text-cyan-400" />
+            {/* Insurance & Claim Info */}
+            <div className="bg-slate-800/50 backdrop-blur-sm rounded-xl border border-slate-700/50 p-4">
+              <div className="flex items-center justify-between mb-3">
+                <h2 className="text-sm font-semibold text-white flex items-center gap-2">
+                  <FileText className="w-4 h-4 text-cyan-400" />
                   Insurance & Claim
                 </h2>
-                <button className="text-xs text-cyan-400 hover:text-cyan-300">
-                  <Edit3 className="w-3 h-3" />
-                </button>
+                <div className="flex items-center gap-2">
+                  <button className="text-cyan-400 hover:text-cyan-300">
+                    <Edit3 className="w-3.5 h-3.5" />
+                  </button>
+                  <button
+                    onClick={() => togglePanel('insuranceClaim')}
+                    className="text-slate-400 hover:text-white transition-colors"
+                  >
+                    {expandedPanels.insuranceClaim ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
+                  </button>
+                </div>
               </div>
-              <div className="grid grid-cols-4 gap-x-4 gap-y-1.5 text-xs">
+              <div className="grid grid-cols-4 gap-x-4 gap-y-2 text-sm">
                 <div>
-                  <p className="text-slate-500">Carrier</p>
+                  <p className="text-slate-500 text-xs">Carrier</p>
                   <p className="text-slate-200 truncate">{displayValue(job.property?.insurance_company)}</p>
                 </div>
                 <div>
-                  <p className="text-slate-500">Policy #</p>
+                  <p className="text-slate-500 text-xs">Policy #</p>
                   <p className="text-slate-200">{displayValue(job.property?.policy_number)}</p>
                 </div>
                 <div>
-                  <p className="text-slate-500">Claim #</p>
+                  <p className="text-slate-500 text-xs">Claim #</p>
                   <p className="text-slate-200">{displayValue(job.claim_number)}</p>
                 </div>
                 <div>
-                  <p className="text-slate-500">Date of Loss</p>
+                  <p className="text-slate-500 text-xs">Date of Loss</p>
                   <p className="text-slate-200">{job.date_of_loss ? new Date(job.date_of_loss).toLocaleDateString() : '--'}</p>
                 </div>
-                <div>
-                  <p className="text-slate-500">Adjuster Name</p>
-                  <p className="text-slate-200">{displayValue(job.adjuster_name || job.property?.adjuster_name)}</p>
-                </div>
-                <div>
-                  <p className="text-slate-500">Adjuster Phone</p>
-                  <p className="text-cyan-400">{displayValue(job.adjuster_phone || job.property?.adjuster_phone)}</p>
-                </div>
-                <div className="col-span-2">
-                  <p className="text-slate-500">Adjuster Email</p>
-                  <p className="text-cyan-400 truncate">{displayValue(job.adjuster_email || job.property?.adjuster_email)}</p>
-                </div>
-                <div>
-                  <p className="text-slate-500">Deductible</p>
-                  <p className="text-slate-200">{job.deductible ? formatCurrency(job.deductible) : '--'}</p>
-                </div>
-                <div>
-                  <p className="text-slate-500">Claim Type</p>
-                  <p className="text-slate-200 capitalize">{displayValue(job.claim_type?.replace('_', ' '))}</p>
-                </div>
-                <div>
-                  <p className="text-slate-500">Severity</p>
-                  <p className="text-slate-200 capitalize">{displayValue(job.severity)}</p>
-                </div>
-                <div>
-                  <p className="text-slate-500">Date Reported</p>
-                  <p className="text-slate-200">{job.date_reported ? new Date(job.date_reported).toLocaleDateString() : '--'}</p>
-                </div>
               </div>
+              {/* Expanded content - Adjuster & More Claim Info */}
+              {expandedPanels.insuranceClaim && (
+                <div className="mt-3 pt-3 border-t border-slate-700/50">
+                  <p className="text-xs text-slate-400 mb-2 font-medium">Adjuster Information</p>
+                  <div className="grid grid-cols-4 gap-x-4 gap-y-2 text-sm">
+                    <div>
+                      <p className="text-slate-500 text-xs">Adjuster Name</p>
+                      <p className="text-slate-200">{displayValue(job.adjuster_name || job.property?.adjuster_name)}</p>
+                    </div>
+                    <div>
+                      <p className="text-slate-500 text-xs">Adjuster Phone</p>
+                      <p className="text-cyan-400">{displayValue(job.adjuster_phone || job.property?.adjuster_phone)}</p>
+                    </div>
+                    <div className="col-span-2">
+                      <p className="text-slate-500 text-xs">Adjuster Email</p>
+                      <p className="text-cyan-400 truncate">{displayValue(job.adjuster_email || job.property?.adjuster_email)}</p>
+                    </div>
+                  </div>
+                  <p className="text-xs text-slate-400 mb-2 mt-3 font-medium">Claim Details</p>
+                  <div className="grid grid-cols-4 gap-x-4 gap-y-2 text-sm">
+                    <div>
+                      <p className="text-slate-500 text-xs">Deductible</p>
+                      <p className="text-slate-200">{job.deductible ? formatCurrency(job.deductible) : '--'}</p>
+                    </div>
+                    <div>
+                      <p className="text-slate-500 text-xs">Claim Type</p>
+                      <p className="text-slate-200 capitalize">{displayValue(job.claim_type?.replace('_', ' '))}</p>
+                    </div>
+                    <div>
+                      <p className="text-slate-500 text-xs">Severity</p>
+                      <p className="text-slate-200 capitalize">{displayValue(job.severity)}</p>
+                    </div>
+                    <div>
+                      <p className="text-slate-500 text-xs">Date Reported</p>
+                      <p className="text-slate-200">{job.date_reported ? new Date(job.date_reported).toLocaleDateString() : '--'}</p>
+                    </div>
+                  </div>
+                </div>
+              )}
             </div>
 
             {/* Team & Dates Row */}
             <div className="grid grid-cols-2 gap-3">
               {/* Team Assignment */}
-              <div className="bg-slate-800/50 backdrop-blur-sm rounded-xl border border-slate-700/50 p-3">
-                <div className="flex items-center justify-between mb-2">
-                  <h2 className="text-xs font-semibold text-white flex items-center gap-2">
-                    <User className="w-3.5 h-3.5 text-cyan-400" />
+              <div className="bg-slate-800/50 backdrop-blur-sm rounded-xl border border-slate-700/50 p-4">
+                <div className="flex items-center justify-between mb-3">
+                  <h2 className="text-sm font-semibold text-white flex items-center gap-2">
+                    <User className="w-4 h-4 text-cyan-400" />
                     Team
                   </h2>
+                  <button
+                    onClick={() => togglePanel('team')}
+                    className="text-slate-400 hover:text-white transition-colors"
+                  >
+                    {expandedPanels.team ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
+                  </button>
                 </div>
-                <div className="space-y-1.5 text-xs">
+                <div className="space-y-2 text-sm">
                   <div className="flex justify-between">
-                    <span className="text-slate-500">Sales Rep</span>
+                    <span className="text-slate-500 text-xs">Sales Rep</span>
                     <span className="text-slate-200">{displayValue(job.sales_rep_name)}</span>
                   </div>
                   <div className="flex justify-between">
-                    <span className="text-slate-500">Project Manager</span>
+                    <span className="text-slate-500 text-xs">Project Manager</span>
                     <span className="text-slate-200">{displayValue(job.project_manager_name)}</span>
                   </div>
                   <div className="flex justify-between">
-                    <span className="text-slate-500">Estimator</span>
+                    <span className="text-slate-500 text-xs">Estimator</span>
                     <span className="text-slate-200">{displayValue(job.estimator_name)}</span>
                   </div>
                 </div>
+                {expandedPanels.team && (
+                  <div className="mt-3 pt-3 border-t border-slate-700/50 space-y-2 text-sm">
+                    <div className="flex justify-between">
+                      <span className="text-slate-500 text-xs">Production Mgr</span>
+                      <span className="text-slate-200">--</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-slate-500 text-xs">Coordinator</span>
+                      <span className="text-slate-200">--</span>
+                    </div>
+                  </div>
+                )}
               </div>
 
               {/* Important Dates */}
-              <div className="bg-slate-800/50 backdrop-blur-sm rounded-xl border border-slate-700/50 p-3">
-                <div className="flex items-center justify-between mb-2">
-                  <h2 className="text-xs font-semibold text-white flex items-center gap-2">
-                    <Calendar className="w-3.5 h-3.5 text-cyan-400" />
+              <div className="bg-slate-800/50 backdrop-blur-sm rounded-xl border border-slate-700/50 p-4">
+                <div className="flex items-center justify-between mb-3">
+                  <h2 className="text-sm font-semibold text-white flex items-center gap-2">
+                    <Calendar className="w-4 h-4 text-cyan-400" />
                     Key Dates
                   </h2>
+                  <button
+                    onClick={() => togglePanel('keyDates')}
+                    className="text-slate-400 hover:text-white transition-colors"
+                  >
+                    {expandedPanels.keyDates ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
+                  </button>
                 </div>
-                <div className="space-y-1.5 text-xs">
+                <div className="space-y-2 text-sm">
                   <div className="flex justify-between">
-                    <span className="text-slate-500">Appointment</span>
+                    <span className="text-slate-500 text-xs">Appointment</span>
                     <span className="text-slate-200">{job.date_appointment ? new Date(job.date_appointment).toLocaleDateString() : '--'}</span>
                   </div>
                   <div className="flex justify-between">
-                    <span className="text-slate-500">Sold Date</span>
+                    <span className="text-slate-500 text-xs">Sold Date</span>
                     <span className="text-slate-200">{job.date_sold ? new Date(job.date_sold).toLocaleDateString() : '--'}</span>
                   </div>
                   <div className="flex justify-between">
-                    <span className="text-slate-500">Start Date</span>
+                    <span className="text-slate-500 text-xs">Start Date</span>
                     <span className="text-slate-200">{job.date_started ? new Date(job.date_started).toLocaleDateString() : '--'}</span>
                   </div>
                 </div>
+                {expandedPanels.keyDates && (
+                  <div className="mt-3 pt-3 border-t border-slate-700/50 space-y-2 text-sm">
+                    <div className="flex justify-between">
+                      <span className="text-slate-500 text-xs">Target Start</span>
+                      <span className="text-slate-200">{job.target_start_date ? new Date(job.target_start_date).toLocaleDateString() : '--'}</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-slate-500 text-xs">Target Complete</span>
+                      <span className="text-slate-200">{job.target_completion_date ? new Date(job.target_completion_date).toLocaleDateString() : '--'}</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-slate-500 text-xs">Completed</span>
+                      <span className="text-slate-200">{job.date_completed ? new Date(job.date_completed).toLocaleDateString() : '--'}</span>
+                    </div>
+                  </div>
+                )}
               </div>
             </div>
 
-            {/* Roofing Details & Permit Row */}
-            <div className="grid grid-cols-2 gap-3">
-              {/* Roofing Details */}
-              <div className="bg-slate-800/50 backdrop-blur-sm rounded-xl border border-slate-700/50 p-3">
-                <div className="flex items-center justify-between mb-2">
-                  <h2 className="text-xs font-semibold text-white flex items-center gap-2">
-                    <Building2 className="w-3.5 h-3.5 text-cyan-400" />
-                    Roof Details
-                  </h2>
+            {/* Permit Info */}
+            <div className="bg-slate-800/50 backdrop-blur-sm rounded-xl border border-slate-700/50 p-4">
+              <div className="flex items-center justify-between mb-3">
+                <h2 className="text-sm font-semibold text-white flex items-center gap-2">
+                  <FileText className="w-4 h-4 text-cyan-400" />
+                  Permit
+                </h2>
+                <button
+                  onClick={() => togglePanel('permit')}
+                  className="text-slate-400 hover:text-white transition-colors"
+                >
+                  {expandedPanels.permit ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
+                </button>
+              </div>
+              <div className="grid grid-cols-4 gap-x-4 gap-y-2 text-sm">
+                <div>
+                  <p className="text-slate-500 text-xs">Permit #</p>
+                  <p className="text-slate-200">{displayValue(job.permit_number)}</p>
                 </div>
-                <div className="space-y-1.5 text-xs">
-                  <div className="flex justify-between">
-                    <span className="text-slate-500">Roof Type</span>
-                    <span className="text-slate-200">{displayValue(job.roof_type)}</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="text-slate-500">Squares</span>
-                    <span className="text-slate-200">{job.roof_squares ? `${job.roof_squares} SQ` : '--'}</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="text-slate-500">Pitch</span>
-                    <span className="text-slate-200">{displayValue(job.roof_pitch)}</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="text-slate-500">Shingle Color</span>
-                    <span className="text-slate-200">{displayValue(job.shingle_color)}</span>
-                  </div>
+                <div>
+                  <p className="text-slate-500 text-xs">Status</p>
+                  <p className="text-slate-200">{displayValue(job.permit_status)}</p>
                 </div>
               </div>
-
-              {/* Permit Info */}
-              <div className="bg-slate-800/50 backdrop-blur-sm rounded-xl border border-slate-700/50 p-3">
-                <div className="flex items-center justify-between mb-2">
-                  <h2 className="text-xs font-semibold text-white flex items-center gap-2">
-                    <FileText className="w-3.5 h-3.5 text-cyan-400" />
-                    Permit
-                  </h2>
-                </div>
-                <div className="space-y-1.5 text-xs">
-                  <div className="flex justify-between">
-                    <span className="text-slate-500">Permit #</span>
-                    <span className="text-slate-200">{displayValue(job.permit_number)}</span>
+              {expandedPanels.permit && (
+                <div className="mt-3 pt-3 border-t border-slate-700/50 grid grid-cols-4 gap-x-4 gap-y-2 text-sm">
+                  <div>
+                    <p className="text-slate-500 text-xs">Jurisdiction</p>
+                    <p className="text-slate-200">--</p>
                   </div>
-                  <div className="flex justify-between">
-                    <span className="text-slate-500">Status</span>
-                    <span className="text-slate-200">{displayValue(job.permit_status)}</span>
+                  <div>
+                    <p className="text-slate-500 text-xs">Permit Fee</p>
+                    <p className="text-slate-200">--</p>
+                  </div>
+                  <div>
+                    <p className="text-slate-500 text-xs">Submitted</p>
+                    <p className="text-slate-200">--</p>
+                  </div>
+                  <div>
+                    <p className="text-slate-500 text-xs">Approved</p>
+                    <p className="text-slate-200">--</p>
                   </div>
                 </div>
-              </div>
+              )}
             </div>
 
-            {/* Financials - Compact Single Row */}
-            <div className="bg-slate-800/50 backdrop-blur-sm rounded-xl border border-slate-700/50 p-3">
-              <div className="flex items-center justify-between mb-2">
-                <h2 className="text-xs font-semibold text-white flex items-center gap-2">
-                  <DollarSign className="w-3.5 h-3.5 text-cyan-400" />
+            {/* Financials */}
+            <div className="bg-slate-800/50 backdrop-blur-sm rounded-xl border border-slate-700/50 p-4">
+              <div className="flex items-center justify-between mb-3">
+                <h2 className="text-sm font-semibold text-white flex items-center gap-2">
+                  <DollarSign className="w-4 h-4 text-cyan-400" />
                   Financials
                 </h2>
-                <button className="text-xs text-cyan-400 hover:text-cyan-300">View Details</button>
+                <button
+                  onClick={() => togglePanel('financials')}
+                  className="text-slate-400 hover:text-white transition-colors"
+                >
+                  {expandedPanels.financials ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
+                </button>
               </div>
 
-              <div className="grid grid-cols-6 gap-1.5">
-                <div className="bg-slate-900/50 rounded-lg p-1.5 text-center">
-                  <p className="text-[10px] text-slate-500">Estimate</p>
-                  <p className="text-xs font-bold text-white">{formatCurrency(job.estimated_total)}</p>
+              <div className="grid grid-cols-6 gap-2">
+                <div className="bg-slate-900/50 rounded-lg p-2 text-center">
+                  <p className="text-xs text-slate-500">Estimate</p>
+                  <p className="text-sm font-bold text-white">{formatCurrency(job.estimated_total)}</p>
                 </div>
-                <div className="bg-slate-900/50 rounded-lg p-1.5 text-center">
-                  <p className="text-[10px] text-slate-500">Approved</p>
-                  <p className="text-xs font-bold text-cyan-400">{formatCurrency(job.approved_amount)}</p>
+                <div className="bg-slate-900/50 rounded-lg p-2 text-center">
+                  <p className="text-xs text-slate-500">Approved</p>
+                  <p className="text-sm font-bold text-cyan-400">{formatCurrency(job.approved_amount)}</p>
                 </div>
-                <div className="bg-slate-900/50 rounded-lg p-1.5 text-center">
-                  <p className="text-[10px] text-slate-500">Contract</p>
-                  <p className="text-xs font-bold text-white">{job.contract_amount ? formatCurrency(job.contract_amount) : '--'}</p>
+                <div className="bg-slate-900/50 rounded-lg p-2 text-center">
+                  <p className="text-xs text-slate-500">Contract</p>
+                  <p className="text-sm font-bold text-white">{job.contract_amount ? formatCurrency(job.contract_amount) : '--'}</p>
                 </div>
-                <div className="bg-slate-900/50 rounded-lg p-1.5 text-center">
-                  <p className="text-[10px] text-slate-500">Invoiced</p>
-                  <p className="text-xs font-bold text-white">{formatCurrency(invoiced)}</p>
+                <div className="bg-slate-900/50 rounded-lg p-2 text-center">
+                  <p className="text-xs text-slate-500">Invoiced</p>
+                  <p className="text-sm font-bold text-white">{formatCurrency(invoiced)}</p>
                 </div>
-                <div className="bg-emerald-500/10 rounded-lg p-1.5 text-center border border-emerald-500/20">
-                  <p className="text-[10px] text-emerald-400">Paid</p>
-                  <p className="text-xs font-bold text-emerald-400">{formatCurrency(paid)}</p>
+                <div className="bg-emerald-500/10 rounded-lg p-2 text-center border border-emerald-500/20">
+                  <p className="text-xs text-emerald-400">Paid</p>
+                  <p className="text-sm font-bold text-emerald-400">{formatCurrency(paid)}</p>
                 </div>
-                <div className="bg-slate-900/50 rounded-lg p-1.5 text-center">
-                  <p className="text-[10px] text-slate-500">Balance</p>
-                  <p className="text-xs font-bold text-white">{formatCurrency(balance)}</p>
+                <div className="bg-slate-900/50 rounded-lg p-2 text-center">
+                  <p className="text-xs text-slate-500">Balance</p>
+                  <p className="text-sm font-bold text-white">{formatCurrency(balance)}</p>
                 </div>
               </div>
 
-              {/* Extended financial details */}
-              <div className="grid grid-cols-4 gap-2 mt-2 text-xs">
-                <div>
-                  <p className="text-slate-500">Material Cost</p>
-                  <p className="text-slate-200">{job.material_cost ? formatCurrency(job.material_cost) : '--'}</p>
+              {/* Expanded financial details */}
+              {expandedPanels.financials && (
+                <div className="mt-3 pt-3 border-t border-slate-700/50 grid grid-cols-4 gap-x-4 gap-y-2 text-sm">
+                  <div>
+                    <p className="text-slate-500 text-xs">Material Cost</p>
+                    <p className="text-slate-200">{job.material_cost ? formatCurrency(job.material_cost) : '--'}</p>
+                  </div>
+                  <div>
+                    <p className="text-slate-500 text-xs">Labor Cost</p>
+                    <p className="text-slate-200">{job.labor_cost ? formatCurrency(job.labor_cost) : '--'}</p>
+                  </div>
+                  <div>
+                    <p className="text-slate-500 text-xs">Deductible</p>
+                    <p className="text-slate-200">{job.deductible ? formatCurrency(job.deductible) : '--'}</p>
+                  </div>
+                  <div>
+                    <p className="text-slate-500 text-xs">Supplement</p>
+                    <p className="text-slate-200">{job.supplement_amount ? formatCurrency(job.supplement_amount) : '--'}</p>
+                  </div>
                 </div>
-                <div>
-                  <p className="text-slate-500">Labor Cost</p>
-                  <p className="text-slate-200">{job.labor_cost ? formatCurrency(job.labor_cost) : '--'}</p>
-                </div>
-                <div>
-                  <p className="text-slate-500">Deductible</p>
-                  <p className="text-slate-200">{job.deductible ? formatCurrency(job.deductible) : '--'}</p>
-                </div>
-                <div>
-                  <p className="text-slate-500">Supplement</p>
-                  <p className="text-slate-200">{job.supplement_amount ? formatCurrency(job.supplement_amount) : '--'}</p>
-                </div>
-              </div>
+              )}
             </div>
 
             {/* Quick Access - Files/Photos */}
-            <div className="bg-slate-800/50 backdrop-blur-sm rounded-xl border border-slate-700/50 p-3">
+            <div className="bg-slate-800/50 backdrop-blur-sm rounded-xl border border-slate-700/50 p-4">
               <div className="flex items-center gap-3">
                 <button
                   onClick={() => setNotesFilesTab('files')}
-                  className="flex-1 flex items-center justify-center gap-2 py-1.5 bg-slate-700/50 rounded-lg text-slate-300 hover:bg-slate-700 text-xs"
+                  className="flex-1 flex items-center justify-center gap-2 py-2 bg-slate-700/50 rounded-lg text-slate-300 hover:bg-slate-700 text-sm"
                 >
-                  <FileText className="w-3.5 h-3.5" />
+                  <FileText className="w-4 h-4" />
                   Files
                 </button>
                 <button
                   onClick={() => setNotesFilesTab('photos')}
-                  className="flex-1 flex items-center justify-center gap-2 py-1.5 bg-slate-700/50 rounded-lg text-slate-300 hover:bg-slate-700 text-xs"
+                  className="flex-1 flex items-center justify-center gap-2 py-2 bg-slate-700/50 rounded-lg text-slate-300 hover:bg-slate-700 text-sm"
                 >
-                  <ImageIcon className="w-3.5 h-3.5" />
+                  <ImageIcon className="w-4 h-4" />
                   Photos
                 </button>
-                <button className="flex items-center gap-2 px-3 py-1.5 bg-cyan-600/20 text-cyan-400 rounded-lg hover:bg-cyan-600/30 text-xs border border-cyan-500/30">
-                  <Upload className="w-3.5 h-3.5" />
+                <button className="flex items-center gap-2 px-4 py-2 bg-cyan-600/20 text-cyan-400 rounded-lg hover:bg-cyan-600/30 text-sm border border-cyan-500/30">
+                  <Upload className="w-4 h-4" />
                   Upload
                 </button>
               </div>
