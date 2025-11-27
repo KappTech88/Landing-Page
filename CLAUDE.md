@@ -2,7 +2,7 @@
 
 ## Project Overview
 
-**Estimate Reliance** is a comprehensive web platform for the insurance restoration industry, providing professional estimate and supplement services with AI-powered business development tools.
+**Estimate Reliance** is a comprehensive web platform for the insurance restoration industry, providing professional estimate and supplement services with AI-powered business development tools and a full-featured CRM dashboard.
 
 **Live Production**: Deployed on Vercel
 **Repository**: Landing-Page
@@ -10,7 +10,7 @@
 
 ---
 
-## ⚠️ CRITICAL RULES FOR AI CODERS ⚠️
+## CRITICAL RULES FOR AI CODERS
 
 **These rules are MANDATORY and enforced by hooks. Violations will be blocked.**
 
@@ -28,7 +28,7 @@
 - Let the owner review and merge PRs
 
 **Hooks Location**: `.claude/` directory
-**Hook Scripts**: `pre-bash-hook.sh`, `pre-edit-hook.sh`, `pre-write-hook.sh`
+**Hook Scripts**: `pre-bash-hook.sh`, `pre-edit-hook.sh`, `pre-write-hook.sh`, `post-commit-hook.sh`, `stop-hook-git-check.sh`
 
 ---
 
@@ -44,12 +44,14 @@
 - **3D/Graphics**: Three.js, @react-three/fiber, @react-three/drei
 - **Smooth Scroll**: Lenis 1.3.15
 - **Particles**: @tsparticles
+- **Tilt Effects**: react-parallax-tilt
+- **Excel Parsing**: xlsx 0.18.5
 
 ### Backend & Database
 - **Database**: Supabase (PostgreSQL)
 - **Auth**: Supabase Auth
 - **Storage**: Supabase Storage
-- **ORM/Client**: @supabase/supabase-js 2.39.0
+- **ORM/Client**: @supabase/supabase-js 2.39.0, @supabase/ssr 0.0.10
 
 ### AI Services
 - **Primary AI**: Google Gemini (@google/genai 1.30.0)
@@ -80,8 +82,40 @@
 ├── tsconfig.json           # TypeScript configuration
 │
 ├── /components/            # React components
-│   ├── /Labs/              # Labs platform tools
-│   │   ├── LabsMenu.tsx
+│   │
+│   ├── /Dashboard/         # CRM Dashboard System
+│   │   ├── DashboardLayout.tsx     # Main dashboard shell & navigation
+│   │   ├── DashboardHome.tsx       # Dashboard overview/home
+│   │   ├── JobsList.tsx            # Jobs list view with filters
+│   │   ├── JobDetail.tsx           # Individual job detail view
+│   │   │
+│   │   ├── /JobDetail/Communications/  # Job communications system
+│   │   │   ├── CommunicationsPanel.tsx # Main panel container
+│   │   │   ├── NotesList.tsx          # Notes list display
+│   │   │   ├── NoteItem.tsx           # Individual note component
+│   │   │   ├── NoteInput.tsx          # Note input with mentions
+│   │   │   └── index.ts               # Barrel export
+│   │   │
+│   │   ├── /Settings/              # Dashboard settings
+│   │   │   ├── DashboardSettings.tsx       # Main settings container
+│   │   │   ├── MacroBuilder.tsx            # Pricing macro builder
+│   │   │   ├── ProductionPricingSettings.tsx  # Production pricing config
+│   │   │   ├── WorkOrderPricingList.tsx    # Work order pricing
+│   │   │   ├── VendorManagement.tsx        # Vendor/subcontractor management
+│   │   │   └── XactimatePricing.tsx        # Xactimate line item pricing
+│   │   │
+│   │   └── /shared/                # Shared dashboard components
+│   │       ├── ProgressBar.tsx
+│   │       ├── StatusBadge.tsx
+│   │       └── UserAvatar.tsx
+│   │
+│   ├── /EstimateBuilder/   # Estimate creation tool
+│   │   ├── EstimateBuilder.tsx     # Main estimate builder
+│   │   └── EstimateImport.tsx      # Excel/Xactimate import
+│   │
+│   ├── /Labs/              # AI creative tools platform
+│   │   ├── Labs.tsx                # Labs main component
+│   │   ├── LabsMenu.tsx            # Labs navigation menu
 │   │   ├── LogoStudio.tsx
 │   │   ├── BusinessCardStudio.tsx
 │   │   ├── YardSignStudio.tsx
@@ -121,13 +155,15 @@
 ├── /services/              # Business logic services
 │   ├── geminiService.ts    # Gemini AI integration
 │   ├── grokService.ts      # Grok AI integration (planned)
-│   └── documentRequestService.ts  # Document request handling
+│   ├── documentRequestService.ts  # Document request handling
+│   ├── excelService.ts     # Xactimate Excel parsing
+│   └── pricingService.ts   # Pricing database operations
 │
 ├── /lib/                   # Shared utilities
 │   └── supabase.ts         # Supabase client & helpers
 │
 ├── /database/              # Database schema & docs
-│   ├── /schemas/           # SQL migration files (001-010)
+│   ├── /schemas/           # SQL migration files (001-012)
 │   ├── /docs/              # Database documentation
 │   ├── /examples/          # Seed data & sample queries
 │   ├── COMPLETE_SCHEMA.sql
@@ -135,6 +171,14 @@
 │
 ├── /n8n-workflows/         # n8n automation workflows
 │   └── document-request-notifications.json
+│
+├── /.claude/               # Claude Code hooks & settings
+│   ├── settings.json       # Hook configuration
+│   ├── pre-bash-hook.sh
+│   ├── pre-edit-hook.sh
+│   ├── pre-write-hook.sh
+│   ├── post-commit-hook.sh
+│   └── stop-hook-git-check.sh
 │
 └── docker-compose.n8n.yml  # n8n Docker configuration
 ```
@@ -145,6 +189,7 @@
 
 The app uses a state-based routing system via `AppView` enum:
 
+### Public/Landing Views
 | View | Component | Description |
 |------|-----------|-------------|
 | `LANDING` | App.tsx (default) | Homepage with hero and service cards |
@@ -158,6 +203,23 @@ The app uses a state-based routing system via `AppView` enum:
 | `LABS` | Labs | AI creative tools platform |
 | `PORTAL` | PortalLogin | Partner login |
 | `REGISTER` | PartnerRegistration | Partner registration |
+| `ESTIMATE_BUILDER` | EstimateBuilder | Standalone estimate builder |
+
+### Dashboard Views (Authenticated)
+| View | Component | Description |
+|------|-----------|-------------|
+| `DASHBOARD` | DashboardLayout | Main dashboard shell |
+| `DASHBOARD_HOME` | DashboardHome | Dashboard overview |
+| `DASHBOARD_CONTACTS` | (Planned) | Contact/customer management |
+| `DASHBOARD_JOBS` | JobsList | Jobs list with filters |
+| `DASHBOARD_JOB_DETAIL` | JobDetail | Individual job view |
+| `DASHBOARD_ESTIMATES` | EstimateBuilder | Estimate builder in dashboard |
+| `DASHBOARD_CALENDAR` | (Planned) | Calendar/scheduling |
+| `DASHBOARD_INBOX` | (Planned) | Messages/notifications |
+| `DASHBOARD_TASKS` | (Planned) | Task management |
+| `DASHBOARD_WORKFLOWS` | (Planned) | Workflow automation |
+| `DASHBOARD_REPORTS` | (Planned) | Reports & analytics |
+| `DASHBOARD_SETTINGS` | DashboardSettings | Settings management |
 
 ---
 
@@ -180,26 +242,54 @@ The app uses a state-based routing system via `AppView` enum:
 - Row Level Security (RLS) enforces access control
 - Users can belong to multiple organizations
 
-### Core Tables
+### Core Tables (12 Schema Files)
 1. **001-init.sql**: organizations, users, roles, user_organization_roles
-2. **002-claims.sql**: claims, properties, claim_contractors
-3. **003-estimates.sql**: estimates, estimate_line_items, materials, labor
-4. **004-photos.sql**: photos, photo_albums, documents
-5. **005-invoices.sql**: invoices, invoice_line_items, payments
-6. **006-insurers.sql**: insurance_companies, insurance_adjusters
-7. **007-status-history.sql**: status_history, activity_log, notes, notifications
-8. **008-rls-policies.sql**: Row Level Security policies
-9. **009-document-requests.sql**: Document request submissions
-10. **010-notification-queue.sql**: Email notification queue
+2. **002-contacts.sql**: contacts (customers, leads, vendors)
+3. **003-jobs.sql**: jobs (central work entity)
+4. **004-claims.sql**: claims, properties, claim_contractors
+5. **005-estimates.sql**: estimates, estimate_line_items
+6. **006-production.sql**: crews, schedules, production tracking
+7. **007-materials.sql**: suppliers, material_orders, inventory
+8. **008-finances.sql**: invoices, payments, financial tracking
+9. **009-documents.sql**: photos, documents, albums
+10. **010-communications.sql**: activity_log, notes, notifications
+11. **011-production-pricing.sql**: xactimate_categories, xactimate_line_items, pricing_macros, work_order_pricing, vendor_labor_rates, vendor_material_pricing
+12. **012-job-notes.sql**: job_notes, job_note_mentions, job_access, job_team_members
 
 ### Key Types (from types.ts)
 
 ```typescript
-// Claim Status Workflow (14 stages)
-type ClaimStatus = 'open' | 'assigned' | 'assessment_scheduled' |
-  'assessment_complete' | 'estimate_in_progress' | 'estimate_submitted' |
-  'approved' | 'work_in_progress' | 'work_complete' | 'final_inspection' |
-  'closed' | 'cancelled' | 'denied';
+// Job Status Workflow (16 stages)
+type JobStatus =
+  | 'lead' | 'appointment_set' | 'quoted' | 'negotiating'
+  | 'sold' | 'pending_permit' | 'permit_approved' | 'materials_ordered'
+  | 'scheduled' | 'in_progress' | 'on_hold' | 'punch_list'
+  | 'complete' | 'closed' | 'cancelled' | 'lost';
+
+// Claim Status Workflow (13 stages)
+type ClaimStatus =
+  | 'open' | 'assigned' | 'assessment_scheduled' | 'assessment_complete'
+  | 'estimate_in_progress' | 'estimate_submitted' | 'approved'
+  | 'work_in_progress' | 'work_complete' | 'final_inspection'
+  | 'closed' | 'cancelled' | 'denied';
+
+// Job Types
+type JobType = 'roofing' | 'siding' | 'gutters' | 'windows' | 'doors' |
+  'painting' | 'decking' | 'fencing' | 'insulation' | 'ventilation' |
+  'general' | 'other';
+
+// Job Categories
+type JobCategory = 'residential_retail' | 'residential_insurance' | 'commercial';
+
+// Contact Types
+type ContactType = 'lead' | 'prospect' | 'customer' | 'past_customer' | 'vendor' | 'other';
+
+// Note Types (for job communications)
+type NoteType = 'general' | 'mention' | 'reply' | 'system' | 'status_change';
+
+// Units of Measure (for pricing)
+type UnitOfMeasure = 'SF' | 'SQ' | 'SY' | 'LF' | 'EA' | 'HR' | 'DA' | 'WK' |
+  'MO' | 'BDL' | 'ROL' | 'PC' | 'GAL' | 'CF' | 'CY' | 'TON' | 'LS';
 
 // Subscription Tiers
 type SubscriptionTier = 'free' | 'basic' | 'professional' | 'enterprise';
@@ -210,7 +300,7 @@ type PropertyType = 'residential' | 'commercial' | 'multi_family' | 'industrial'
 
 ---
 
-## AI Service Integration
+## Service Functions
 
 ### Gemini Service (`services/geminiService.ts`)
 
@@ -232,6 +322,42 @@ generateProGraphics(prompt: string, assetType: string, imageBase64?: string, asp
 
 // Video Generation (Veo 3.1)
 generateVeoVideo(imageBase64: string, prompt?: string): Promise<string>
+```
+
+### Excel Service (`services/excelService.ts`)
+
+```typescript
+// Parse Xactimate Excel export
+parseXactimateExcel(file: File): Promise<ParsedEstimate>
+
+// Extract line items from Excel
+extractLineItems(workbook: XLSX.WorkBook): XactimateLineItem[]
+
+// Validate parsed data
+validateEstimateData(data: ParsedEstimate): ValidationResult
+```
+
+### Pricing Service (`services/pricingService.ts`)
+
+```typescript
+// Xactimate Categories
+getXactimateCategories(organizationId: string): Promise<XactimateCategory[]>
+createXactimateCategory(category: XactimateCategory): Promise<XactimateCategory>
+
+// Xactimate Line Items
+getXactimateLineItems(organizationId: string, categoryId?: string): Promise<XactimateLineItem[]>
+upsertXactimateLineItem(item: XactimateLineItem): Promise<XactimateLineItem>
+
+// Pricing Macros
+getPricingMacros(organizationId: string): Promise<PricingMacro[]>
+createPricingMacro(macro: PricingMacro): Promise<PricingMacro>
+
+// Work Order Pricing
+getWorkOrderPricing(organizationId: string): Promise<WorkOrderPricing[]>
+
+// Vendor Rates
+getVendorLaborRates(organizationId: string, crewId?: string): Promise<VendorLaborRate[]>
+getVendorMaterialPricing(organizationId: string, supplierId?: string): Promise<VendorMaterialPricing[]>
 ```
 
 ---
@@ -301,6 +427,7 @@ VITE_ENV=development
 - Use strict typing with interfaces from `types.ts`
 - Prefer `const` over `let`
 - Use async/await over Promises
+- Export types explicitly from types.ts
 
 ### React Components
 - Functional components with hooks
@@ -394,11 +521,17 @@ Add all `VITE_*` variables in Vercel Dashboard > Settings > Environment Variable
 - Follow glass-morphism design language
 - Test responsive behavior at mobile (375px) and desktop (1920px)
 - Preserve existing animation classes
+- Dashboard views use a different layout (no background effects)
+
+### Dashboard vs Landing Page
+- **Landing pages**: Full visual effects (particles, cursor trail, floating elements)
+- **Dashboard views**: Clean, functional UI without effects for performance
+- Dashboard detection: `view.toString().startsWith('DASHBOARD')`
 
 ### Current Limitations (Frontend Only)
-- Form submissions require backend integration
+- Some dashboard views are planned but not implemented (Calendar, Tasks, etc.)
 - AI generation in Labs needs API keys configured
-- User authentication is UI-ready but needs Supabase Auth setup
+- User authentication is UI-ready but needs full Supabase Auth setup
 - Payment processing planned but not implemented
 
 ---
@@ -412,12 +545,34 @@ Add all `VITE_*` variables in Vercel Dashboard > Settings > Environment Variable
 | Database types | `types.ts` |
 | Supabase queries | `/lib/supabase.ts` |
 | AI features | `/services/geminiService.ts` |
+| Excel/Xactimate parsing | `/services/excelService.ts` |
+| Pricing operations | `/services/pricingService.ts` |
 | Styling | `index.html` (CSS), component-level Tailwind |
 | Environment vars | `.env.local`, `.env.example` |
 | Database schema | `/database/schemas/` |
+| Dashboard components | `/components/Dashboard/` |
+| Settings/Pricing UI | `/components/Dashboard/Settings/` |
 
 ---
 
-*Last Updated: 2025-11-26*
-*Database Version: 1.0.0*
-*Application Version: 0.0.0 (Phase 1 Complete)*
+## Recent Changes (as of 2025-11-27)
+
+### New Features
+- **Dashboard System**: Full CRM dashboard with jobs, settings, and team features
+- **Job Notes & Communications**: Threaded notes with @mentions and replies
+- **Estimate Builder**: Import Xactimate Excel exports, build estimates visually
+- **Production Pricing**: Xactimate line items, pricing macros, vendor management
+- **Excel Service**: Parse and import Xactimate spreadsheet exports
+
+### New Schema Files
+- `011-production-pricing.sql`: Xactimate categories, line items, macros, work orders
+- `012-job-notes.sql`: Job notes, mentions, access control, team members
+
+### New Dependencies
+- `xlsx`: Excel file parsing for Xactimate imports
+
+---
+
+*Last Updated: 2025-11-27*
+*Database Version: 1.1.0*
+*Application Version: 0.1.0 (Phase 2 - Dashboard & CRM)*
