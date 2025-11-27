@@ -247,7 +247,7 @@ const JobDetail: React.FC<JobDetailProps> = ({ job = mockJob, onBack, activeTab 
 
   // Banner component shared across tabs
   const BannerSection = () => (
-    <div className="relative h-40 bg-slate-800 overflow-hidden group">
+    <div className="relative h-52 bg-slate-800 overflow-hidden group">
       {bannerImage ? (
         <img
           src={bannerImage}
