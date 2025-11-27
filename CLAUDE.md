@@ -10,6 +10,28 @@
 
 ---
 
+## ⚠️ CRITICAL RULES FOR AI CODERS ⚠️
+
+**These rules are MANDATORY and enforced by hooks. Violations will be blocked.**
+
+### RULE 1: No Changing Data Variables
+- **NEVER** modify data variables, database schemas, or configuration values without explicit user approval
+- **ALWAYS ASK** before creating any new dataset, schema, migration, or data file
+- Protected files include: `.env.*`, `types.ts`, `database/schemas/*`, `supabase.ts`, seed files, migrations
+- When in doubt, **ASK FIRST**
+
+### RULE 2: Never Merge to Main
+- **NEVER** merge any branch into `main` or `master`
+- **NEVER** push directly to `main` or `master`
+- **ONLY** the repository owner (KappTech88) can merge branches to main
+- Always work on feature branches and create Pull Requests
+- Let the owner review and merge PRs
+
+**Hooks Location**: `.claude/` directory
+**Hook Scripts**: `pre-bash-hook.sh`, `pre-edit-hook.sh`, `pre-write-hook.sh`
+
+---
+
 ## Tech Stack
 
 ### Frontend

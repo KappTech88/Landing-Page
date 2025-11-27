@@ -1,0 +1,33 @@
+{
+  "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "Bash",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash /home/user/Landing-Page/.claude/pre-bash-hook.sh \"$TOOL_INPUT\""
+          }
+        ]
+      },
+      {
+        "matcher": "Edit",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash /home/user/Landing-Page/.claude/pre-edit-hook.sh \"$TOOL_INPUT\""
+          }
+        ]
+      },
+      {
+        "matcher": "Write",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash /home/user/Landing-Page/.claude/pre-write-hook.sh \"$TOOL_INPUT\""
+          }
+        ]
+      }
+    ]
+  }
+}
