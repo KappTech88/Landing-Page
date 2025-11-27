@@ -182,7 +182,8 @@ CREATE TABLE roles (
     -- METADATA
     -- ===================
     -- Created by (for custom roles)
-    created_by UUID REFERENCES users(id),
+    -- NOTE: FK constraint added via ALTER TABLE after users table exists
+    created_by UUID,
 
     -- Audit Fields
     created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
@@ -394,6 +395,14 @@ CREATE TRIGGER user_org_roles_update_count
     AFTER INSERT OR UPDATE OR DELETE ON user_organization_roles
     FOR EACH ROW
     EXECUTE FUNCTION update_role_assignment_count();
+
+-- =====================================================
+-- DEFERRED FOREIGN KEY CONSTRAINTS
+-- =====================================================
+-- Add FK constraints that couldn't be created due to table order
+
+ALTER TABLE roles ADD CONSTRAINT roles_created_by_fkey
+    FOREIGN KEY (created_by) REFERENCES users(id);
 
 -- =====================================================
 -- AUTO-UPDATE TIMESTAMP TRIGGER
