@@ -4654,7 +4654,7 @@ CREATE TABLE financing_options (
     minimum_amount DECIMAL(10, 2),
     maximum_amount DECIMAL(12, 2),
 
-    -- Status
+    -- Statu
     is_active BOOLEAN DEFAULT true,
 
     -- Display
