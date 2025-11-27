@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import {
   LayoutDashboard,
   Users,
@@ -10,7 +10,12 @@ import {
   BarChart3,
   Settings,
   Search,
-  Plus
+  Plus,
+  Wrench,
+  ChevronDown,
+  Phone,
+  Building2,
+  Truck
 } from 'lucide-react';
 import { AppView } from '../../types';
 
@@ -22,6 +27,14 @@ interface DashboardLayoutProps {
   tasksCount?: number;
 }
 
+// Sample company contacts (would come from database/vendors)
+const SAMPLE_COMPANY_CONTACTS = [
+  { id: '1', name: 'Mike Johnson', company: 'ABC Roofing Crew', type: 'subcontractor', phone: '(555) 123-4567', email: 'mike@abcroofing.com' },
+  { id: '2', name: 'Carlos Rivera', company: 'Pro Siding Team', type: 'subcontractor', phone: '(555) 234-5678', email: 'carlos@prosiding.com' },
+  { id: '3', name: 'John Smith', company: 'ABC Supply Co.', type: 'supplier', phone: '(555) 111-2222', email: 'john.smith@abcsupply.com' },
+  { id: '4', name: 'Sarah Williams', company: 'SRS Distribution', type: 'supplier', phone: '(555) 333-4444', email: 'sarah@srsdist.com' },
+];
+
 const DashboardLayout: React.FC<DashboardLayoutProps> = ({
   children,
   currentView,
@@ -29,6 +42,8 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({
   inboxCount = 3,
   tasksCount = 5
 }) => {
+  const [toolsOpen, setToolsOpen] = useState(false);
+
   const navItems = [
     { id: AppView.DASHBOARD_HOME, label: 'Dashboard', icon: LayoutDashboard },
     { id: AppView.DASHBOARD_CONTACTS, label: 'Contacts', icon: Users },
@@ -100,6 +115,59 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({
               </button>
             );
           })}
+
+          {/* Tools Dropdown */}
+          <div className="mt-2 pt-2 border-t border-slate-800">
+            <button
+              onClick={() => setToolsOpen(!toolsOpen)}
+              className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg mb-1 transition-all text-left text-slate-400 hover:bg-slate-800/50 hover:text-slate-200"
+            >
+              <Wrench className="w-5 h-5" />
+              <span className="text-sm font-medium flex-1">Tools</span>
+              <ChevronDown className={`w-4 h-4 transition-transform ${toolsOpen ? 'rotate-180' : ''}`} />
+            </button>
+
+            {toolsOpen && (
+              <div className="ml-3 space-y-1">
+                {/* Company Contacts Section */}
+                <div className="px-3 py-2">
+                  <p className="text-xs font-medium text-slate-500 uppercase tracking-wider mb-2">Company Contacts</p>
+                  <div className="space-y-1 max-h-48 overflow-y-auto">
+                    {SAMPLE_COMPANY_CONTACTS.map((contact) => (
+                      <div
+                        key={contact.id}
+                        className="flex items-center gap-2 px-2 py-1.5 rounded-lg hover:bg-slate-800/50 cursor-pointer group"
+                      >
+                        <div className={`w-6 h-6 rounded-full flex items-center justify-center ${
+                          contact.type === 'subcontractor' ? 'bg-orange-900/30' : 'bg-green-900/30'
+                        }`}>
+                          {contact.type === 'subcontractor' ? (
+                            <Building2 className="w-3 h-3 text-orange-400" />
+                          ) : (
+                            <Truck className="w-3 h-3 text-green-400" />
+                          )}
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <p className="text-xs text-slate-300 truncate">{contact.name}</p>
+                          <p className="text-[10px] text-slate-500 truncate">{contact.company}</p>
+                        </div>
+                        <a
+                          href={`tel:${contact.phone}`}
+                          className="p-1 rounded hover:bg-slate-700 opacity-0 group-hover:opacity-100 transition-opacity"
+                          onClick={(e) => e.stopPropagation()}
+                        >
+                          <Phone className="w-3 h-3 text-cyan-400" />
+                        </a>
+                      </div>
+                    ))}
+                  </div>
+                  <p className="text-[10px] text-slate-600 mt-2 text-center">
+                    Contacts populated from Settings &gt; Vendors
+                  </p>
+                </div>
+              </div>
+            )}
+          </div>
         </nav>
 
         {/* User Section */}

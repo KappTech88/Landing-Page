@@ -21,6 +21,7 @@ import DashboardLayout from './components/Dashboard/DashboardLayout';
 import DashboardHome from './components/Dashboard/DashboardHome';
 import JobsList from './components/Dashboard/JobsList';
 import JobDetail from './components/Dashboard/JobDetail';
+import DashboardSettings from './components/Dashboard/Settings/DashboardSettings';
 // Estimate Builder
 import EstimateBuilder from './components/EstimateBuilder';
 import { AppView } from './types';
@@ -480,6 +481,8 @@ const App: React.FC = () => {
           return <JobDetail onBack={() => setView(AppView.DASHBOARD_JOBS)} />;
         case AppView.DASHBOARD_ESTIMATES:
           return <EstimateBuilder onBack={() => setView(AppView.DASHBOARD_HOME)} />;
+        case AppView.DASHBOARD_SETTINGS:
+          return <DashboardSettings />;
         case AppView.DASHBOARD:
         case AppView.DASHBOARD_HOME:
         default:
