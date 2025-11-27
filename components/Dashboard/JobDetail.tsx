@@ -267,14 +267,14 @@ const JobDetail: React.FC<JobDetailProps> = ({ job = mockJob, onBack, activeTab 
       <div className="absolute inset-0 bg-gradient-to-t from-slate-900/90 via-slate-900/40 to-transparent" />
 
       {/* Financial Summary - Top Right */}
-      <div className="absolute top-3 right-3 bg-slate-900/70 backdrop-blur-sm rounded-lg p-3 border border-slate-700/50">
+      <div className="absolute top-2 right-2 sm:top-3 sm:right-3 bg-slate-900/70 backdrop-blur-sm rounded-lg p-2 sm:p-3 border border-slate-700/50">
         <div className="text-right">
-          <p className="text-xs text-slate-400">Job Total</p>
-          <p className="text-lg font-bold text-white">{formatCurrency(totalJobAmount)}</p>
+          <p className="text-[10px] sm:text-xs text-slate-400">Job Total</p>
+          <p className="text-sm sm:text-lg font-bold text-white">{formatCurrency(totalJobAmount)}</p>
         </div>
         <div className="text-right mt-1 pt-1 border-t border-slate-700/50">
-          <p className="text-xs text-slate-400">Amount Due</p>
-          <p className="text-lg font-bold text-cyan-400">{formatCurrency(amountDue)}</p>
+          <p className="text-[10px] sm:text-xs text-slate-400">Amount Due</p>
+          <p className="text-sm sm:text-lg font-bold text-cyan-400">{formatCurrency(amountDue)}</p>
         </div>
       </div>
 
@@ -293,16 +293,16 @@ const JobDetail: React.FC<JobDetailProps> = ({ job = mockJob, onBack, activeTab 
       </label>
 
       {/* Job Title Overlay */}
-      <div className="absolute bottom-0 left-0 right-0 p-4">
+      <div className="absolute bottom-0 left-0 right-0 p-3 sm:p-4">
         <div className="flex items-end justify-between">
-          <div>
-            <h1 className="text-xl font-bold text-white mb-1">
+          <div className="max-w-[70%] sm:max-w-none">
+            <h1 className="text-base sm:text-xl font-bold text-white mb-1 line-clamp-2 sm:line-clamp-none">
               <span className="text-cyan-400">Job:</span> {job.property?.full_address?.split(',')[0]} {job.description}
             </h1>
-            <div className="flex items-center gap-3">
-              <span className="text-emerald-400 font-medium text-sm">{formatStatus(job.status)}</span>
-              <span className="text-slate-400 text-sm">{progress}%</span>
-              <div className="w-24 h-1.5 bg-slate-700 rounded-full overflow-hidden">
+            <div className="flex items-center gap-2 sm:gap-3 flex-wrap">
+              <span className="text-emerald-400 font-medium text-xs sm:text-sm">{formatStatus(job.status)}</span>
+              <span className="text-slate-400 text-xs sm:text-sm">{progress}%</span>
+              <div className="w-16 sm:w-24 h-1.5 bg-slate-700 rounded-full overflow-hidden">
                 <div
                   className="h-full bg-gradient-to-r from-cyan-500 to-emerald-500 rounded-full transition-all"
                   style={{ width: `${progress}%` }}
@@ -321,7 +321,7 @@ const JobDetail: React.FC<JobDetailProps> = ({ job = mockJob, onBack, activeTab 
       <BannerSection />
 
       {/* Main Content - Compact Layout */}
-      <div className="p-4 pt-10">
+      <div className="p-3 sm:p-4 pt-6 sm:pt-10">
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
           {/* Left Column - Job, Property & Claim Info */}
           <div className="space-y-3">
@@ -344,7 +344,7 @@ const JobDetail: React.FC<JobDetailProps> = ({ job = mockJob, onBack, activeTab 
                   </button>
                 </div>
               </div>
-              <div className="grid grid-cols-4 gap-x-4 gap-y-2 text-sm">
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-x-4 gap-y-2 text-sm">
                 <div>
                   <p className="text-slate-500 text-xs">Job #</p>
                   <p className="text-slate-200">{displayValue(job.job_number)}</p>
@@ -364,7 +364,7 @@ const JobDetail: React.FC<JobDetailProps> = ({ job = mockJob, onBack, activeTab 
               </div>
               {/* Expanded content */}
               {expandedPanels.jobInfo && (
-                <div className="mt-3 pt-3 border-t border-slate-700/50 grid grid-cols-4 gap-x-4 gap-y-2 text-sm">
+                <div className="mt-3 pt-3 border-t border-slate-700/50 grid grid-cols-2 sm:grid-cols-4 gap-x-4 gap-y-2 text-sm">
                   <div>
                     <p className="text-slate-500 text-xs">Job Category</p>
                     <p className="text-slate-200 capitalize">{displayValue(job.job_category?.replace('_', ' '))}</p>
@@ -404,18 +404,18 @@ const JobDetail: React.FC<JobDetailProps> = ({ job = mockJob, onBack, activeTab 
                   </button>
                 </div>
               </div>
-              <div className="grid grid-cols-4 gap-x-4 gap-y-2 text-sm">
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-x-4 gap-y-2 text-sm">
                 <div className="col-span-2">
                   <p className="text-slate-500 text-xs">Customer Name</p>
                   <p className="text-slate-200">{displayValue(job.property?.owner_full_name)}</p>
                 </div>
                 <div>
                   <p className="text-slate-500 text-xs">Phone</p>
-                  <p className="text-cyan-400">{displayValue(job.property?.owner_phone)}</p>
+                  <p className="text-cyan-400 text-xs sm:text-sm">{displayValue(job.property?.owner_phone)}</p>
                 </div>
                 <div>
                   <p className="text-slate-500 text-xs">Email</p>
-                  <p className="text-cyan-400 truncate">{displayValue(job.property?.owner_email)}</p>
+                  <p className="text-cyan-400 truncate text-xs sm:text-sm">{displayValue(job.property?.owner_email)}</p>
                 </div>
                 <div className="col-span-2">
                   <p className="text-slate-500 text-xs">Address</p>
@@ -434,7 +434,7 @@ const JobDetail: React.FC<JobDetailProps> = ({ job = mockJob, onBack, activeTab 
               {expandedPanels.customerProperty && (
                 <div className="mt-3 pt-3 border-t border-slate-700/50">
                   <p className="text-xs text-slate-400 mb-2 font-medium">Property Details</p>
-                  <div className="grid grid-cols-4 gap-x-4 gap-y-2 text-sm">
+                  <div className="grid grid-cols-2 sm:grid-cols-4 gap-x-4 gap-y-2 text-sm">
                     <div>
                       <p className="text-slate-500 text-xs">Property Type</p>
                       <p className="text-slate-200 capitalize">{displayValue(job.property?.property_type)}</p>
@@ -453,7 +453,7 @@ const JobDetail: React.FC<JobDetailProps> = ({ job = mockJob, onBack, activeTab 
                     </div>
                   </div>
                   <p className="text-xs text-slate-400 mb-2 mt-3 font-medium">Roof Details</p>
-                  <div className="grid grid-cols-4 gap-x-4 gap-y-2 text-sm">
+                  <div className="grid grid-cols-2 sm:grid-cols-4 gap-x-4 gap-y-2 text-sm">
                     <div>
                       <p className="text-slate-500 text-xs">Roof Type</p>
                       <p className="text-slate-200">{displayValue(job.roof_type)}</p>
@@ -494,7 +494,7 @@ const JobDetail: React.FC<JobDetailProps> = ({ job = mockJob, onBack, activeTab 
                   </button>
                 </div>
               </div>
-              <div className="grid grid-cols-4 gap-x-4 gap-y-2 text-sm">
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-x-4 gap-y-2 text-sm">
                 <div>
                   <p className="text-slate-500 text-xs">Carrier</p>
                   <p className="text-slate-200 truncate">{displayValue(job.property?.insurance_company)}</p>
@@ -516,7 +516,7 @@ const JobDetail: React.FC<JobDetailProps> = ({ job = mockJob, onBack, activeTab 
               {expandedPanels.insuranceClaim && (
                 <div className="mt-3 pt-3 border-t border-slate-700/50">
                   <p className="text-xs text-slate-400 mb-2 font-medium">Adjuster Information</p>
-                  <div className="grid grid-cols-4 gap-x-4 gap-y-2 text-sm">
+                  <div className="grid grid-cols-2 sm:grid-cols-4 gap-x-4 gap-y-2 text-sm">
                     <div>
                       <p className="text-slate-500 text-xs">Adjuster Name</p>
                       <p className="text-slate-200">{displayValue(job.adjuster_name || job.property?.adjuster_name)}</p>
@@ -531,7 +531,7 @@ const JobDetail: React.FC<JobDetailProps> = ({ job = mockJob, onBack, activeTab 
                     </div>
                   </div>
                   <p className="text-xs text-slate-400 mb-2 mt-3 font-medium">Claim Details</p>
-                  <div className="grid grid-cols-4 gap-x-4 gap-y-2 text-sm">
+                  <div className="grid grid-cols-2 sm:grid-cols-4 gap-x-4 gap-y-2 text-sm">
                     <div>
                       <p className="text-slate-500 text-xs">Deductible</p>
                       <p className="text-slate-200">{job.deductible ? formatCurrency(job.deductible) : '--'}</p>
@@ -554,7 +554,7 @@ const JobDetail: React.FC<JobDetailProps> = ({ job = mockJob, onBack, activeTab 
             </div>
 
             {/* Team & Dates Row */}
-            <div className="grid grid-cols-2 gap-3">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               {/* Team Assignment */}
               <div className="bg-slate-800/50 backdrop-blur-sm rounded-xl border border-slate-700/50 p-4">
                 <div className="flex items-center justify-between mb-3">
@@ -658,7 +658,7 @@ const JobDetail: React.FC<JobDetailProps> = ({ job = mockJob, onBack, activeTab 
                   {expandedPanels.permit ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
                 </button>
               </div>
-              <div className="grid grid-cols-4 gap-x-4 gap-y-2 text-sm">
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-x-4 gap-y-2 text-sm">
                 <div>
                   <p className="text-slate-500 text-xs">Permit #</p>
                   <p className="text-slate-200">{displayValue(job.permit_number)}</p>
@@ -669,7 +669,7 @@ const JobDetail: React.FC<JobDetailProps> = ({ job = mockJob, onBack, activeTab 
                 </div>
               </div>
               {expandedPanels.permit && (
-                <div className="mt-3 pt-3 border-t border-slate-700/50 grid grid-cols-4 gap-x-4 gap-y-2 text-sm">
+                <div className="mt-3 pt-3 border-t border-slate-700/50 grid grid-cols-2 sm:grid-cols-4 gap-x-4 gap-y-2 text-sm">
                   <div>
                     <p className="text-slate-500 text-xs">Jurisdiction</p>
                     <p className="text-slate-200">--</p>
@@ -691,24 +691,24 @@ const JobDetail: React.FC<JobDetailProps> = ({ job = mockJob, onBack, activeTab 
             </div>
 
             {/* Quick Access - Files/Photos */}
-            <div className="bg-slate-800/50 backdrop-blur-sm rounded-xl border border-slate-700/50 p-4">
-              <div className="flex items-center gap-3">
+            <div className="bg-slate-800/50 backdrop-blur-sm rounded-xl border border-slate-700/50 p-3 sm:p-4">
+              <div className="flex items-center gap-2 sm:gap-3">
                 <button
                   onClick={() => setNotesFilesTab('files')}
-                  className="flex-1 flex items-center justify-center gap-2 py-2 bg-slate-700/50 rounded-lg text-slate-300 hover:bg-slate-700 text-sm"
+                  className="flex-1 flex items-center justify-center gap-1.5 sm:gap-2 py-2 bg-slate-700/50 rounded-lg text-slate-300 hover:bg-slate-700 text-xs sm:text-sm"
                 >
-                  <FileText className="w-4 h-4" />
+                  <FileText className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
                   Files
                 </button>
                 <button
                   onClick={() => setNotesFilesTab('photos')}
-                  className="flex-1 flex items-center justify-center gap-2 py-2 bg-slate-700/50 rounded-lg text-slate-300 hover:bg-slate-700 text-sm"
+                  className="flex-1 flex items-center justify-center gap-1.5 sm:gap-2 py-2 bg-slate-700/50 rounded-lg text-slate-300 hover:bg-slate-700 text-xs sm:text-sm"
                 >
-                  <ImageIcon className="w-4 h-4" />
+                  <ImageIcon className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
                   Photos
                 </button>
-                <button className="flex items-center gap-2 px-4 py-2 bg-cyan-600/20 text-cyan-400 rounded-lg hover:bg-cyan-600/30 text-sm border border-cyan-500/30">
-                  <Upload className="w-4 h-4" />
+                <button className="flex items-center gap-1.5 sm:gap-2 px-3 sm:px-4 py-2 bg-cyan-600/20 text-cyan-400 rounded-lg hover:bg-cyan-600/30 text-xs sm:text-sm border border-cyan-500/30">
+                  <Upload className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
                   Upload
                 </button>
               </div>

@@ -33,7 +33,9 @@ import {
   Camera,
   MessageSquare,
   History,
-  Paperclip
+  Paperclip,
+  Menu,
+  ChevronRight
 } from 'lucide-react';
 import { AppView } from '../../types';
 
@@ -99,6 +101,7 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({
   const [toolsOpen, setToolsOpen] = useState(false);
   const [contactFilter, setContactFilter] = useState('all');
   const [contactSearchTerm, setContactSearchTerm] = useState('');
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   const navItems = [
     { id: AppView.DASHBOARD_HOME, label: 'Dashboard', icon: LayoutDashboard },
@@ -140,9 +143,18 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({
   return (
     <div className="min-h-screen bg-slate-900 flex flex-col">
       {/* Top Navigation Bar */}
-      <header className="h-14 bg-slate-950 border-b border-slate-800 flex items-center px-4 flex-shrink-0">
+      <header className="h-14 bg-slate-950 border-b border-slate-800 flex items-center px-3 md:px-4 flex-shrink-0">
+        {/* Mobile Hamburger Menu */}
+        <button
+          onClick={() => setMobileMenuOpen(true)}
+          className="md:hidden p-2 mr-2 text-slate-400 hover:text-white hover:bg-slate-800 rounded-lg transition-colors"
+          aria-label="Open menu"
+        >
+          <Menu className="w-5 h-5" />
+        </button>
+
         {/* Logo */}
-        <div className="flex items-center gap-3 mr-6">
+        <div className="flex items-center gap-3 mr-4 md:mr-6">
           <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-cyan-500 to-blue-600 flex items-center justify-center shadow-lg shadow-cyan-500/20">
             <span className="text-white font-bold text-xs">ER</span>
           </div>
@@ -152,8 +164,8 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({
           </div>
         </div>
 
-        {/* Main Navigation */}
-        <nav className="flex-1 flex items-center gap-1 overflow-x-auto scrollbar-hide">
+        {/* Main Navigation - Hidden on mobile */}
+        <nav className="hidden md:flex flex-1 items-center gap-1 overflow-x-auto scrollbar-hide">
           {navItems.map((item) => {
             const Icon = item.icon;
             const active = isActive(item.id);
@@ -168,7 +180,7 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({
                 }`}
               >
                 <Icon className="w-4 h-4" />
-                <span className="text-sm font-medium hidden md:inline">{item.label}</span>
+                <span className="text-sm font-medium hidden lg:inline">{item.label}</span>
                 {item.badge && (
                   <span className={`text-xs px-1.5 py-0.5 rounded-full ${
                     active ? 'bg-cyan-500/30 text-cyan-300' : 'bg-slate-700 text-slate-400'
@@ -180,6 +192,9 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({
             );
           })}
         </nav>
+
+        {/* Spacer for mobile */}
+        <div className="flex-1 md:hidden" />
 
         {/* Right Side - Search, Tools, User */}
         <div className="flex items-center gap-2 ml-4">
@@ -340,11 +355,121 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({
         </div>
       </header>
 
+      {/* Mobile Navigation Drawer */}
+      {mobileMenuOpen && (
+        <>
+          {/* Backdrop */}
+          <div
+            className="fixed inset-0 bg-black/60 backdrop-blur-sm z-40 md:hidden"
+            onClick={() => setMobileMenuOpen(false)}
+          />
+
+          {/* Drawer */}
+          <div className="fixed inset-y-0 left-0 w-72 bg-slate-950 border-r border-slate-800 z-50 md:hidden flex flex-col shadow-2xl animate-slideInLeft">
+            {/* Drawer Header */}
+            <div className="h-14 flex items-center justify-between px-4 border-b border-slate-800">
+              <div className="flex items-center gap-3">
+                <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-cyan-500 to-blue-600 flex items-center justify-center">
+                  <span className="text-white font-bold text-xs">ER</span>
+                </div>
+                <div>
+                  <h1 className="text-white font-semibold text-sm">Estimate Reliance</h1>
+                  <p className="text-slate-500 text-[10px]">CRM Platform</p>
+                </div>
+              </div>
+              <button
+                onClick={() => setMobileMenuOpen(false)}
+                className="p-2 text-slate-400 hover:text-white hover:bg-slate-800 rounded-lg transition-colors"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            {/* Main Navigation */}
+            <nav className="flex-1 p-3 overflow-y-auto">
+              <p className="text-xs font-medium text-slate-500 uppercase tracking-wider px-3 mb-2">Navigation</p>
+              {navItems.map((item) => {
+                const Icon = item.icon;
+                const active = isActive(item.id);
+                return (
+                  <button
+                    key={item.id}
+                    onClick={() => {
+                      onNavigate(item.id);
+                      setMobileMenuOpen(false);
+                    }}
+                    className={`w-full flex items-center gap-3 px-3 py-3 rounded-lg mb-1 transition-all ${
+                      active
+                        ? 'bg-cyan-600/20 text-cyan-400 border border-cyan-500/30'
+                        : 'text-slate-400 hover:bg-slate-800/50 hover:text-slate-200'
+                    }`}
+                  >
+                    <Icon className="w-5 h-5" />
+                    <span className="text-sm font-medium">{item.label}</span>
+                    {item.badge && (
+                      <span className={`ml-auto text-xs px-2 py-0.5 rounded-full ${
+                        active ? 'bg-cyan-500/30 text-cyan-300' : 'bg-slate-700 text-slate-400'
+                      }`}>
+                        {item.badge}
+                      </span>
+                    )}
+                    <ChevronRight className="w-4 h-4 ml-auto text-slate-600" />
+                  </button>
+                );
+              })}
+
+              {/* Job Detail Tabs (if on job detail page) */}
+              {showContextSidebar && (
+                <>
+                  <div className="mt-4 pt-4 border-t border-slate-800">
+                    <p className="text-xs font-medium text-slate-500 uppercase tracking-wider px-3 mb-2">Job Navigation</p>
+                    {JOB_DETAIL_TABS.map((tab) => {
+                      const Icon = tab.icon;
+                      const isTabActive = activeJobTab === tab.id;
+                      return (
+                        <button
+                          key={tab.id}
+                          onClick={() => {
+                            onJobTabChange?.(tab.id);
+                            setMobileMenuOpen(false);
+                          }}
+                          className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg mb-1 transition-all ${
+                            isTabActive
+                              ? 'bg-cyan-600/20 text-cyan-400 border border-cyan-500/30'
+                              : 'text-slate-400 hover:bg-slate-800/50 hover:text-slate-200'
+                          }`}
+                        >
+                          <Icon className="w-4 h-4" />
+                          <span className="text-sm font-medium">{tab.label}</span>
+                        </button>
+                      );
+                    })}
+                  </div>
+                </>
+              )}
+            </nav>
+
+            {/* User Profile at Bottom */}
+            <div className="p-3 border-t border-slate-800">
+              <div className="flex items-center gap-3 p-2 rounded-lg bg-slate-900/50">
+                <div className="w-10 h-10 rounded-full bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center">
+                  <span className="text-white text-sm font-bold">JD</span>
+                </div>
+                <div className="flex-1">
+                  <p className="text-sm font-medium text-white">John Doe</p>
+                  <p className="text-xs text-slate-500">john@estimatereliance.com</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </>
+      )}
+
       {/* Main Content Area with Optional Sidebar */}
       <div className="flex-1 flex overflow-hidden">
-        {/* Context-Sensitive Sidebar (shows for Job Detail, etc.) */}
+        {/* Context-Sensitive Sidebar (shows for Job Detail, hidden on mobile) */}
         {showContextSidebar && (
-          <aside className="w-52 bg-slate-950 border-r border-slate-800 flex-shrink-0 overflow-y-auto">
+          <aside className="hidden md:block w-52 bg-slate-950 border-r border-slate-800 flex-shrink-0 overflow-y-auto">
             <div className="p-3 border-b border-slate-800">
               <p className="text-xs font-medium text-slate-500 uppercase tracking-wider">Job Navigation</p>
             </div>
