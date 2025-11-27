@@ -17,22 +17,30 @@ import SupplementClaimForm from './components/SupplementClaimForm';
 import CommercialBidForm from './components/CommercialBidForm';
 import CustomizedDocumentsForm from './components/CustomizedDocumentsForm';
 // Dashboard Components
-import DashboardLayout from './components/Dashboard/DashboardLayout';
 import DashboardHome from './components/Dashboard/DashboardHome';
 import JobsList from './components/Dashboard/JobsList';
 import JobDetail from './components/Dashboard/JobDetail';
+// Navigation Components
+import { TopNavBar, ContextualSidebar } from './components/Navigation';
 // Estimate Builder
 import EstimateBuilder from './components/EstimateBuilder';
 import { AppView } from './types';
-import { FileText, Microscope, ShieldCheck, ArrowLeft, UserPlus, LogIn, ClipboardList, FileCheck, Calculator, Building2, FileEdit, DollarSign } from 'lucide-react';
+import { FileText, Microscope, ShieldCheck, ArrowLeft, UserPlus, LogIn, ClipboardList, FileCheck, Calculator, Building2, FileEdit, DollarSign, Menu, X } from 'lucide-react';
 
 const App: React.FC = () => {
   const [view, setView] = useState<AppView>(AppView.LANDING);
   const [isLoading, setIsLoading] = useState(true);
   const [selectedJobId, setSelectedJobId] = useState<string | null>(null);
+  const [sidebarOpen, setSidebarOpen] = useState(true);
+  const [isLoggedIn, setIsLoggedIn] = useState(false); // TODO: Connect to actual auth
 
   // Check if current view is a dashboard view
   const isDashboardView = view.toString().startsWith('DASHBOARD');
+
+  // Check if current view should show the contextual sidebar
+  const showSidebar = isDashboardView ||
+    view === AppView.ESTIMATE_BUILDER ||
+    view === AppView.LABS;
 
   // Handle job selection from jobs list
   const handleSelectJob = (jobId: string) => {
@@ -48,50 +56,11 @@ const App: React.FC = () => {
     setView(newView);
   };
 
-  // Logo Component (removed text, just click area to return home)
-  const Logo = () => (
-    <div className="flex items-center cursor-pointer select-none" onClick={() => setView(AppView.LANDING)}>
-      <div className="w-8 h-8 rounded-full bg-gradient-to-r from-cyan-500 to-blue-500 flex items-center justify-center shadow-lg shadow-cyan-500/50">
-        <span className="text-white font-bold text-sm">ER</span>
-      </div>
-    </div>
-  );
-
-  // Landing Nav (with Login & Register)
-  const renderLandingNav = () => (
-    <nav className="sticky top-0 z-50 w-full backdrop-blur-md bg-slate-950/80 border-b border-white/10 px-6 py-4">
-      <div className="max-w-7xl mx-auto flex justify-between items-center">
-        <Logo />
-        <div className="flex items-center gap-3">
-          <button
-            onClick={() => setView(AppView.REGISTER)}
-            className="px-4 py-2 text-sm text-cyan-300 hover:text-cyan-200 border border-cyan-700 hover:border-cyan-500 rounded-lg transition-all"
-          >
-            Register
-          </button>
-          <button
-            onClick={() => setView(AppView.PORTAL)}
-            className="px-4 py-2 text-sm text-slate-300 hover:text-white border border-slate-700 hover:border-slate-500 rounded-lg transition-all"
-          >
-            Partner Login
-          </button>
-        </div>
-      </div>
-    </nav>
-  );
-
-  // Internal Nav (with Back button)
-  const renderInternalNav = () => (
-    <nav className="sticky top-0 z-50 w-full backdrop-blur-md bg-slate-950/50 border-b border-white/10 px-6 py-4 flex justify-between items-center">
-      <Logo />
-      <button 
-        onClick={() => setView(AppView.LANDING)}
-        className="flex items-center px-3 py-1.5 rounded-lg hover:bg-white/10 transition-colors text-sm text-slate-300"
-      >
-        <ArrowLeft className="w-4 h-4 mr-2" /> Back
-      </button>
-    </nav>
-  );
+  // Handle sidebar actions from EstimateBuilder context
+  const handleSidebarAction = (action: string) => {
+    console.log('Sidebar action:', action);
+    // Actions will be handled by context or passed to child components
+  };
 
   const renderContent = () => {
     switch (view) {
@@ -470,51 +439,76 @@ const App: React.FC = () => {
     return <LoadingScreen onComplete={() => setIsLoading(false)} />;
   }
 
-  // Render Dashboard Layout for dashboard views (no popups, full page)
-  if (isDashboardView) {
-    const renderDashboardContent = () => {
-      switch (view) {
-        case AppView.DASHBOARD_JOBS:
-          return <JobsList onSelectJob={handleSelectJob} />;
-        case AppView.DASHBOARD_JOB_DETAIL:
-          return <JobDetail onBack={() => setView(AppView.DASHBOARD_JOBS)} />;
-        case AppView.DASHBOARD_ESTIMATES:
-          return <EstimateBuilder onBack={() => setView(AppView.DASHBOARD_HOME)} />;
-        case AppView.DASHBOARD:
-        case AppView.DASHBOARD_HOME:
-        default:
-          return <DashboardHome />;
-      }
-    };
+  // Render dashboard content
+  const renderDashboardContent = () => {
+    switch (view) {
+      case AppView.DASHBOARD_JOBS:
+        return <JobsList onSelectJob={handleSelectJob} />;
+      case AppView.DASHBOARD_JOB_DETAIL:
+        return <JobDetail onBack={() => setView(AppView.DASHBOARD_JOBS)} />;
+      case AppView.DASHBOARD_ESTIMATES:
+        return <EstimateBuilder onBack={() => setView(AppView.DASHBOARD_HOME)} />;
+      case AppView.DASHBOARD:
+      case AppView.DASHBOARD_HOME:
+      default:
+        return <DashboardHome />;
+    }
+  };
 
-    return (
-      <DashboardLayout
-        currentView={view}
-        onNavigate={handleDashboardNavigate}
-      >
-        {renderDashboardContent()}
-      </DashboardLayout>
-    );
-  }
-
+  // Unified layout with TopNavBar and optional ContextualSidebar
   return (
     <SmoothScroll>
       <div className="min-h-screen w-full relative bg-slate-950 noise-overlay overflow-hidden">
-        <ParticleField count={3000} />
-        <FloatingElements />
-        <CursorTrail />
-        <AmbientAudio />
-
-        {/* Animated Gradient Mesh Background */}
-        <div className="fixed inset-0 gradient-mesh pointer-events-none z-0"></div>
+        {/* Background effects - only show on non-dashboard views for performance */}
+        {!isDashboardView && (
+          <>
+            <ParticleField count={3000} />
+            <FloatingElements />
+            <CursorTrail />
+            <AmbientAudio />
+            <div className="fixed inset-0 gradient-mesh pointer-events-none z-0"></div>
+          </>
+        )}
 
         <div className="relative z-10 flex flex-col min-h-screen">
-          {view === AppView.LANDING ? renderLandingNav() : renderInternalNav()}
-          <main className="flex-grow flex flex-col">
-            <PageTransition pageKey={view}>
-              {renderContent()}
-            </PageTransition>
-          </main>
+          {/* Top Navigation Bar */}
+          <TopNavBar
+            currentView={view}
+            onNavigate={setView}
+            isLoggedIn={isLoggedIn}
+          />
+
+          {/* Main Layout with optional sidebar */}
+          <div className="flex-1 flex overflow-hidden">
+            {/* Contextual Sidebar - shown on dashboard and tool views */}
+            {showSidebar && (
+              <div className="hidden md:block">
+                <ContextualSidebar
+                  currentView={view}
+                  onNavigate={setView}
+                  onAction={handleSidebarAction}
+                  isCollapsed={!sidebarOpen}
+                />
+              </div>
+            )}
+
+            {/* Mobile sidebar toggle */}
+            {showSidebar && (
+              <button
+                onClick={() => setSidebarOpen(!sidebarOpen)}
+                className="md:hidden fixed bottom-4 left-4 z-50 w-12 h-12 bg-cyan-600 hover:bg-cyan-500 text-white rounded-full shadow-lg shadow-cyan-500/30 flex items-center justify-center transition-all"
+              >
+                {sidebarOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
+              </button>
+            )}
+
+            {/* Main Content Area */}
+            <main className="flex-1 overflow-auto">
+              <PageTransition pageKey={view}>
+                {isDashboardView ? renderDashboardContent() : renderContent()}
+              </PageTransition>
+            </main>
+          </div>
         </div>
       </div>
     </SmoothScroll>
