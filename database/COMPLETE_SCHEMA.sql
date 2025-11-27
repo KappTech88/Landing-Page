@@ -3256,8 +3256,107 @@ COMMENT ON COLUMN estimate_line_items.extended_price IS 'Computed: quantity * un
 
 -- =====================================================
 -- 006-production.sql
--- Production: Crews, Labor, Scheduling
+-- Production: Work Orders, Crews, Labor, Scheduling
 -- =====================================================
+
+-- =====================================================
+-- WORK ORDERS TABLE
+-- =====================================================
+-- Work orders are specific work items within a job
+-- A job can have multiple work orders (tear-off, install, cleanup, etc.)
+
+CREATE TABLE work_orders (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    job_id UUID NOT NULL REFERENCES jobs(id) ON DELETE CASCADE,
+    organization_id UUID NOT NULL REFERENCES organizations(id) ON DELETE CASCADE,
+
+    -- Work Order Identification
+    work_order_number VARCHAR(50) UNIQUE NOT NULL, -- WO-2024-00001
+
+    -- Work Order Details
+    title VARCHAR(255) NOT NULL, -- "Tear-off", "Shingle Installation", etc.
+    description TEXT,
+    work_order_type VARCHAR(50) DEFAULT 'standard',
+    -- standard, change_order, warranty, punch_list, inspection
+
+    -- Scope
+    scope_of_work TEXT,
+    special_instructions TEXT,
+
+    -- Related Estimate/Change Order
+    estimate_id UUID REFERENCES estimates(id),
+    is_change_order BOOLEAN DEFAULT false,
+    change_order_reason TEXT,
+    original_work_order_id UUID REFERENCES work_orders(id), -- If this is a change order
+
+    -- Scheduling
+    scheduled_start_date DATE,
+    scheduled_end_date DATE,
+    actual_start_date DATE,
+    actual_end_date DATE,
+    estimated_hours DECIMAL(8, 2),
+    actual_hours DECIMAL(8, 2),
+
+    -- Assignment
+    assigned_crew_id UUID, -- FK added after crews table created
+    assigned_to_user_id UUID REFERENCES users(id),
+
+    -- Priority & Status
+    priority VARCHAR(20) DEFAULT 'normal', -- low, normal, high, urgent
+    status VARCHAR(30) DEFAULT 'pending',
+    -- pending, scheduled, in_progress, on_hold, completed, cancelled
+
+    -- Costs
+    estimated_labor_cost DECIMAL(12, 2) DEFAULT 0.00,
+    estimated_material_cost DECIMAL(12, 2) DEFAULT 0.00,
+    estimated_total_cost DECIMAL(12, 2) GENERATED ALWAYS AS (
+        estimated_labor_cost + estimated_material_cost
+    ) STORED,
+    actual_labor_cost DECIMAL(12, 2) DEFAULT 0.00,
+    actual_material_cost DECIMAL(12, 2) DEFAULT 0.00,
+    actual_total_cost DECIMAL(12, 2) GENERATED ALWAYS AS (
+        actual_labor_cost + actual_material_cost
+    ) STORED,
+
+    -- Billing
+    is_billable BOOLEAN DEFAULT true,
+    billing_amount DECIMAL(12, 2),
+    invoiced BOOLEAN DEFAULT false,
+    invoice_id UUID, -- FK added after invoices table reference available
+
+    -- Approval
+    requires_approval BOOLEAN DEFAULT false,
+    approved_by UUID REFERENCES users(id),
+    approved_at TIMESTAMP WITH TIME ZONE,
+
+    -- Completion
+    completed_by UUID REFERENCES users(id),
+    completion_notes TEXT,
+    customer_signature TEXT, -- Base64 signature
+
+    -- Metadata
+    custom_fields JSONB DEFAULT '{}'::jsonb,
+
+    -- Audit
+    created_by UUID REFERENCES users(id),
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+    updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+    deleted_at TIMESTAMP WITH TIME ZONE,
+
+    CONSTRAINT valid_wo_priority CHECK (priority IN ('low', 'normal', 'high', 'urgent')),
+    CONSTRAINT valid_wo_status CHECK (status IN (
+        'pending', 'scheduled', 'in_progress', 'on_hold', 'completed', 'cancelled', 'invoiced'
+    ))
+);
+
+CREATE INDEX idx_work_orders_job ON work_orders(job_id);
+CREATE INDEX idx_work_orders_org ON work_orders(organization_id);
+CREATE INDEX idx_work_orders_number ON work_orders(work_order_number);
+CREATE INDEX idx_work_orders_status ON work_orders(status);
+CREATE INDEX idx_work_orders_scheduled ON work_orders(scheduled_start_date);
+CREATE INDEX idx_work_orders_type ON work_orders(work_order_type);
+CREATE INDEX idx_work_orders_change_order ON work_orders(is_change_order) WHERE is_change_order = true;
+CREATE INDEX idx_work_orders_deleted ON work_orders(deleted_at) WHERE deleted_at IS NULL;
 
 -- =====================================================
 -- CREWS TABLE
@@ -3334,6 +3433,15 @@ CREATE INDEX idx_crews_deleted ON crews(deleted_at) WHERE deleted_at IS NULL;
 
 CREATE TRIGGER crews_updated_at
     BEFORE UPDATE ON crews
+    FOR EACH ROW
+    EXECUTE FUNCTION update_updated_at_column();
+
+-- Add FK constraint for work_orders.assigned_crew_id now that crews exists
+ALTER TABLE work_orders ADD CONSTRAINT work_orders_assigned_crew_fkey
+    FOREIGN KEY (assigned_crew_id) REFERENCES crews(id) ON DELETE SET NULL;
+
+CREATE TRIGGER work_orders_updated_at
+    BEFORE UPDATE ON work_orders
     FOR EACH ROW
     EXECUTE FUNCTION update_updated_at_column();
 
@@ -3768,10 +3876,99 @@ CREATE TRIGGER labor_tickets_update_job
     FOR EACH ROW
     EXECUTE FUNCTION trigger_update_job_labor();
 
+-- Create work order with auto-generated number
+CREATE OR REPLACE FUNCTION create_work_order(
+    p_job_id UUID,
+    p_title VARCHAR,
+    p_work_order_type VARCHAR DEFAULT 'standard',
+    p_created_by UUID DEFAULT NULL
+)
+RETURNS UUID AS $$
+DECLARE
+    v_work_order_id UUID;
+    v_work_order_number VARCHAR(50);
+    v_org_id UUID;
+BEGIN
+    -- Get organization from job
+    SELECT organization_id INTO v_org_id FROM jobs WHERE id = p_job_id;
+
+    -- Generate work order number
+    v_work_order_number := generate_sequence_number(v_org_id, 'work_order');
+
+    INSERT INTO work_orders (
+        organization_id,
+        job_id,
+        work_order_number,
+        title,
+        work_order_type,
+        created_by
+    ) VALUES (
+        v_org_id,
+        p_job_id,
+        v_work_order_number,
+        p_title,
+        p_work_order_type,
+        p_created_by
+    )
+    RETURNING id INTO v_work_order_id;
+
+    RETURN v_work_order_id;
+END;
+$$ LANGUAGE plpgsql;
+
+-- Create change order (special type of work order)
+CREATE OR REPLACE FUNCTION create_change_order(
+    p_original_work_order_id UUID,
+    p_title VARCHAR,
+    p_reason TEXT,
+    p_created_by UUID DEFAULT NULL
+)
+RETURNS UUID AS $$
+DECLARE
+    v_work_order_id UUID;
+    v_work_order_number VARCHAR(50);
+    v_job_id UUID;
+    v_org_id UUID;
+BEGIN
+    -- Get job and org from original work order
+    SELECT job_id, organization_id INTO v_job_id, v_org_id
+    FROM work_orders WHERE id = p_original_work_order_id;
+
+    -- Generate work order number
+    v_work_order_number := generate_sequence_number(v_org_id, 'work_order');
+
+    INSERT INTO work_orders (
+        organization_id,
+        job_id,
+        work_order_number,
+        title,
+        work_order_type,
+        is_change_order,
+        change_order_reason,
+        original_work_order_id,
+        created_by
+    ) VALUES (
+        v_org_id,
+        v_job_id,
+        v_work_order_number,
+        p_title,
+        'change_order',
+        true,
+        p_reason,
+        p_original_work_order_id,
+        p_created_by
+    )
+    RETURNING id INTO v_work_order_id;
+
+    RETURN v_work_order_id;
+END;
+$$ LANGUAGE plpgsql;
+
 -- =====================================================
 -- COMMENTS
 -- =====================================================
 
+COMMENT ON TABLE work_orders IS 'Work orders - individual work items within a job';
 COMMENT ON TABLE crews IS 'Production crews - internal and subcontractor';
 COMMENT ON TABLE crew_members IS 'Individual workers in crews';
 COMMENT ON TABLE job_crew_assignments IS 'Schedule crews to jobs';
@@ -4663,7 +4860,7 @@ CREATE TABLE financing_options (
     minimum_amount DECIMAL(10, 2),
     maximum_amount DECIMAL(12, 2),
 
-    -- Statu
+    -- Status
     is_active BOOLEAN DEFAULT true,
 
     -- Display

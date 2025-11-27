@@ -176,9 +176,10 @@ Key Features:
 - Template system
 
 ### 006-production.sql
-**Crews & Scheduling**
+**Work Orders, Crews & Scheduling**
 
 Tables:
+- `work_orders` - Work orders within jobs (WO-2024-00001)
 - `crews` - Crew definitions
 - `crew_members` - Individual crew members
 - `job_crew_assignments` - Crew → Job assignments
@@ -188,6 +189,8 @@ Tables:
 - `quality_inspections` - Inspection records
 
 Key Features:
+- **Work orders** - Multiple per job (standard, change_order, warranty, punch_list)
+- **Change orders** - Track modifications with reason and link to original
 - Crew management with specialties
 - Labor time tracking with approval workflow
 - Production calendar/scheduling
@@ -326,6 +329,10 @@ SELECT search_contacts(org_id, 'search term');
 
 -- Jobs
 SELECT create_job(org_id, contact_id, 'Roof Replacement', 'standard');
+
+-- Work Orders
+SELECT create_work_order(job_id, 'Tear-off', 'standard');
+SELECT create_change_order(original_wo_id, 'Additional repairs', 'Found rotted decking');
 
 -- Invoices
 SELECT create_invoice_from_estimate(estimate_id);
