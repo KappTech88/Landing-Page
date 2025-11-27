@@ -21,6 +21,7 @@ import DashboardLayout from './components/Dashboard/DashboardLayout';
 import DashboardHome from './components/Dashboard/DashboardHome';
 import JobsList from './components/Dashboard/JobsList';
 import JobDetail from './components/Dashboard/JobDetail';
+import DashboardSettings from './components/Dashboard/Settings/DashboardSettings';
 // Estimate Builder
 import EstimateBuilder from './components/EstimateBuilder';
 import { AppView } from './types';
@@ -30,6 +31,7 @@ const App: React.FC = () => {
   const [view, setView] = useState<AppView>(AppView.LANDING);
   const [isLoading, setIsLoading] = useState(true);
   const [selectedJobId, setSelectedJobId] = useState<string | null>(null);
+  const [activeJobTab, setActiveJobTab] = useState<string>('overview');
 
   // Check if current view is a dashboard view
   const isDashboardView = view.toString().startsWith('DASHBOARD');
@@ -37,6 +39,7 @@ const App: React.FC = () => {
   // Handle job selection from jobs list
   const handleSelectJob = (jobId: string) => {
     setSelectedJobId(jobId);
+    setActiveJobTab('overview'); // Reset to overview when opening a new job
     setView(AppView.DASHBOARD_JOB_DETAIL);
   };
 
@@ -477,9 +480,11 @@ const App: React.FC = () => {
         case AppView.DASHBOARD_JOBS:
           return <JobsList onSelectJob={handleSelectJob} />;
         case AppView.DASHBOARD_JOB_DETAIL:
-          return <JobDetail onBack={() => setView(AppView.DASHBOARD_JOBS)} />;
+          return <JobDetail onBack={() => setView(AppView.DASHBOARD_JOBS)} activeTab={activeJobTab} />;
         case AppView.DASHBOARD_ESTIMATES:
           return <EstimateBuilder onBack={() => setView(AppView.DASHBOARD_HOME)} />;
+        case AppView.DASHBOARD_SETTINGS:
+          return <DashboardSettings />;
         case AppView.DASHBOARD:
         case AppView.DASHBOARD_HOME:
         default:
@@ -491,6 +496,8 @@ const App: React.FC = () => {
       <DashboardLayout
         currentView={view}
         onNavigate={handleDashboardNavigate}
+        activeJobTab={activeJobTab}
+        onJobTabChange={setActiveJobTab}
       >
         {renderDashboardContent()}
       </DashboardLayout>
