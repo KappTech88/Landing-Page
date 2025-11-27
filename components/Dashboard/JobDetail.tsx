@@ -18,13 +18,16 @@ import {
   DollarSign,
   TrendingUp,
   Clock,
-  CheckCircle
+  CheckCircle,
+  Package,
+  ClipboardList
 } from 'lucide-react';
 import { ClaimWithDetails, Property } from '../../types';
 
 interface JobDetailProps {
   job?: ClaimWithDetails;
   onBack: () => void;
+  activeTab?: string;
 }
 
 // Mock data for demonstration
@@ -75,8 +78,8 @@ const mockJob: ClaimWithDetails & { property: Property; bannerUrl?: string } = {
   }
 };
 
-const JobDetail: React.FC<JobDetailProps> = ({ job = mockJob, onBack }) => {
-  const [activeTab, setActiveTab] = useState<'notes' | 'files' | 'photos'>('notes');
+const JobDetail: React.FC<JobDetailProps> = ({ job = mockJob, onBack, activeTab = 'overview' }) => {
+  const [notesFilesTab, setNotesFilesTab] = useState<'notes' | 'files' | 'photos'>('notes');
   const [bannerImage, setBannerImage] = useState<string | null>(job.bannerUrl || null);
 
   const handleBannerUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -131,63 +134,68 @@ const JobDetail: React.FC<JobDetailProps> = ({ job = mockJob, onBack }) => {
   const paid = 0;
   const balance = invoiced - paid;
 
-  return (
-    <div className="min-h-full bg-slate-900">
-      {/* Banner Section */}
-      <div className="relative h-56 bg-slate-800 overflow-hidden group">
-        {bannerImage ? (
-          <img
-            src={bannerImage}
-            alt="Property"
-            className="w-full h-full object-cover"
-          />
-        ) : (
-          <div className="w-full h-full bg-gradient-to-br from-slate-800 to-slate-700 flex items-center justify-center">
-            <div className="text-center">
-              <Camera className="w-12 h-12 text-slate-600 mx-auto mb-2" />
-              <p className="text-slate-500 text-sm">No property image</p>
-            </div>
+  // Banner component shared across tabs
+  const BannerSection = () => (
+    <div className="relative h-56 bg-slate-800 overflow-hidden group">
+      {bannerImage ? (
+        <img
+          src={bannerImage}
+          alt="Property"
+          className="w-full h-full object-cover"
+        />
+      ) : (
+        <div className="w-full h-full bg-gradient-to-br from-slate-800 to-slate-700 flex items-center justify-center">
+          <div className="text-center">
+            <Camera className="w-12 h-12 text-slate-600 mx-auto mb-2" />
+            <p className="text-slate-500 text-sm">No property image</p>
           </div>
-        )}
+        </div>
+      )}
 
-        {/* Gradient overlay */}
-        <div className="absolute inset-0 bg-gradient-to-t from-slate-900/90 via-slate-900/40 to-transparent" />
+      {/* Gradient overlay */}
+      <div className="absolute inset-0 bg-gradient-to-t from-slate-900/90 via-slate-900/40 to-transparent" />
 
-        {/* Upload button */}
-        <label className="absolute top-4 right-4 opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer">
-          <input
-            type="file"
-            accept="image/*"
-            onChange={handleBannerUpload}
-            className="hidden"
-          />
-          <div className="flex items-center gap-2 bg-slate-900/80 backdrop-blur-sm text-white px-4 py-2 rounded-lg hover:bg-slate-800 transition-colors">
-            <Upload className="w-4 h-4" />
-            <span className="text-sm">Upload Photo</span>
-          </div>
-        </label>
+      {/* Upload button */}
+      <label className="absolute top-4 right-4 opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer">
+        <input
+          type="file"
+          accept="image/*"
+          onChange={handleBannerUpload}
+          className="hidden"
+        />
+        <div className="flex items-center gap-2 bg-slate-900/80 backdrop-blur-sm text-white px-4 py-2 rounded-lg hover:bg-slate-800 transition-colors">
+          <Upload className="w-4 h-4" />
+          <span className="text-sm">Upload Photo</span>
+        </div>
+      </label>
 
-        {/* Job Title Overlay */}
-        <div className="absolute bottom-0 left-0 right-0 p-6">
-          <div className="flex items-end justify-between">
-            <div>
-              <h1 className="text-3xl font-bold text-white mb-2">
-                <span className="text-cyan-400">Job:</span> {job.property?.full_address?.split(',')[0]} {job.description}
-              </h1>
-              <div className="flex items-center gap-4">
-                <span className="text-emerald-400 font-semibold">{formatStatus(job.status)}</span>
-                <span className="text-slate-400">- {progress}%</span>
-                <div className="w-32 h-2 bg-slate-700 rounded-full overflow-hidden">
-                  <div
-                    className="h-full bg-gradient-to-r from-cyan-500 to-emerald-500 rounded-full transition-all"
-                    style={{ width: `${progress}%` }}
-                  />
-                </div>
+      {/* Job Title Overlay */}
+      <div className="absolute bottom-0 left-0 right-0 p-6">
+        <div className="flex items-end justify-between">
+          <div>
+            <h1 className="text-3xl font-bold text-white mb-2">
+              <span className="text-cyan-400">Job:</span> {job.property?.full_address?.split(',')[0]} {job.description}
+            </h1>
+            <div className="flex items-center gap-4">
+              <span className="text-emerald-400 font-semibold">{formatStatus(job.status)}</span>
+              <span className="text-slate-400">- {progress}%</span>
+              <div className="w-32 h-2 bg-slate-700 rounded-full overflow-hidden">
+                <div
+                  className="h-full bg-gradient-to-r from-cyan-500 to-emerald-500 rounded-full transition-all"
+                  style={{ width: `${progress}%` }}
+                />
               </div>
             </div>
           </div>
         </div>
       </div>
+    </div>
+  );
+
+  // Overview content (the original job detail view)
+  const renderOverviewContent = () => (
+    <div className="min-h-full bg-slate-900">
+      <BannerSection />
 
       {/* Main Content */}
       <div className="p-6">
@@ -356,9 +364,9 @@ const JobDetail: React.FC<JobDetailProps> = ({ job = mockJob, onBack }) => {
                   return (
                     <button
                       key={tab.id}
-                      onClick={() => setActiveTab(tab.id as typeof activeTab)}
+                      onClick={() => setNotesFilesTab(tab.id as typeof notesFilesTab)}
                       className={`flex-1 flex items-center justify-center gap-2 py-4 text-sm font-medium transition-colors ${
-                        activeTab === tab.id
+                        notesFilesTab === tab.id
                           ? 'text-cyan-400 border-b-2 border-cyan-400 bg-slate-700/30'
                           : 'text-slate-400 hover:text-slate-200 hover:bg-slate-700/20'
                       }`}
@@ -373,7 +381,7 @@ const JobDetail: React.FC<JobDetailProps> = ({ job = mockJob, onBack }) => {
               {/* Tab Content */}
               <div className="p-6">
                 <p className="text-slate-400 text-sm mb-4">
-                  Easy access and upload across your {activeTab}.
+                  Easy access and upload across your {notesFilesTab}.
                 </p>
                 <button className="flex items-center gap-2 px-4 py-2 bg-slate-700/50 text-slate-300 rounded-lg hover:bg-slate-700 transition-colors text-sm border border-slate-600/50">
                   <Upload className="w-4 h-4" />
@@ -386,6 +394,234 @@ const JobDetail: React.FC<JobDetailProps> = ({ job = mockJob, onBack }) => {
       </div>
     </div>
   );
+
+  // Render tab-specific content based on activeTab from sidebar
+  const renderTabContent = () => {
+    switch (activeTab) {
+      case 'measurements':
+        return (
+          <div className="min-h-full bg-slate-900">
+            <BannerSection />
+            <div className="p-6">
+              <div className="bg-slate-800/50 backdrop-blur-sm rounded-2xl border border-slate-700/50 p-6">
+                <h2 className="text-xl font-semibold text-white mb-4">Measurements</h2>
+                <p className="text-slate-400 mb-6">Import measurements from EagleView, HOVER, or enter manually.</p>
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+                  <div className="bg-slate-900/50 rounded-xl p-4 border border-slate-700/30">
+                    <p className="text-xs text-slate-500 uppercase tracking-wider mb-1">Total Roof Area</p>
+                    <p className="text-2xl font-bold text-white">-- SQ</p>
+                  </div>
+                  <div className="bg-slate-900/50 rounded-xl p-4 border border-slate-700/30">
+                    <p className="text-xs text-slate-500 uppercase tracking-wider mb-1">Ridge Length</p>
+                    <p className="text-2xl font-bold text-white">-- LF</p>
+                  </div>
+                  <div className="bg-slate-900/50 rounded-xl p-4 border border-slate-700/30">
+                    <p className="text-xs text-slate-500 uppercase tracking-wider mb-1">Eave Length</p>
+                    <p className="text-2xl font-bold text-white">-- LF</p>
+                  </div>
+                </div>
+                <button className="flex items-center gap-2 px-4 py-2 bg-cyan-600/20 text-cyan-400 rounded-lg hover:bg-cyan-600/30 transition-colors text-sm font-medium border border-cyan-500/30">
+                  <Upload className="w-4 h-4" />
+                  Import from EagleView
+                </button>
+              </div>
+            </div>
+          </div>
+        );
+      case 'estimate':
+        return (
+          <div className="min-h-full bg-slate-900">
+            <BannerSection />
+            <div className="p-6">
+              <div className="bg-slate-800/50 backdrop-blur-sm rounded-2xl border border-slate-700/50 p-6">
+                <h2 className="text-xl font-semibold text-white mb-4">Estimate</h2>
+                <p className="text-slate-400 mb-6">Create and manage estimates for this job.</p>
+                <div className="bg-slate-900/50 rounded-xl p-4 border border-slate-700/30 mb-4">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <p className="text-sm text-slate-300">Primary Estimate</p>
+                      <p className="text-xs text-slate-500">Last updated: --</p>
+                    </div>
+                    <span className="px-2 py-1 bg-slate-700 text-slate-400 rounded text-xs">Not Created</span>
+                  </div>
+                </div>
+                <button className="flex items-center gap-2 px-4 py-2 bg-cyan-600/20 text-cyan-400 rounded-lg hover:bg-cyan-600/30 transition-colors text-sm font-medium border border-cyan-500/30">
+                  <Plus className="w-4 h-4" />
+                  Create Estimate
+                </button>
+              </div>
+            </div>
+          </div>
+        );
+      case 'work-orders':
+        return (
+          <div className="min-h-full bg-slate-900">
+            <BannerSection />
+            <div className="p-6">
+              <div className="bg-slate-800/50 backdrop-blur-sm rounded-2xl border border-slate-700/50 p-6">
+                <h2 className="text-xl font-semibold text-white mb-4">Work Orders</h2>
+                <p className="text-slate-400 mb-6">Manage work orders and assign crews to this job.</p>
+                <div className="text-center py-8 text-slate-500">
+                  <ClipboardList className="w-12 h-12 mx-auto mb-3 opacity-50" />
+                  <p>No work orders created yet</p>
+                </div>
+                <button className="flex items-center gap-2 px-4 py-2 bg-cyan-600/20 text-cyan-400 rounded-lg hover:bg-cyan-600/30 transition-colors text-sm font-medium border border-cyan-500/30">
+                  <Plus className="w-4 h-4" />
+                  Create Work Order
+                </button>
+              </div>
+            </div>
+          </div>
+        );
+      case 'materials':
+        return (
+          <div className="min-h-full bg-slate-900">
+            <BannerSection />
+            <div className="p-6">
+              <div className="bg-slate-800/50 backdrop-blur-sm rounded-2xl border border-slate-700/50 p-6">
+                <h2 className="text-xl font-semibold text-white mb-4">Materials</h2>
+                <p className="text-slate-400 mb-6">Track materials ordered and delivered for this job.</p>
+                <div className="text-center py-8 text-slate-500">
+                  <Package className="w-12 h-12 mx-auto mb-3 opacity-50" />
+                  <p>No materials tracked yet</p>
+                </div>
+                <button className="flex items-center gap-2 px-4 py-2 bg-cyan-600/20 text-cyan-400 rounded-lg hover:bg-cyan-600/30 transition-colors text-sm font-medium border border-cyan-500/30">
+                  <Plus className="w-4 h-4" />
+                  Add Material Order
+                </button>
+              </div>
+            </div>
+          </div>
+        );
+      case 'financials':
+        return (
+          <div className="min-h-full bg-slate-900">
+            <BannerSection />
+            <div className="p-6">
+              <div className="bg-slate-800/50 backdrop-blur-sm rounded-2xl border border-slate-700/50 p-6">
+                <h2 className="text-xl font-semibold text-white mb-4">Financials</h2>
+                <p className="text-slate-400 mb-6">Complete financial overview for this job.</p>
+                <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
+                  <div className="bg-slate-900/50 rounded-xl p-4 border border-slate-700/30">
+                    <p className="text-xs text-slate-500 uppercase tracking-wider mb-1">Estimate</p>
+                    <p className="text-2xl font-bold text-white">{formatCurrency(job.estimated_total)}</p>
+                  </div>
+                  <div className="bg-slate-900/50 rounded-xl p-4 border border-slate-700/30">
+                    <p className="text-xs text-slate-500 uppercase tracking-wider mb-1">Approved</p>
+                    <p className="text-2xl font-bold text-cyan-400">{formatCurrency(job.approved_amount)}</p>
+                  </div>
+                  <div className="bg-emerald-500/10 rounded-xl p-4 border border-emerald-500/30">
+                    <p className="text-xs text-emerald-400 uppercase tracking-wider mb-1">Paid</p>
+                    <p className="text-2xl font-bold text-emerald-400">$0</p>
+                  </div>
+                  <div className="bg-slate-900/50 rounded-xl p-4 border border-slate-700/30">
+                    <p className="text-xs text-slate-500 uppercase tracking-wider mb-1">Balance</p>
+                    <p className="text-2xl font-bold text-white">{formatCurrency(job.estimated_total)}</p>
+                  </div>
+                </div>
+                <button className="flex items-center gap-2 px-4 py-2 bg-cyan-600/20 text-cyan-400 rounded-lg hover:bg-cyan-600/30 transition-colors text-sm font-medium border border-cyan-500/30">
+                  <DollarSign className="w-4 h-4" />
+                  Record Payment
+                </button>
+              </div>
+            </div>
+          </div>
+        );
+      case 'photos':
+        return (
+          <div className="min-h-full bg-slate-900">
+            <BannerSection />
+            <div className="p-6">
+              <div className="bg-slate-800/50 backdrop-blur-sm rounded-2xl border border-slate-700/50 p-6">
+                <h2 className="text-xl font-semibold text-white mb-4">Photos</h2>
+                <p className="text-slate-400 mb-6">Manage job photos organized by category.</p>
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+                  {['Before', 'During', 'After', 'Damage'].map((category) => (
+                    <div key={category} className="bg-slate-900/50 rounded-xl p-4 border border-slate-700/30 text-center">
+                      <Camera className="w-8 h-8 text-slate-600 mx-auto mb-2" />
+                      <p className="text-sm text-slate-300">{category}</p>
+                      <p className="text-xs text-slate-500">0 photos</p>
+                    </div>
+                  ))}
+                </div>
+                <button className="flex items-center gap-2 px-4 py-2 bg-cyan-600/20 text-cyan-400 rounded-lg hover:bg-cyan-600/30 transition-colors text-sm font-medium border border-cyan-500/30">
+                  <Upload className="w-4 h-4" />
+                  Upload Photos
+                </button>
+              </div>
+            </div>
+          </div>
+        );
+      case 'documents':
+        return (
+          <div className="min-h-full bg-slate-900">
+            <BannerSection />
+            <div className="p-6">
+              <div className="bg-slate-800/50 backdrop-blur-sm rounded-2xl border border-slate-700/50 p-6">
+                <h2 className="text-xl font-semibold text-white mb-4">Documents</h2>
+                <p className="text-slate-400 mb-6">Store contracts, invoices, and other documents.</p>
+                <div className="text-center py-8 text-slate-500">
+                  <FileText className="w-12 h-12 mx-auto mb-3 opacity-50" />
+                  <p>No documents uploaded yet</p>
+                </div>
+                <button className="flex items-center gap-2 px-4 py-2 bg-cyan-600/20 text-cyan-400 rounded-lg hover:bg-cyan-600/30 transition-colors text-sm font-medium border border-cyan-500/30">
+                  <Upload className="w-4 h-4" />
+                  Upload Document
+                </button>
+              </div>
+            </div>
+          </div>
+        );
+      case 'communications':
+        return (
+          <div className="min-h-full bg-slate-900">
+            <BannerSection />
+            <div className="p-6">
+              <div className="bg-slate-800/50 backdrop-blur-sm rounded-2xl border border-slate-700/50 p-6">
+                <h2 className="text-xl font-semibold text-white mb-4">Communications</h2>
+                <p className="text-slate-400 mb-6">Track all communications with homeowner and insurance.</p>
+                <div className="text-center py-8 text-slate-500">
+                  <MessageSquare className="w-12 h-12 mx-auto mb-3 opacity-50" />
+                  <p>No communications logged yet</p>
+                </div>
+                <button className="flex items-center gap-2 px-4 py-2 bg-cyan-600/20 text-cyan-400 rounded-lg hover:bg-cyan-600/30 transition-colors text-sm font-medium border border-cyan-500/30">
+                  <Plus className="w-4 h-4" />
+                  Log Communication
+                </button>
+              </div>
+            </div>
+          </div>
+        );
+      case 'history':
+        return (
+          <div className="min-h-full bg-slate-900">
+            <BannerSection />
+            <div className="p-6">
+              <div className="bg-slate-800/50 backdrop-blur-sm rounded-2xl border border-slate-700/50 p-6">
+                <h2 className="text-xl font-semibold text-white mb-4">History</h2>
+                <p className="text-slate-400 mb-6">Complete activity log for this job.</p>
+                <div className="space-y-4">
+                  <div className="flex items-start gap-3 p-3 bg-slate-900/50 rounded-lg border border-slate-700/30">
+                    <div className="w-8 h-8 rounded-full bg-cyan-500/20 flex items-center justify-center flex-shrink-0">
+                      <CheckCircle className="w-4 h-4 text-cyan-400" />
+                    </div>
+                    <div>
+                      <p className="text-sm text-slate-200">Job created</p>
+                      <p className="text-xs text-slate-500">{new Date(job.created_at).toLocaleDateString()}</p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        );
+      case 'overview':
+      default:
+        return renderOverviewContent();
+    }
+  };
+
+  return renderTabContent();
 };
 
 export default JobDetail;
