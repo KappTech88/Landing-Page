@@ -22,7 +22,10 @@ import {
   Package,
   ClipboardList
 } from 'lucide-react';
-import { ClaimWithDetails, Property } from '../../types';
+import { ClaimWithDetails, Property, JOB_STATUS_CONFIG } from '../../types';
+import { CommunicationsPanel } from './JobDetail/Communications';
+import { StatusBadge } from './shared/StatusBadge';
+import { ProgressBar } from './shared/ProgressBar';
 
 interface JobDetailProps {
   job?: ClaimWithDetails;
@@ -278,6 +281,13 @@ const JobDetail: React.FC<JobDetailProps> = ({ job = mockJob, onBack, activeTab 
                 </div>
               </div>
             </div>
+
+            {/* Communications Panel */}
+            <CommunicationsPanel
+              jobId={job.id}
+              organizationId={job.organization_id}
+              currentUserId="demo-user-id"
+            />
           </div>
 
           {/* Right Column - Job Finances */}
@@ -577,18 +587,11 @@ const JobDetail: React.FC<JobDetailProps> = ({ job = mockJob, onBack, activeTab 
           <div className="min-h-full bg-slate-900">
             <BannerSection />
             <div className="p-6">
-              <div className="bg-slate-800/50 backdrop-blur-sm rounded-2xl border border-slate-700/50 p-6">
-                <h2 className="text-xl font-semibold text-white mb-4">Communications</h2>
-                <p className="text-slate-400 mb-6">Track all communications with homeowner and insurance.</p>
-                <div className="text-center py-8 text-slate-500">
-                  <MessageSquare className="w-12 h-12 mx-auto mb-3 opacity-50" />
-                  <p>No communications logged yet</p>
-                </div>
-                <button className="flex items-center gap-2 px-4 py-2 bg-cyan-600/20 text-cyan-400 rounded-lg hover:bg-cyan-600/30 transition-colors text-sm font-medium border border-cyan-500/30">
-                  <Plus className="w-4 h-4" />
-                  Log Communication
-                </button>
-              </div>
+              <CommunicationsPanel
+                jobId={job.id}
+                organizationId={job.organization_id}
+                currentUserId="demo-user-id"
+              />
             </div>
           </div>
         );
