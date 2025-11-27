@@ -22,7 +22,10 @@ import {
   Package,
   ClipboardList
 } from 'lucide-react';
-import { ClaimWithDetails, Property } from '../../types';
+import { ClaimWithDetails, Property, JOB_STATUS_CONFIG } from '../../types';
+import { CommunicationsPanel } from './JobDetail/Communications';
+import { StatusBadge } from './shared/StatusBadge';
+import { ProgressBar } from './shared/ProgressBar';
 
 interface JobDetailProps {
   job?: ClaimWithDetails;
@@ -136,7 +139,7 @@ const JobDetail: React.FC<JobDetailProps> = ({ job = mockJob, onBack, activeTab 
 
   // Banner component shared across tabs
   const BannerSection = () => (
-    <div className="relative h-56 bg-slate-800 overflow-hidden group">
+    <div className="relative h-36 bg-slate-800 overflow-hidden group">
       {bannerImage ? (
         <img
           src={bannerImage}
@@ -146,8 +149,8 @@ const JobDetail: React.FC<JobDetailProps> = ({ job = mockJob, onBack, activeTab 
       ) : (
         <div className="w-full h-full bg-gradient-to-br from-slate-800 to-slate-700 flex items-center justify-center">
           <div className="text-center">
-            <Camera className="w-12 h-12 text-slate-600 mx-auto mb-2" />
-            <p className="text-slate-500 text-sm">No property image</p>
+            <Camera className="w-8 h-8 text-slate-600 mx-auto mb-1" />
+            <p className="text-slate-500 text-xs">No property image</p>
           </div>
         </div>
       )}
@@ -156,30 +159,30 @@ const JobDetail: React.FC<JobDetailProps> = ({ job = mockJob, onBack, activeTab 
       <div className="absolute inset-0 bg-gradient-to-t from-slate-900/90 via-slate-900/40 to-transparent" />
 
       {/* Upload button */}
-      <label className="absolute top-4 right-4 opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer">
+      <label className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer">
         <input
           type="file"
           accept="image/*"
           onChange={handleBannerUpload}
           className="hidden"
         />
-        <div className="flex items-center gap-2 bg-slate-900/80 backdrop-blur-sm text-white px-4 py-2 rounded-lg hover:bg-slate-800 transition-colors">
-          <Upload className="w-4 h-4" />
-          <span className="text-sm">Upload Photo</span>
+        <div className="flex items-center gap-1 bg-slate-900/80 backdrop-blur-sm text-white px-2 py-1 rounded text-xs hover:bg-slate-800 transition-colors">
+          <Upload className="w-3 h-3" />
+          Upload
         </div>
       </label>
 
       {/* Job Title Overlay */}
-      <div className="absolute bottom-0 left-0 right-0 p-6">
+      <div className="absolute bottom-0 left-0 right-0 p-4">
         <div className="flex items-end justify-between">
           <div>
-            <h1 className="text-3xl font-bold text-white mb-2">
+            <h1 className="text-xl font-bold text-white mb-1">
               <span className="text-cyan-400">Job:</span> {job.property?.full_address?.split(',')[0]} {job.description}
             </h1>
-            <div className="flex items-center gap-4">
-              <span className="text-emerald-400 font-semibold">{formatStatus(job.status)}</span>
-              <span className="text-slate-400">- {progress}%</span>
-              <div className="w-32 h-2 bg-slate-700 rounded-full overflow-hidden">
+            <div className="flex items-center gap-3">
+              <span className="text-emerald-400 font-medium text-sm">{formatStatus(job.status)}</span>
+              <span className="text-slate-400 text-sm">{progress}%</span>
+              <div className="w-24 h-1.5 bg-slate-700 rounded-full overflow-hidden">
                 <div
                   className="h-full bg-gradient-to-r from-cyan-500 to-emerald-500 rounded-full transition-all"
                   style={{ width: `${progress}%` }}
@@ -197,198 +200,133 @@ const JobDetail: React.FC<JobDetailProps> = ({ job = mockJob, onBack, activeTab 
     <div className="min-h-full bg-slate-900">
       <BannerSection />
 
-      {/* Main Content */}
-      <div className="p-6">
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          {/* Left Column - Property & Homeowner Info */}
-          <div className="lg:col-span-2 space-y-6">
-            <div className="bg-slate-800/50 backdrop-blur-sm rounded-2xl border border-slate-700/50 overflow-hidden">
-              <div className="p-6 border-b border-slate-700/50">
-                <h2 className="text-xl font-semibold text-white">Property & Homeowner Information</h2>
+      {/* Main Content - Compact Layout */}
+      <div className="p-4">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+          {/* Left Column - Property & Claim Info */}
+          <div className="space-y-4">
+            {/* Property & Homeowner - Compact */}
+            <div className="bg-slate-800/50 backdrop-blur-sm rounded-xl border border-slate-700/50 p-4">
+              <div className="flex items-center justify-between mb-3">
+                <h2 className="text-sm font-semibold text-white flex items-center gap-2">
+                  <Building2 className="w-4 h-4 text-cyan-400" />
+                  Property & Contact
+                </h2>
               </div>
 
-              {/* Property Details */}
-              <div className="p-6 border-b border-slate-700/50">
-                <h3 className="text-lg font-medium text-slate-200 mb-4 flex items-center gap-2">
-                  <Building2 className="w-5 h-5 text-cyan-400" />
-                  Property Details
-                </h3>
-                <div className="grid grid-cols-3 gap-6">
-                  <div>
-                    <p className="text-xs text-slate-500 uppercase tracking-wider mb-1">Address</p>
-                    <p className="text-slate-200">{job.property?.address_line1}</p>
-                    <p className="text-slate-400 text-sm">{job.property?.city}, {job.property?.state} {job.property?.zip_code}</p>
-                  </div>
-                  <div>
-                    <p className="text-xs text-slate-500 uppercase tracking-wider mb-1">Year Built</p>
-                    <p className="text-slate-200">{job.property?.year_built || 'N/A'}</p>
-                  </div>
-                  <div>
-                    <p className="text-xs text-slate-500 uppercase tracking-wider mb-1">Square Footage</p>
-                    <p className="text-slate-200">{job.property?.square_footage?.toLocaleString() || 'N/A'} sq ft</p>
-                  </div>
-                </div>
-              </div>
-
-              {/* Homeowner Contact */}
-              <div className="p-6 border-b border-slate-700/50">
-                <h3 className="text-lg font-medium text-slate-200 mb-4 flex items-center gap-2">
-                  <User className="w-5 h-5 text-cyan-400" />
-                  Homeowner Contact
-                </h3>
-                <div className="grid grid-cols-2 gap-6">
-                  <div>
-                    <p className="text-xs text-slate-500 uppercase tracking-wider mb-1">Name</p>
-                    <p className="text-slate-200">{job.property?.owner_full_name}</p>
-                  </div>
-                  <div>
-                    <p className="text-xs text-slate-500 uppercase tracking-wider mb-1">Phone</p>
-                    <p className="text-slate-200">{job.property?.owner_phone}</p>
-                  </div>
-                  <div>
-                    <p className="text-xs text-slate-500 uppercase tracking-wider mb-1">Email</p>
-                    <p className="text-cyan-400">{job.property?.owner_email}</p>
-                  </div>
-                  <div>
-                    <p className="text-xs text-slate-500 uppercase tracking-wider mb-1">Preferred Method</p>
-                    <p className="text-slate-200">Promet</p>
-                  </div>
-                </div>
-              </div>
-
-              {/* Claim Information */}
-              <div className="p-6">
-                <h3 className="text-lg font-medium text-slate-200 mb-4 flex items-center gap-2">
-                  <FileText className="w-5 h-5 text-cyan-400" />
-                  Claim Information
-                </h3>
-                <div className="grid grid-cols-3 gap-6">
-                  <div>
-                    <p className="text-xs text-slate-500 uppercase tracking-wider mb-1">Carrier</p>
-                    <p className="text-slate-200">{job.property?.insurance_company || 'N/A'}</p>
-                  </div>
-                  <div>
-                    <p className="text-xs text-slate-500 uppercase tracking-wider mb-1">Policy Number</p>
-                    <p className="text-slate-200">{job.property?.policy_number || 'N/A'}</p>
-                  </div>
-                  <div>
-                    <p className="text-xs text-slate-500 uppercase tracking-wider mb-1">Claim Number</p>
-                    <p className="text-slate-200">{job.claim_number}</p>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          {/* Right Column - Job Finances */}
-          <div className="space-y-6">
-            {/* Job Finances Card */}
-            <div className="bg-slate-800/50 backdrop-blur-sm rounded-2xl border border-slate-700/50 overflow-hidden">
-              <div className="p-6 border-b border-slate-700/50 flex items-center justify-between">
+              <div className="grid grid-cols-2 gap-x-6 gap-y-2 text-sm">
                 <div>
-                  <h2 className="text-xl font-semibold text-white">Job Finances</h2>
-                  <p className="text-slate-500 text-sm mt-1">Summary dashboard with interactive chart. Nee...</p>
+                  <p className="text-xs text-slate-500">Address</p>
+                  <p className="text-slate-200">{job.property?.address_line1}</p>
+                  <p className="text-slate-400 text-xs">{job.property?.city}, {job.property?.state} {job.property?.zip_code}</p>
                 </div>
-                <button className="px-4 py-2 bg-cyan-600/20 text-cyan-400 rounded-lg hover:bg-cyan-600/30 transition-colors text-sm font-medium border border-cyan-500/30">
-                  View summary
-                </button>
-              </div>
-
-              <div className="p-6">
-                {/* Finance Stats Grid */}
-                <div className="grid grid-cols-2 gap-4 mb-6">
-                  <div className="bg-slate-900/50 rounded-xl p-4 border border-slate-700/30">
-                    <p className="text-xs text-slate-500 uppercase tracking-wider mb-1">Estimate</p>
-                    <p className="text-2xl font-bold text-white">{formatCurrency(job.estimated_total)}</p>
-                  </div>
-                  <div className="bg-slate-900/50 rounded-xl p-4 border border-slate-700/30">
-                    <p className="text-xs text-slate-500 uppercase tracking-wider mb-1">Approved Amount</p>
-                    <p className="text-2xl font-bold text-cyan-400">{formatCurrency(job.approved_amount)}</p>
-                  </div>
+                <div>
+                  <p className="text-xs text-slate-500">Homeowner</p>
+                  <p className="text-slate-200">{job.property?.owner_full_name}</p>
+                  <p className="text-cyan-400 text-xs">{job.property?.owner_phone}</p>
                 </div>
-
-                {/* Mini Chart Placeholder */}
-                <div className="bg-slate-900/30 rounded-xl p-4 mb-6 border border-slate-700/30">
-                  <div className="flex items-end justify-between h-24 gap-2">
-                    {/* Estimate bars */}
-                    <div className="flex-1 flex items-end gap-1">
-                      <div className="flex-1 bg-cyan-500/80 rounded-t h-16"></div>
-                      <div className="flex-1 bg-cyan-500/60 rounded-t h-20"></div>
-                      <div className="flex-1 bg-cyan-500/40 rounded-t h-12"></div>
-                    </div>
-                    {/* Approved bars */}
-                    <div className="flex-1 flex items-end gap-1">
-                      <div className="flex-1 bg-emerald-500/80 rounded-t h-10"></div>
-                      <div className="flex-1 bg-emerald-500/60 rounded-t h-14"></div>
-                      <div className="flex-1 bg-emerald-500/40 rounded-t h-8"></div>
-                    </div>
-                  </div>
-                  <div className="flex justify-between mt-2 text-xs text-slate-500">
-                    <span>Plan</span>
-                    <span>App</span>
-                    <span>Dos</span>
-                    <span>Plan</span>
-                    <span>App</span>
-                    <span>Paid</span>
-                  </div>
+                <div>
+                  <p className="text-xs text-slate-500">Year / Sq Ft</p>
+                  <p className="text-slate-200">{job.property?.year_built || 'N/A'} / {job.property?.square_footage?.toLocaleString() || 'N/A'} sq ft</p>
                 </div>
-
-                {/* Invoiced/Paid/Balance */}
-                <div className="space-y-3">
-                  <div className="bg-slate-900/50 rounded-xl p-4 border border-slate-700/30">
-                    <p className="text-xs text-slate-500 uppercase tracking-wider mb-1">Invoiced</p>
-                    <p className="text-2xl font-bold text-white">{formatCurrency(invoiced)}</p>
-                  </div>
-                  <div className="bg-emerald-500/10 rounded-xl p-4 border border-emerald-500/30">
-                    <p className="text-xs text-emerald-400 uppercase tracking-wider mb-1">Paid</p>
-                    <p className="text-2xl font-bold text-emerald-400">{formatCurrency(paid)}</p>
-                  </div>
-                  <div className="bg-slate-900/50 rounded-xl p-4 border border-slate-700/30">
-                    <p className="text-xs text-slate-500 uppercase tracking-wider mb-1">Balance</p>
-                    <p className="text-2xl font-bold text-white">{formatCurrency(balance)}</p>
-                  </div>
+                <div>
+                  <p className="text-xs text-slate-500">Email</p>
+                  <p className="text-cyan-400 text-xs truncate">{job.property?.owner_email}</p>
                 </div>
               </div>
             </div>
 
-            {/* Notes/Files/Photos Tabs */}
-            <div className="bg-slate-800/50 backdrop-blur-sm rounded-2xl border border-slate-700/50 overflow-hidden">
-              {/* Tabs */}
-              <div className="flex border-b border-slate-700/50">
-                {[
-                  { id: 'notes', label: 'Notes', icon: MessageSquare },
-                  { id: 'files', label: 'Files', icon: FileText },
-                  { id: 'photos', label: 'Photos', icon: ImageIcon },
-                ].map((tab) => {
-                  const Icon = tab.icon;
-                  return (
-                    <button
-                      key={tab.id}
-                      onClick={() => setNotesFilesTab(tab.id as typeof notesFilesTab)}
-                      className={`flex-1 flex items-center justify-center gap-2 py-4 text-sm font-medium transition-colors ${
-                        notesFilesTab === tab.id
-                          ? 'text-cyan-400 border-b-2 border-cyan-400 bg-slate-700/30'
-                          : 'text-slate-400 hover:text-slate-200 hover:bg-slate-700/20'
-                      }`}
-                    >
-                      <Icon className="w-4 h-4" />
-                      {tab.label}
-                    </button>
-                  );
-                })}
+            {/* Claim Info - Compact */}
+            <div className="bg-slate-800/50 backdrop-blur-sm rounded-xl border border-slate-700/50 p-4">
+              <div className="flex items-center justify-between mb-3">
+                <h2 className="text-sm font-semibold text-white flex items-center gap-2">
+                  <FileText className="w-4 h-4 text-cyan-400" />
+                  Claim Information
+                </h2>
               </div>
 
-              {/* Tab Content */}
-              <div className="p-6">
-                <p className="text-slate-400 text-sm mb-4">
-                  Easy access and upload across your {notesFilesTab}.
-                </p>
-                <button className="flex items-center gap-2 px-4 py-2 bg-slate-700/50 text-slate-300 rounded-lg hover:bg-slate-700 transition-colors text-sm border border-slate-600/50">
+              <div className="grid grid-cols-3 gap-4 text-sm">
+                <div>
+                  <p className="text-xs text-slate-500">Carrier</p>
+                  <p className="text-slate-200 truncate">{job.property?.insurance_company || 'N/A'}</p>
+                </div>
+                <div>
+                  <p className="text-xs text-slate-500">Policy #</p>
+                  <p className="text-slate-200">{job.property?.policy_number || 'N/A'}</p>
+                </div>
+                <div>
+                  <p className="text-xs text-slate-500">Claim #</p>
+                  <p className="text-slate-200">{job.claim_number}</p>
+                </div>
+              </div>
+            </div>
+
+            {/* Financials - Compact Single Row */}
+            <div className="bg-slate-800/50 backdrop-blur-sm rounded-xl border border-slate-700/50 p-4">
+              <div className="flex items-center justify-between mb-3">
+                <h2 className="text-sm font-semibold text-white flex items-center gap-2">
+                  <DollarSign className="w-4 h-4 text-cyan-400" />
+                  Financials
+                </h2>
+                <button className="text-xs text-cyan-400 hover:text-cyan-300">View Details</button>
+              </div>
+
+              <div className="grid grid-cols-5 gap-2">
+                <div className="bg-slate-900/50 rounded-lg p-2 text-center">
+                  <p className="text-xs text-slate-500">Estimate</p>
+                  <p className="text-sm font-bold text-white">{formatCurrency(job.estimated_total)}</p>
+                </div>
+                <div className="bg-slate-900/50 rounded-lg p-2 text-center">
+                  <p className="text-xs text-slate-500">Approved</p>
+                  <p className="text-sm font-bold text-cyan-400">{formatCurrency(job.approved_amount)}</p>
+                </div>
+                <div className="bg-slate-900/50 rounded-lg p-2 text-center">
+                  <p className="text-xs text-slate-500">Invoiced</p>
+                  <p className="text-sm font-bold text-white">{formatCurrency(invoiced)}</p>
+                </div>
+                <div className="bg-emerald-500/10 rounded-lg p-2 text-center border border-emerald-500/20">
+                  <p className="text-xs text-emerald-400">Paid</p>
+                  <p className="text-sm font-bold text-emerald-400">{formatCurrency(paid)}</p>
+                </div>
+                <div className="bg-slate-900/50 rounded-lg p-2 text-center">
+                  <p className="text-xs text-slate-500">Balance</p>
+                  <p className="text-sm font-bold text-white">{formatCurrency(balance)}</p>
+                </div>
+              </div>
+            </div>
+
+            {/* Quick Access - Files/Photos */}
+            <div className="bg-slate-800/50 backdrop-blur-sm rounded-xl border border-slate-700/50 p-4">
+              <div className="flex items-center gap-4">
+                <button
+                  onClick={() => setNotesFilesTab('files')}
+                  className="flex-1 flex items-center justify-center gap-2 py-2 bg-slate-700/50 rounded-lg text-slate-300 hover:bg-slate-700 text-sm"
+                >
+                  <FileText className="w-4 h-4" />
+                  Files
+                </button>
+                <button
+                  onClick={() => setNotesFilesTab('photos')}
+                  className="flex-1 flex items-center justify-center gap-2 py-2 bg-slate-700/50 rounded-lg text-slate-300 hover:bg-slate-700 text-sm"
+                >
+                  <ImageIcon className="w-4 h-4" />
+                  Photos
+                </button>
+                <button className="flex items-center gap-2 px-4 py-2 bg-cyan-600/20 text-cyan-400 rounded-lg hover:bg-cyan-600/30 text-sm border border-cyan-500/30">
                   <Upload className="w-4 h-4" />
                   Upload
                 </button>
               </div>
             </div>
+          </div>
+
+          {/* Right Column - Communications */}
+          <div>
+            <CommunicationsPanel
+              jobId={job.id}
+              organizationId={job.organization_id}
+              currentUserId="demo-user-id"
+            />
           </div>
         </div>
       </div>
@@ -577,18 +515,11 @@ const JobDetail: React.FC<JobDetailProps> = ({ job = mockJob, onBack, activeTab 
           <div className="min-h-full bg-slate-900">
             <BannerSection />
             <div className="p-6">
-              <div className="bg-slate-800/50 backdrop-blur-sm rounded-2xl border border-slate-700/50 p-6">
-                <h2 className="text-xl font-semibold text-white mb-4">Communications</h2>
-                <p className="text-slate-400 mb-6">Track all communications with homeowner and insurance.</p>
-                <div className="text-center py-8 text-slate-500">
-                  <MessageSquare className="w-12 h-12 mx-auto mb-3 opacity-50" />
-                  <p>No communications logged yet</p>
-                </div>
-                <button className="flex items-center gap-2 px-4 py-2 bg-cyan-600/20 text-cyan-400 rounded-lg hover:bg-cyan-600/30 transition-colors text-sm font-medium border border-cyan-500/30">
-                  <Plus className="w-4 h-4" />
-                  Log Communication
-                </button>
-              </div>
+              <CommunicationsPanel
+                jobId={job.id}
+                organizationId={job.organization_id}
+                currentUserId="demo-user-id"
+              />
             </div>
           </div>
         );
