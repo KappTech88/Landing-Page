@@ -1,0 +1,54 @@
+#!/bin/bash
+# Git post-commit hook - Updates branch notes after ANY commit
+# Works in: IDE, command line, Claude Code, etc.
+
+REPO_ROOT=$(git rev-parse --show-toplevel 2>/dev/null)
+BRANCH=$(git rev-parse --abbrev-ref HEAD 2>/dev/null)
+
+# Only run for claude/ branches (or remove this check for all branches)
+if [[ ! "$BRANCH" =~ ^claude/ ]]; then
+    exit 0
+fi
+
+NOTES_FILE="$REPO_ROOT/.claude/BRANCH_NOTES.md"
+
+# Get latest commit info
+LATEST_HASH=$(git log -1 --format='%h' 2>/dev/null)
+LATEST_MSG=$(git log -1 --format='%s' 2>/dev/null)
+LATEST_TIME=$(git log -1 --format='%ci' 2>/dev/null)
+AUTHOR=$(git log -1 --format='%an' 2>/dev/null)
+FILES_CHANGED=$(git diff-tree --no-commit-id --name-only -r HEAD 2>/dev/null | head -10)
+
+# Create notes directory if needed
+mkdir -p "$REPO_ROOT/.claude"
+
+# Create or update notes file
+if [ ! -f "$NOTES_FILE" ]; then
+    cat > "$NOTES_FILE" << EOF
+# Branch Notes: $BRANCH
+
+**Created:** $(date '+%Y-%m-%d %H:%M:%S')
+
+---
+
+## Change Log
+
+EOF
+fi
+
+# Append latest commit
+cat >> "$NOTES_FILE" << EOF
+### $LATEST_TIME
+**Author:** $AUTHOR
+**Commit:** \`$LATEST_HASH\` - $LATEST_MSG
+
+**Files:**
+\`\`\`
+$FILES_CHANGED
+\`\`\`
+
+---
+
+EOF
+
+exit 0

@@ -1,5 +1,16 @@
 {
   "hooks": {
+    "PostToolUse": [
+      {
+        "matcher": "Bash",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash /home/user/Landing-Page/.claude/post-commit-hook.sh \"$TOOL_INPUT\""
+          }
+        ]
+      }
+    ],
     "Stop": [
       {
         "hooks": [
