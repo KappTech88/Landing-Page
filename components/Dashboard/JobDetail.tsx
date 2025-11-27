@@ -20,7 +20,9 @@ import {
   Clock,
   CheckCircle,
   Package,
-  ClipboardList
+  ClipboardList,
+  ChevronDown,
+  ChevronUp
 } from 'lucide-react';
 import { ClaimWithDetails, Property, JOB_STATUS_CONFIG } from '../../types';
 import { CommunicationsPanel } from './JobDetail/Communications';
@@ -33,10 +35,63 @@ interface JobDetailProps {
   activeTab?: string;
 }
 
-// Mock data for demonstration
-const mockJob: ClaimWithDetails & { property: Property; bannerUrl?: string } = {
+// Helper function to display empty values
+const displayValue = (value: string | number | undefined | null, suffix?: string): string => {
+  if (value === undefined || value === null || value === '') {
+    return '--';
+  }
+  return suffix ? `${value}${suffix}` : String(value);
+};
+
+// Mock data for demonstration - includes all fields with some left empty to show placeholders
+const mockJob: ClaimWithDetails & { property: Property; bannerUrl?: string } & {
+  // Extended job fields
+  job_number?: string;
+  job_name?: string;
+  job_type?: string;
+  job_category?: string;
+  work_type?: string;
+  // Customer contact
+  customer_name?: string;
+  customer_phone?: string;
+  customer_email?: string;
+  // Dates
+  date_appointment?: string;
+  date_sold?: string;
+  date_started?: string;
+  date_completed?: string;
+  target_start_date?: string;
+  target_completion_date?: string;
+  // Insurance/Adjuster
+  adjuster_name?: string;
+  adjuster_phone?: string;
+  adjuster_email?: string;
+  // Team
+  sales_rep_name?: string;
+  project_manager_name?: string;
+  estimator_name?: string;
+  // Permit
+  permit_number?: string;
+  permit_status?: string;
+  // Roofing
+  roof_type?: string;
+  roof_squares?: number;
+  roof_pitch?: string;
+  shingle_color?: string;
+  // Extended financials
+  contract_amount?: number;
+  material_cost?: number;
+  labor_cost?: number;
+} = {
   id: '1',
   organization_id: 'org-1',
+  // Job identification
+  job_number: 'JOB-2024-0147',
+  job_name: 'Roof Replacement',
+  job_type: 'roofing',
+  job_category: 'residential_insurance',
+  work_type: 'replacement',
+  // Claim info
   claim_number: '2122419433',
   internal_reference: 'JOB-001',
   created_by: 'user-1',
@@ -46,16 +101,45 @@ const mockJob: ClaimWithDetails & { property: Property; bannerUrl?: string } = {
   status: 'work_in_progress',
   date_of_loss: '2024-03-15',
   date_reported: '2024-03-16',
+  // Financials
   estimated_total: 25000,
   approved_amount: 8000,
   supplement_amount: 0,
   final_amount: 0,
   deductible: 1000,
+  contract_amount: undefined, // Empty - not set yet
+  material_cost: undefined, // Empty
+  labor_cost: undefined, // Empty
+  // Descriptions
   description: 'Roof Replacement',
   damage_description: 'Storm damage to roof requiring full replacement',
   scope_of_work: 'Full roof tear-off and replacement with architectural shingles',
+  // Dates
   created_at: '2024-03-16T10:00:00Z',
   updated_at: '2024-03-20T15:30:00Z',
+  date_appointment: '2024-03-18',
+  date_sold: undefined, // Empty
+  date_started: undefined, // Empty
+  date_completed: undefined, // Empty
+  target_start_date: undefined, // Empty
+  target_completion_date: undefined, // Empty
+  // Adjuster - some empty
+  adjuster_name: undefined, // Empty
+  adjuster_phone: undefined, // Empty
+  adjuster_email: undefined, // Empty
+  // Team - empty
+  sales_rep_name: undefined, // Empty
+  project_manager_name: undefined, // Empty
+  estimator_name: undefined, // Empty
+  // Permit - empty
+  permit_number: undefined, // Empty
+  permit_status: undefined, // Empty
+  // Roofing details - some filled
+  roof_type: 'Architectural Shingles',
+  roof_squares: 28,
+  roof_pitch: '6/12',
+  shingle_color: undefined, // Empty
+  // Banner
   bannerUrl: 'https://images.unsplash.com/photo-1564013799919-ab600027ffc6?w=1200&h=400&fit=crop',
   property: {
     id: 'prop-1',
@@ -74,8 +158,13 @@ const mockJob: ClaimWithDetails & { property: Property; bannerUrl?: string } = {
     property_type: 'residential',
     year_built: 2007,
     square_footage: 350,
+    // Insurance
     insurance_company: 'Extimations Carrier',
     policy_number: '$123459866',
+    // Adjuster fields on property
+    adjuster_name: undefined, // Empty
+    adjuster_phone: undefined, // Empty
+    adjuster_email: undefined, // Empty
     created_at: '2024-03-16T10:00:00Z',
     updated_at: '2024-03-16T10:00:00Z',
   }
@@ -84,6 +173,21 @@ const mockJob: ClaimWithDetails & { property: Property; bannerUrl?: string } = {
 const JobDetail: React.FC<JobDetailProps> = ({ job = mockJob, onBack, activeTab = 'overview' }) => {
   const [notesFilesTab, setNotesFilesTab] = useState<'notes' | 'files' | 'photos'>('notes');
   const [bannerImage, setBannerImage] = useState<string | null>(job.bannerUrl || null);
+
+  // Panel expanded states
+  const [expandedPanels, setExpandedPanels] = useState<Record<string, boolean>>({
+    jobInfo: false,
+    customerProperty: false,
+    insuranceClaim: false,
+    team: false,
+    keyDates: false,
+    permit: false,
+    financials: false,
+  });
+
+  const togglePanel = (panel: string) => {
+    setExpandedPanels(prev => ({ ...prev, [panel]: !prev[panel] }));
+  };
 
   const handleBannerUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -201,77 +305,391 @@ const JobDetail: React.FC<JobDetailProps> = ({ job = mockJob, onBack, activeTab 
       <BannerSection />
 
       {/* Main Content - Compact Layout */}
-      <div className="p-4">
+      <div className="p-4 pt-6">
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-          {/* Left Column - Property & Claim Info */}
-          <div className="space-y-4">
-            {/* Property & Homeowner - Compact */}
+          {/* Left Column - Job, Property & Claim Info */}
+          <div className="space-y-3">
+            {/* Job Info */}
             <div className="bg-slate-800/50 backdrop-blur-sm rounded-xl border border-slate-700/50 p-4">
               <div className="flex items-center justify-between mb-3">
                 <h2 className="text-sm font-semibold text-white flex items-center gap-2">
-                  <Building2 className="w-4 h-4 text-cyan-400" />
-                  Property & Contact
+                  <ClipboardList className="w-4 h-4 text-cyan-400" />
+                  Job Information
                 </h2>
-              </div>
-
-              <div className="grid grid-cols-2 gap-x-6 gap-y-2 text-sm">
-                <div>
-                  <p className="text-xs text-slate-500">Address</p>
-                  <p className="text-slate-200">{job.property?.address_line1}</p>
-                  <p className="text-slate-400 text-xs">{job.property?.city}, {job.property?.state} {job.property?.zip_code}</p>
-                </div>
-                <div>
-                  <p className="text-xs text-slate-500">Homeowner</p>
-                  <p className="text-slate-200">{job.property?.owner_full_name}</p>
-                  <p className="text-cyan-400 text-xs">{job.property?.owner_phone}</p>
-                </div>
-                <div>
-                  <p className="text-xs text-slate-500">Year / Sq Ft</p>
-                  <p className="text-slate-200">{job.property?.year_built || 'N/A'} / {job.property?.square_footage?.toLocaleString() || 'N/A'} sq ft</p>
-                </div>
-                <div>
-                  <p className="text-xs text-slate-500">Email</p>
-                  <p className="text-cyan-400 text-xs truncate">{job.property?.owner_email}</p>
+                <div className="flex items-center gap-2">
+                  <button className="text-cyan-400 hover:text-cyan-300">
+                    <Edit3 className="w-3.5 h-3.5" />
+                  </button>
+                  <button
+                    onClick={() => togglePanel('jobInfo')}
+                    className="text-slate-400 hover:text-white transition-colors"
+                  >
+                    {expandedPanels.jobInfo ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
+                  </button>
                 </div>
               </div>
+              <div className="grid grid-cols-4 gap-x-4 gap-y-2 text-sm">
+                <div>
+                  <p className="text-slate-500 text-xs">Job #</p>
+                  <p className="text-slate-200">{displayValue(job.job_number)}</p>
+                </div>
+                <div>
+                  <p className="text-slate-500 text-xs">Job Type</p>
+                  <p className="text-slate-200 capitalize">{displayValue(job.job_type)}</p>
+                </div>
+                <div>
+                  <p className="text-slate-500 text-xs">Work Type</p>
+                  <p className="text-slate-200 capitalize">{displayValue(job.work_type)}</p>
+                </div>
+                <div>
+                  <p className="text-slate-500 text-xs">Priority</p>
+                  <p className="text-slate-200 capitalize">{displayValue(job.priority)}</p>
+                </div>
+              </div>
+              {/* Expanded content */}
+              {expandedPanels.jobInfo && (
+                <div className="mt-3 pt-3 border-t border-slate-700/50 grid grid-cols-4 gap-x-4 gap-y-2 text-sm">
+                  <div>
+                    <p className="text-slate-500 text-xs">Job Category</p>
+                    <p className="text-slate-200 capitalize">{displayValue(job.job_category?.replace('_', ' '))}</p>
+                  </div>
+                  <div>
+                    <p className="text-slate-500 text-xs">Internal Ref</p>
+                    <p className="text-slate-200">{displayValue(job.internal_reference)}</p>
+                  </div>
+                  <div>
+                    <p className="text-slate-500 text-xs">Created</p>
+                    <p className="text-slate-200">{job.created_at ? new Date(job.created_at).toLocaleDateString() : '--'}</p>
+                  </div>
+                  <div>
+                    <p className="text-slate-500 text-xs">Updated</p>
+                    <p className="text-slate-200">{job.updated_at ? new Date(job.updated_at).toLocaleDateString() : '--'}</p>
+                  </div>
+                </div>
+              )}
             </div>
 
-            {/* Claim Info - Compact */}
+            {/* Customer & Property - Combined with Roof Details */}
+            <div className="bg-slate-800/50 backdrop-blur-sm rounded-xl border border-slate-700/50 p-4">
+              <div className="flex items-center justify-between mb-3">
+                <h2 className="text-sm font-semibold text-white flex items-center gap-2">
+                  <User className="w-4 h-4 text-cyan-400" />
+                  Customer & Property
+                </h2>
+                <div className="flex items-center gap-2">
+                  <button className="text-cyan-400 hover:text-cyan-300">
+                    <Edit3 className="w-3.5 h-3.5" />
+                  </button>
+                  <button
+                    onClick={() => togglePanel('customerProperty')}
+                    className="text-slate-400 hover:text-white transition-colors"
+                  >
+                    {expandedPanels.customerProperty ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
+                  </button>
+                </div>
+              </div>
+              <div className="grid grid-cols-4 gap-x-4 gap-y-2 text-sm">
+                <div className="col-span-2">
+                  <p className="text-slate-500 text-xs">Customer Name</p>
+                  <p className="text-slate-200">{displayValue(job.property?.owner_full_name)}</p>
+                </div>
+                <div>
+                  <p className="text-slate-500 text-xs">Phone</p>
+                  <p className="text-cyan-400">{displayValue(job.property?.owner_phone)}</p>
+                </div>
+                <div>
+                  <p className="text-slate-500 text-xs">Email</p>
+                  <p className="text-cyan-400 truncate">{displayValue(job.property?.owner_email)}</p>
+                </div>
+                <div className="col-span-2">
+                  <p className="text-slate-500 text-xs">Address</p>
+                  <p className="text-slate-200">{displayValue(job.property?.address_line1)}</p>
+                </div>
+                <div>
+                  <p className="text-slate-500 text-xs">City</p>
+                  <p className="text-slate-200">{displayValue(job.property?.city)}</p>
+                </div>
+                <div>
+                  <p className="text-slate-500 text-xs">State / Zip</p>
+                  <p className="text-slate-200">{displayValue(job.property?.state)} {displayValue(job.property?.zip_code)}</p>
+                </div>
+              </div>
+              {/* Expanded content - Property & Roof Details */}
+              {expandedPanels.customerProperty && (
+                <div className="mt-3 pt-3 border-t border-slate-700/50">
+                  <p className="text-xs text-slate-400 mb-2 font-medium">Property Details</p>
+                  <div className="grid grid-cols-4 gap-x-4 gap-y-2 text-sm">
+                    <div>
+                      <p className="text-slate-500 text-xs">Property Type</p>
+                      <p className="text-slate-200 capitalize">{displayValue(job.property?.property_type)}</p>
+                    </div>
+                    <div>
+                      <p className="text-slate-500 text-xs">Year Built</p>
+                      <p className="text-slate-200">{displayValue(job.property?.year_built)}</p>
+                    </div>
+                    <div>
+                      <p className="text-slate-500 text-xs">Sq Footage</p>
+                      <p className="text-slate-200">{job.property?.square_footage ? `${job.property.square_footage.toLocaleString()} sf` : '--'}</p>
+                    </div>
+                    <div>
+                      <p className="text-slate-500 text-xs">Stories</p>
+                      <p className="text-slate-200">{displayValue(job.property?.stories)}</p>
+                    </div>
+                  </div>
+                  <p className="text-xs text-slate-400 mb-2 mt-3 font-medium">Roof Details</p>
+                  <div className="grid grid-cols-4 gap-x-4 gap-y-2 text-sm">
+                    <div>
+                      <p className="text-slate-500 text-xs">Roof Type</p>
+                      <p className="text-slate-200">{displayValue(job.roof_type)}</p>
+                    </div>
+                    <div>
+                      <p className="text-slate-500 text-xs">Squares</p>
+                      <p className="text-slate-200">{job.roof_squares ? `${job.roof_squares} SQ` : '--'}</p>
+                    </div>
+                    <div>
+                      <p className="text-slate-500 text-xs">Pitch</p>
+                      <p className="text-slate-200">{displayValue(job.roof_pitch)}</p>
+                    </div>
+                    <div>
+                      <p className="text-slate-500 text-xs">Shingle Color</p>
+                      <p className="text-slate-200">{displayValue(job.shingle_color)}</p>
+                    </div>
+                  </div>
+                </div>
+              )}
+            </div>
+
+            {/* Insurance & Claim Info */}
             <div className="bg-slate-800/50 backdrop-blur-sm rounded-xl border border-slate-700/50 p-4">
               <div className="flex items-center justify-between mb-3">
                 <h2 className="text-sm font-semibold text-white flex items-center gap-2">
                   <FileText className="w-4 h-4 text-cyan-400" />
-                  Claim Information
+                  Insurance & Claim
                 </h2>
+                <div className="flex items-center gap-2">
+                  <button className="text-cyan-400 hover:text-cyan-300">
+                    <Edit3 className="w-3.5 h-3.5" />
+                  </button>
+                  <button
+                    onClick={() => togglePanel('insuranceClaim')}
+                    className="text-slate-400 hover:text-white transition-colors"
+                  >
+                    {expandedPanels.insuranceClaim ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
+                  </button>
+                </div>
+              </div>
+              <div className="grid grid-cols-4 gap-x-4 gap-y-2 text-sm">
+                <div>
+                  <p className="text-slate-500 text-xs">Carrier</p>
+                  <p className="text-slate-200 truncate">{displayValue(job.property?.insurance_company)}</p>
+                </div>
+                <div>
+                  <p className="text-slate-500 text-xs">Policy #</p>
+                  <p className="text-slate-200">{displayValue(job.property?.policy_number)}</p>
+                </div>
+                <div>
+                  <p className="text-slate-500 text-xs">Claim #</p>
+                  <p className="text-slate-200">{displayValue(job.claim_number)}</p>
+                </div>
+                <div>
+                  <p className="text-slate-500 text-xs">Date of Loss</p>
+                  <p className="text-slate-200">{job.date_of_loss ? new Date(job.date_of_loss).toLocaleDateString() : '--'}</p>
+                </div>
+              </div>
+              {/* Expanded content - Adjuster & More Claim Info */}
+              {expandedPanels.insuranceClaim && (
+                <div className="mt-3 pt-3 border-t border-slate-700/50">
+                  <p className="text-xs text-slate-400 mb-2 font-medium">Adjuster Information</p>
+                  <div className="grid grid-cols-4 gap-x-4 gap-y-2 text-sm">
+                    <div>
+                      <p className="text-slate-500 text-xs">Adjuster Name</p>
+                      <p className="text-slate-200">{displayValue(job.adjuster_name || job.property?.adjuster_name)}</p>
+                    </div>
+                    <div>
+                      <p className="text-slate-500 text-xs">Adjuster Phone</p>
+                      <p className="text-cyan-400">{displayValue(job.adjuster_phone || job.property?.adjuster_phone)}</p>
+                    </div>
+                    <div className="col-span-2">
+                      <p className="text-slate-500 text-xs">Adjuster Email</p>
+                      <p className="text-cyan-400 truncate">{displayValue(job.adjuster_email || job.property?.adjuster_email)}</p>
+                    </div>
+                  </div>
+                  <p className="text-xs text-slate-400 mb-2 mt-3 font-medium">Claim Details</p>
+                  <div className="grid grid-cols-4 gap-x-4 gap-y-2 text-sm">
+                    <div>
+                      <p className="text-slate-500 text-xs">Deductible</p>
+                      <p className="text-slate-200">{job.deductible ? formatCurrency(job.deductible) : '--'}</p>
+                    </div>
+                    <div>
+                      <p className="text-slate-500 text-xs">Claim Type</p>
+                      <p className="text-slate-200 capitalize">{displayValue(job.claim_type?.replace('_', ' '))}</p>
+                    </div>
+                    <div>
+                      <p className="text-slate-500 text-xs">Severity</p>
+                      <p className="text-slate-200 capitalize">{displayValue(job.severity)}</p>
+                    </div>
+                    <div>
+                      <p className="text-slate-500 text-xs">Date Reported</p>
+                      <p className="text-slate-200">{job.date_reported ? new Date(job.date_reported).toLocaleDateString() : '--'}</p>
+                    </div>
+                  </div>
+                </div>
+              )}
+            </div>
+
+            {/* Team & Dates Row */}
+            <div className="grid grid-cols-2 gap-3">
+              {/* Team Assignment */}
+              <div className="bg-slate-800/50 backdrop-blur-sm rounded-xl border border-slate-700/50 p-4">
+                <div className="flex items-center justify-between mb-3">
+                  <h2 className="text-sm font-semibold text-white flex items-center gap-2">
+                    <User className="w-4 h-4 text-cyan-400" />
+                    Team
+                  </h2>
+                  <button
+                    onClick={() => togglePanel('team')}
+                    className="text-slate-400 hover:text-white transition-colors"
+                  >
+                    {expandedPanels.team ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
+                  </button>
+                </div>
+                <div className="space-y-2 text-sm">
+                  <div className="flex justify-between">
+                    <span className="text-slate-500 text-xs">Sales Rep</span>
+                    <span className="text-slate-200">{displayValue(job.sales_rep_name)}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-slate-500 text-xs">Project Manager</span>
+                    <span className="text-slate-200">{displayValue(job.project_manager_name)}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-slate-500 text-xs">Estimator</span>
+                    <span className="text-slate-200">{displayValue(job.estimator_name)}</span>
+                  </div>
+                </div>
+                {expandedPanels.team && (
+                  <div className="mt-3 pt-3 border-t border-slate-700/50 space-y-2 text-sm">
+                    <div className="flex justify-between">
+                      <span className="text-slate-500 text-xs">Production Mgr</span>
+                      <span className="text-slate-200">--</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-slate-500 text-xs">Coordinator</span>
+                      <span className="text-slate-200">--</span>
+                    </div>
+                  </div>
+                )}
               </div>
 
-              <div className="grid grid-cols-3 gap-4 text-sm">
-                <div>
-                  <p className="text-xs text-slate-500">Carrier</p>
-                  <p className="text-slate-200 truncate">{job.property?.insurance_company || 'N/A'}</p>
+              {/* Important Dates */}
+              <div className="bg-slate-800/50 backdrop-blur-sm rounded-xl border border-slate-700/50 p-4">
+                <div className="flex items-center justify-between mb-3">
+                  <h2 className="text-sm font-semibold text-white flex items-center gap-2">
+                    <Calendar className="w-4 h-4 text-cyan-400" />
+                    Key Dates
+                  </h2>
+                  <button
+                    onClick={() => togglePanel('keyDates')}
+                    className="text-slate-400 hover:text-white transition-colors"
+                  >
+                    {expandedPanels.keyDates ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
+                  </button>
                 </div>
-                <div>
-                  <p className="text-xs text-slate-500">Policy #</p>
-                  <p className="text-slate-200">{job.property?.policy_number || 'N/A'}</p>
+                <div className="space-y-2 text-sm">
+                  <div className="flex justify-between">
+                    <span className="text-slate-500 text-xs">Appointment</span>
+                    <span className="text-slate-200">{job.date_appointment ? new Date(job.date_appointment).toLocaleDateString() : '--'}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-slate-500 text-xs">Sold Date</span>
+                    <span className="text-slate-200">{job.date_sold ? new Date(job.date_sold).toLocaleDateString() : '--'}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-slate-500 text-xs">Start Date</span>
+                    <span className="text-slate-200">{job.date_started ? new Date(job.date_started).toLocaleDateString() : '--'}</span>
+                  </div>
                 </div>
-                <div>
-                  <p className="text-xs text-slate-500">Claim #</p>
-                  <p className="text-slate-200">{job.claim_number}</p>
-                </div>
+                {expandedPanels.keyDates && (
+                  <div className="mt-3 pt-3 border-t border-slate-700/50 space-y-2 text-sm">
+                    <div className="flex justify-between">
+                      <span className="text-slate-500 text-xs">Target Start</span>
+                      <span className="text-slate-200">{job.target_start_date ? new Date(job.target_start_date).toLocaleDateString() : '--'}</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-slate-500 text-xs">Target Complete</span>
+                      <span className="text-slate-200">{job.target_completion_date ? new Date(job.target_completion_date).toLocaleDateString() : '--'}</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-slate-500 text-xs">Completed</span>
+                      <span className="text-slate-200">{job.date_completed ? new Date(job.date_completed).toLocaleDateString() : '--'}</span>
+                    </div>
+                  </div>
+                )}
               </div>
             </div>
 
-            {/* Financials - Compact Single Row */}
+            {/* Permit Info */}
+            <div className="bg-slate-800/50 backdrop-blur-sm rounded-xl border border-slate-700/50 p-4">
+              <div className="flex items-center justify-between mb-3">
+                <h2 className="text-sm font-semibold text-white flex items-center gap-2">
+                  <FileText className="w-4 h-4 text-cyan-400" />
+                  Permit
+                </h2>
+                <button
+                  onClick={() => togglePanel('permit')}
+                  className="text-slate-400 hover:text-white transition-colors"
+                >
+                  {expandedPanels.permit ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
+                </button>
+              </div>
+              <div className="grid grid-cols-4 gap-x-4 gap-y-2 text-sm">
+                <div>
+                  <p className="text-slate-500 text-xs">Permit #</p>
+                  <p className="text-slate-200">{displayValue(job.permit_number)}</p>
+                </div>
+                <div>
+                  <p className="text-slate-500 text-xs">Status</p>
+                  <p className="text-slate-200">{displayValue(job.permit_status)}</p>
+                </div>
+              </div>
+              {expandedPanels.permit && (
+                <div className="mt-3 pt-3 border-t border-slate-700/50 grid grid-cols-4 gap-x-4 gap-y-2 text-sm">
+                  <div>
+                    <p className="text-slate-500 text-xs">Jurisdiction</p>
+                    <p className="text-slate-200">--</p>
+                  </div>
+                  <div>
+                    <p className="text-slate-500 text-xs">Permit Fee</p>
+                    <p className="text-slate-200">--</p>
+                  </div>
+                  <div>
+                    <p className="text-slate-500 text-xs">Submitted</p>
+                    <p className="text-slate-200">--</p>
+                  </div>
+                  <div>
+                    <p className="text-slate-500 text-xs">Approved</p>
+                    <p className="text-slate-200">--</p>
+                  </div>
+                </div>
+              )}
+            </div>
+
+            {/* Financials */}
             <div className="bg-slate-800/50 backdrop-blur-sm rounded-xl border border-slate-700/50 p-4">
               <div className="flex items-center justify-between mb-3">
                 <h2 className="text-sm font-semibold text-white flex items-center gap-2">
                   <DollarSign className="w-4 h-4 text-cyan-400" />
                   Financials
                 </h2>
-                <button className="text-xs text-cyan-400 hover:text-cyan-300">View Details</button>
+                <button
+                  onClick={() => togglePanel('financials')}
+                  className="text-slate-400 hover:text-white transition-colors"
+                >
+                  {expandedPanels.financials ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
+                </button>
               </div>
 
-              <div className="grid grid-cols-5 gap-2">
+              <div className="grid grid-cols-6 gap-2">
                 <div className="bg-slate-900/50 rounded-lg p-2 text-center">
                   <p className="text-xs text-slate-500">Estimate</p>
                   <p className="text-sm font-bold text-white">{formatCurrency(job.estimated_total)}</p>
@@ -279,6 +697,10 @@ const JobDetail: React.FC<JobDetailProps> = ({ job = mockJob, onBack, activeTab 
                 <div className="bg-slate-900/50 rounded-lg p-2 text-center">
                   <p className="text-xs text-slate-500">Approved</p>
                   <p className="text-sm font-bold text-cyan-400">{formatCurrency(job.approved_amount)}</p>
+                </div>
+                <div className="bg-slate-900/50 rounded-lg p-2 text-center">
+                  <p className="text-xs text-slate-500">Contract</p>
+                  <p className="text-sm font-bold text-white">{job.contract_amount ? formatCurrency(job.contract_amount) : '--'}</p>
                 </div>
                 <div className="bg-slate-900/50 rounded-lg p-2 text-center">
                   <p className="text-xs text-slate-500">Invoiced</p>
@@ -293,11 +715,33 @@ const JobDetail: React.FC<JobDetailProps> = ({ job = mockJob, onBack, activeTab 
                   <p className="text-sm font-bold text-white">{formatCurrency(balance)}</p>
                 </div>
               </div>
+
+              {/* Expanded financial details */}
+              {expandedPanels.financials && (
+                <div className="mt-3 pt-3 border-t border-slate-700/50 grid grid-cols-4 gap-x-4 gap-y-2 text-sm">
+                  <div>
+                    <p className="text-slate-500 text-xs">Material Cost</p>
+                    <p className="text-slate-200">{job.material_cost ? formatCurrency(job.material_cost) : '--'}</p>
+                  </div>
+                  <div>
+                    <p className="text-slate-500 text-xs">Labor Cost</p>
+                    <p className="text-slate-200">{job.labor_cost ? formatCurrency(job.labor_cost) : '--'}</p>
+                  </div>
+                  <div>
+                    <p className="text-slate-500 text-xs">Deductible</p>
+                    <p className="text-slate-200">{job.deductible ? formatCurrency(job.deductible) : '--'}</p>
+                  </div>
+                  <div>
+                    <p className="text-slate-500 text-xs">Supplement</p>
+                    <p className="text-slate-200">{job.supplement_amount ? formatCurrency(job.supplement_amount) : '--'}</p>
+                  </div>
+                </div>
+              )}
             </div>
 
             {/* Quick Access - Files/Photos */}
             <div className="bg-slate-800/50 backdrop-blur-sm rounded-xl border border-slate-700/50 p-4">
-              <div className="flex items-center gap-4">
+              <div className="flex items-center gap-3">
                 <button
                   onClick={() => setNotesFilesTab('files')}
                   className="flex-1 flex items-center justify-center gap-2 py-2 bg-slate-700/50 rounded-lg text-slate-300 hover:bg-slate-700 text-sm"
@@ -321,7 +765,7 @@ const JobDetail: React.FC<JobDetailProps> = ({ job = mockJob, onBack, activeTab 
           </div>
 
           {/* Right Column - Communications */}
-          <div>
+          <div className="lg:mt-0">
             <CommunicationsPanel
               jobId={job.id}
               organizationId={job.organization_id}
