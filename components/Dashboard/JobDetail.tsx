@@ -241,9 +241,13 @@ const JobDetail: React.FC<JobDetailProps> = ({ job = mockJob, onBack, activeTab 
   const paid = 0;
   const balance = invoiced - paid;
 
+  // Calculate total job amount (use estimated or contract if available)
+  const totalJobAmount = job.contract_amount || job.estimated_total || 0;
+  const amountDue = balance;
+
   // Banner component shared across tabs
   const BannerSection = () => (
-    <div className="relative h-36 bg-slate-800 overflow-hidden group">
+    <div className="relative h-40 bg-slate-800 overflow-hidden group">
       {bannerImage ? (
         <img
           src={bannerImage}
@@ -262,8 +266,20 @@ const JobDetail: React.FC<JobDetailProps> = ({ job = mockJob, onBack, activeTab 
       {/* Gradient overlay */}
       <div className="absolute inset-0 bg-gradient-to-t from-slate-900/90 via-slate-900/40 to-transparent" />
 
+      {/* Financial Summary - Top Right */}
+      <div className="absolute top-3 right-3 bg-slate-900/70 backdrop-blur-sm rounded-lg p-3 border border-slate-700/50">
+        <div className="text-right">
+          <p className="text-xs text-slate-400">Job Total</p>
+          <p className="text-lg font-bold text-white">{formatCurrency(totalJobAmount)}</p>
+        </div>
+        <div className="text-right mt-1 pt-1 border-t border-slate-700/50">
+          <p className="text-xs text-slate-400">Amount Due</p>
+          <p className="text-lg font-bold text-cyan-400">{formatCurrency(amountDue)}</p>
+        </div>
+      </div>
+
       {/* Upload button */}
-      <label className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer">
+      <label className="absolute top-3 left-3 opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer">
         <input
           type="file"
           accept="image/*"
@@ -305,7 +321,7 @@ const JobDetail: React.FC<JobDetailProps> = ({ job = mockJob, onBack, activeTab 
       <BannerSection />
 
       {/* Main Content - Compact Layout */}
-      <div className="p-4 pt-6">
+      <div className="p-4 pt-10">
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
           {/* Left Column - Job, Property & Claim Info */}
           <div className="space-y-3">
@@ -669,71 +685,6 @@ const JobDetail: React.FC<JobDetailProps> = ({ job = mockJob, onBack, activeTab 
                   <div>
                     <p className="text-slate-500 text-xs">Approved</p>
                     <p className="text-slate-200">--</p>
-                  </div>
-                </div>
-              )}
-            </div>
-
-            {/* Financials */}
-            <div className="bg-slate-800/50 backdrop-blur-sm rounded-xl border border-slate-700/50 p-4">
-              <div className="flex items-center justify-between mb-3">
-                <h2 className="text-sm font-semibold text-white flex items-center gap-2">
-                  <DollarSign className="w-4 h-4 text-cyan-400" />
-                  Financials
-                </h2>
-                <button
-                  onClick={() => togglePanel('financials')}
-                  className="text-slate-400 hover:text-white transition-colors"
-                >
-                  {expandedPanels.financials ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
-                </button>
-              </div>
-
-              <div className="grid grid-cols-6 gap-2">
-                <div className="bg-slate-900/50 rounded-lg p-2 text-center">
-                  <p className="text-xs text-slate-500">Estimate</p>
-                  <p className="text-sm font-bold text-white">{formatCurrency(job.estimated_total)}</p>
-                </div>
-                <div className="bg-slate-900/50 rounded-lg p-2 text-center">
-                  <p className="text-xs text-slate-500">Approved</p>
-                  <p className="text-sm font-bold text-cyan-400">{formatCurrency(job.approved_amount)}</p>
-                </div>
-                <div className="bg-slate-900/50 rounded-lg p-2 text-center">
-                  <p className="text-xs text-slate-500">Contract</p>
-                  <p className="text-sm font-bold text-white">{job.contract_amount ? formatCurrency(job.contract_amount) : '--'}</p>
-                </div>
-                <div className="bg-slate-900/50 rounded-lg p-2 text-center">
-                  <p className="text-xs text-slate-500">Invoiced</p>
-                  <p className="text-sm font-bold text-white">{formatCurrency(invoiced)}</p>
-                </div>
-                <div className="bg-emerald-500/10 rounded-lg p-2 text-center border border-emerald-500/20">
-                  <p className="text-xs text-emerald-400">Paid</p>
-                  <p className="text-sm font-bold text-emerald-400">{formatCurrency(paid)}</p>
-                </div>
-                <div className="bg-slate-900/50 rounded-lg p-2 text-center">
-                  <p className="text-xs text-slate-500">Balance</p>
-                  <p className="text-sm font-bold text-white">{formatCurrency(balance)}</p>
-                </div>
-              </div>
-
-              {/* Expanded financial details */}
-              {expandedPanels.financials && (
-                <div className="mt-3 pt-3 border-t border-slate-700/50 grid grid-cols-4 gap-x-4 gap-y-2 text-sm">
-                  <div>
-                    <p className="text-slate-500 text-xs">Material Cost</p>
-                    <p className="text-slate-200">{job.material_cost ? formatCurrency(job.material_cost) : '--'}</p>
-                  </div>
-                  <div>
-                    <p className="text-slate-500 text-xs">Labor Cost</p>
-                    <p className="text-slate-200">{job.labor_cost ? formatCurrency(job.labor_cost) : '--'}</p>
-                  </div>
-                  <div>
-                    <p className="text-slate-500 text-xs">Deductible</p>
-                    <p className="text-slate-200">{job.deductible ? formatCurrency(job.deductible) : '--'}</p>
-                  </div>
-                  <div>
-                    <p className="text-slate-500 text-xs">Supplement</p>
-                    <p className="text-slate-200">{job.supplement_amount ? formatCurrency(job.supplement_amount) : '--'}</p>
                   </div>
                 </div>
               )}
