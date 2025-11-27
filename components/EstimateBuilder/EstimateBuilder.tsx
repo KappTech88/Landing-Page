@@ -6,8 +6,9 @@ import {
   Search, Filter, MoreVertical, GripVertical, AlertCircle,
   Building2, Home, Layers, Paintbrush, Wrench, Zap, Droplets,
   Wind, Settings2, Package, Clock, CheckCircle2, XCircle,
-  ChevronUp, Printer, Send, ArrowLeft
+  ChevronUp, Printer, Send, ArrowLeft, Upload
 } from 'lucide-react';
+import EstimateImport from './EstimateImport';
 
 // ============= TYPES =============
 
@@ -904,6 +905,7 @@ const EstimateBuilder: React.FC<EstimateBuilderProps> = ({ onBack }) => {
   const [showPreview, setShowPreview] = useState(false);
   const [showDetailedView, setShowDetailedView] = useState(true);
   const [quickAddSearch, setQuickAddSearch] = useState('');
+  const [showImport, setShowImport] = useState(false);
 
   const [estimate, setEstimate] = useState<EstimateData>({
     id: generateId(),
@@ -1031,6 +1033,91 @@ const EstimateBuilder: React.FC<EstimateBuilderProps> = ({ onBack }) => {
     setEstimate(prev => ({ ...prev, ...updates }));
   }, []);
 
+  // Import from Excel handler
+  const handleExcelImport = useCallback((
+    lineItems: Array<{
+      id: string;
+      lineNumber: number;
+      categoryId: string;
+      categoryName: string;
+      itemCode: string;
+      description: string;
+      detailedDescription?: string;
+      itemType: string;
+      quantity: number;
+      unit: string;
+      unitPrice: number;
+      materialCost: number;
+      laborCost: number;
+      laborHours?: number;
+      laborRate?: number;
+      rcv: number;
+      depreciationPercent: number;
+      depreciationAmount: number;
+      acv: number;
+      isTaxable: boolean;
+      isOptional: boolean;
+      isIncluded: boolean;
+      isContested: boolean;
+      contestNotes?: string;
+      notes?: string;
+    }>,
+    categories: Array<{
+      id: string;
+      code: string;
+      name: string;
+      icon: string;
+      color: string;
+      isExpanded: boolean;
+      sortOrder: number;
+    }>
+  ) => {
+    // Convert imported items to our LineItem format
+    const convertedItems: LineItem[] = lineItems.map((item, index) => ({
+      id: item.id,
+      lineNumber: index + 1,
+      categoryId: item.categoryId,
+      categoryName: item.categoryName,
+      itemCode: item.itemCode,
+      description: item.description,
+      detailedDescription: item.detailedDescription,
+      itemType: (item.itemType as ItemType) || 'material_labor',
+      quantity: item.quantity,
+      unit: (item.unit as UnitType) || 'EA',
+      unitPrice: item.unitPrice,
+      materialCost: item.materialCost,
+      laborCost: item.laborCost,
+      laborHours: item.laborHours,
+      laborRate: item.laborRate,
+      rcv: item.rcv,
+      depreciationPercent: item.depreciationPercent,
+      depreciationAmount: item.depreciationAmount,
+      acv: item.acv,
+      isTaxable: item.isTaxable,
+      isOptional: item.isOptional,
+      isIncluded: item.isIncluded,
+      isContested: item.isContested,
+      contestNotes: item.contestNotes,
+      notes: item.notes,
+    }));
+
+    // Merge imported categories with existing ones
+    const existingCategoryIds = new Set(estimate.categories.map(c => c.id));
+    const newCategories: Category[] = categories
+      .filter(c => !existingCategoryIds.has(c.id))
+      .map(c => ({
+        ...c,
+        isExpanded: true,
+      }));
+
+    // Update estimate with imported data
+    setEstimate(prev => ({
+      ...prev,
+      lineItems: convertedItems, // Replace all line items
+      categories: [...prev.categories, ...newCategories],
+    }));
+  }, [estimate.categories]);
+
   // Render
   return (
     <div className="min-h-screen bg-slate-950">
@@ -1038,6 +1125,17 @@ const EstimateBuilder: React.FC<EstimateBuilderProps> = ({ onBack }) => {
       <AnimatePresence>
         {showPreview && (
           <EstimatePreview estimate={estimate} onClose={() => setShowPreview(false)} />
+        )}
+      </AnimatePresence>
+
+      {/* Import Modal */}
+      <AnimatePresence>
+        {showImport && (
+          <EstimateImport
+            onImport={handleExcelImport}
+            onClose={() => setShowImport(false)}
+            existingItemCount={estimate.lineItems.length}
+          />
         )}
       </AnimatePresence>
 
@@ -1066,6 +1164,14 @@ const EstimateBuilder: React.FC<EstimateBuilderProps> = ({ onBack }) => {
             </div>
 
             <div className="flex items-center gap-3">
+              <button
+                onClick={() => setShowImport(true)}
+                className="flex items-center gap-2 px-3 py-2 rounded-lg bg-purple-500/10 hover:bg-purple-500/20 border border-purple-500/30 text-purple-400 hover:text-purple-300 transition-colors"
+              >
+                <Upload className="w-4 h-4" />
+                <span className="text-sm">Import Excel</span>
+              </button>
+
               <button
                 onClick={() => setShowDetailedView(!showDetailedView)}
                 className={`flex items-center gap-2 px-3 py-2 rounded-lg border transition-colors ${
