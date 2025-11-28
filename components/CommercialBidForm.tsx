@@ -1,8 +1,19 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Upload, FileText, Loader2, Send, User, MapPin, Phone, Mail, Building2, Calendar, Briefcase, ClipboardList } from 'lucide-react';
 import { analyzeClaim } from '../services/geminiService';
+import { getCurrentUser } from '../lib/supabase';
+import ServiceAuthChoice from './ServiceAuthChoice';
+import { AppView } from '../types';
 
-const CommercialBidForm: React.FC = () => {
+interface CommercialBidFormProps {
+  onNavigate?: (view: AppView) => void;
+}
+
+const CommercialBidForm: React.FC<CommercialBidFormProps> = ({ onNavigate }) => {
+  const [showAuthChoice, setShowAuthChoice] = useState(true);
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [userLoading, setUserLoading] = useState(true);
+
   const [formData, setFormData] = useState({
     contactName: '',
     email: '',
@@ -23,6 +34,60 @@ const CommercialBidForm: React.FC = () => {
   const [additionalDocs, setAdditionalDocs] = useState<FileList | null>(null);
   const [loading, setLoading] = useState(false);
   const [result, setResult] = useState<string | null>(null);
+
+  useEffect(() => {
+    const checkAuth = async () => {
+      try {
+        const user = await getCurrentUser();
+        if (user) {
+          setIsAuthenticated(true);
+          setShowAuthChoice(false);
+          setFormData(prev => ({
+            ...prev,
+            contactName: user.user_metadata?.full_name || user.email?.split('@')[0] || '',
+            email: user.email || '',
+            phone: user.user_metadata?.phone || '',
+            companyName: user.user_metadata?.company_name || '',
+          }));
+        }
+      } catch (error) {
+        setIsAuthenticated(false);
+      } finally {
+        setUserLoading(false);
+      }
+    };
+    checkAuth();
+  }, []);
+
+  const handleLoginClick = () => {
+    sessionStorage.setItem('returnToService', 'COMMERCIAL_BID');
+    if (onNavigate) {
+      onNavigate(AppView.PORTAL);
+    }
+  };
+
+  const handleGuestClick = () => {
+    setShowAuthChoice(false);
+  };
+
+  if (userLoading) {
+    return (
+      <div className="min-h-[70vh] flex items-center justify-center">
+        <Loader2 className="w-8 h-8 text-blue-400 animate-spin" />
+      </div>
+    );
+  }
+
+  if (!isAuthenticated && showAuthChoice) {
+    return (
+      <ServiceAuthChoice
+        serviceName="Commercial Bid Request"
+        serviceDescription="Professional commercial project estimates and bids. Pricing: $250 + 3% if contracted."
+        onLoginClick={handleLoginClick}
+        onGuestClick={handleGuestClick}
+      />
+    );
+  }
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     const { name, value } = e.target;

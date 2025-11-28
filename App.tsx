@@ -330,17 +330,17 @@ const App: React.FC = () => {
           </div>
         );
       case AppView.DENIAL_APPEAL:
-        return <DenialAppealForm />;
+        return <DenialAppealForm onNavigate={setView} />;
       case AppView.XACTIMATE_ESTIMATE:
-        return <XactimateEstimateForm />;
+        return <XactimateEstimateForm onNavigate={setView} />;
       case AppView.SUPPLEMENT_CLAIM:
-        return <SupplementClaimForm />;
+        return <SupplementClaimForm onNavigate={setView} />;
       case AppView.COMMERCIAL_BID:
-        return <CommercialBidForm />;
+        return <CommercialBidForm onNavigate={setView} />;
       case AppView.CUSTOMIZED_DOCS:
-        return <CustomizedDocumentsForm />;
+        return <CustomizedDocumentsForm onNavigate={setView} />;
       case AppView.CLAIMS:
-        return <ClaimSubmission />;
+        return <ClaimSubmission onNavigate={setView} />;
       case AppView.LABS:
         return <Labs />;
       case AppView.PORTAL:

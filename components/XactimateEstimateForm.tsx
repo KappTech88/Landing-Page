@@ -1,8 +1,19 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Upload, FileText, Loader2, Send, User, MapPin, Phone, Mail, Calculator, Home, ClipboardList } from 'lucide-react';
 import { analyzeClaim } from '../services/geminiService';
+import { getCurrentUser } from '../lib/supabase';
+import ServiceAuthChoice from './ServiceAuthChoice';
+import { AppView } from '../types';
 
-const XactimateEstimateForm: React.FC = () => {
+interface XactimateEstimateFormProps {
+  onNavigate?: (view: AppView) => void;
+}
+
+const XactimateEstimateForm: React.FC<XactimateEstimateFormProps> = ({ onNavigate }) => {
+  const [showAuthChoice, setShowAuthChoice] = useState(true);
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [userLoading, setUserLoading] = useState(true);
+
   const [formData, setFormData] = useState({
     contactName: '',
     email: '',
@@ -20,6 +31,60 @@ const XactimateEstimateForm: React.FC = () => {
   const [photos, setPhotos] = useState<FileList | null>(null);
   const [loading, setLoading] = useState(false);
   const [result, setResult] = useState<string | null>(null);
+
+  // Check if user is authenticated and pre-fill data
+  useEffect(() => {
+    const checkAuth = async () => {
+      try {
+        const user = await getCurrentUser();
+        if (user) {
+          setIsAuthenticated(true);
+          setShowAuthChoice(false);
+          setFormData(prev => ({
+            ...prev,
+            contactName: user.user_metadata?.full_name || user.email?.split('@')[0] || '',
+            email: user.email || '',
+            phone: user.user_metadata?.phone || '',
+          }));
+        }
+      } catch (error) {
+        setIsAuthenticated(false);
+      } finally {
+        setUserLoading(false);
+      }
+    };
+    checkAuth();
+  }, []);
+
+  const handleLoginClick = () => {
+    sessionStorage.setItem('returnToService', 'XACTIMATE_ESTIMATE');
+    if (onNavigate) {
+      onNavigate(AppView.PORTAL);
+    }
+  };
+
+  const handleGuestClick = () => {
+    setShowAuthChoice(false);
+  };
+
+  if (userLoading) {
+    return (
+      <div className="min-h-[70vh] flex items-center justify-center">
+        <Loader2 className="w-8 h-8 text-blue-400 animate-spin" />
+      </div>
+    );
+  }
+
+  if (!isAuthenticated && showAuthChoice) {
+    return (
+      <ServiceAuthChoice
+        serviceName="Xactimate Estimate Request"
+        serviceDescription="Professional Xactimate estimates with detailed specifications and line items. Pricing: $150 flat rate."
+        onLoginClick={handleLoginClick}
+        onGuestClick={handleGuestClick}
+      />
+    );
+  }
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     const { name, value } = e.target;

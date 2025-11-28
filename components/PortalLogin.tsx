@@ -33,19 +33,24 @@ const PortalLogin: React.FC<PortalLoginProps> = ({ onNavigate }) => {
     setError(null);
 
     try {
-      // TODO: Uncomment when Supabase is configured
-      /*
       const { session, user } = await signIn(formData.email, formData.password);
 
       if (session && user) {
-        // Redirect to dashboard
-        window.location.href = '/dashboard'; // or use router in Next.js
+        // Check if user was trying to access a service before logging in
+        const returnToService = sessionStorage.getItem('returnToService');
+        sessionStorage.removeItem('returnToService'); // Clear it after reading
+
+        if (returnToService && onNavigate) {
+          // Navigate back to the service they were trying to access
+          onNavigate(returnToService as AppView);
+        } else if (onNavigate) {
+          // Default: go to dashboard
+          onNavigate(AppView.DASHBOARD);
+        } else {
+          // Fallback for standalone use
+          window.location.href = '/dashboard';
+        }
       }
-      */
-
-      // Temporary: Show error since Supabase isn't configured yet
-      setError('Supabase authentication not configured yet. Please set up your .env.local file with Supabase credentials.');
-
     } catch (err: any) {
       console.error('Login error:', err);
       setError(err.message || 'Invalid email or password. Please try again.');

@@ -1,8 +1,19 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Upload, FileText, Loader2, Send, User, MapPin, Phone, Mail, Hash, Building2, Hammer, TrendingUp } from 'lucide-react';
 import { analyzeClaim } from '../services/geminiService';
+import { getCurrentUser } from '../lib/supabase';
+import ServiceAuthChoice from './ServiceAuthChoice';
+import { AppView } from '../types';
 
-const SupplementClaimForm: React.FC = () => {
+interface SupplementClaimFormProps {
+  onNavigate?: (view: AppView) => void;
+}
+
+const SupplementClaimForm: React.FC<SupplementClaimFormProps> = ({ onNavigate }) => {
+  const [showAuthChoice, setShowAuthChoice] = useState(true);
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [userLoading, setUserLoading] = useState(true);
+
   const [formData, setFormData] = useState({
     contactName: '',
     email: '',
@@ -24,6 +35,59 @@ const SupplementClaimForm: React.FC = () => {
   const [additionalDocs, setAdditionalDocs] = useState<FileList | null>(null);
   const [loading, setLoading] = useState(false);
   const [result, setResult] = useState<string | null>(null);
+
+  useEffect(() => {
+    const checkAuth = async () => {
+      try {
+        const user = await getCurrentUser();
+        if (user) {
+          setIsAuthenticated(true);
+          setShowAuthChoice(false);
+          setFormData(prev => ({
+            ...prev,
+            contactName: user.user_metadata?.full_name || user.email?.split('@')[0] || '',
+            email: user.email || '',
+            phone: user.user_metadata?.phone || '',
+          }));
+        }
+      } catch (error) {
+        setIsAuthenticated(false);
+      } finally {
+        setUserLoading(false);
+      }
+    };
+    checkAuth();
+  }, []);
+
+  const handleLoginClick = () => {
+    sessionStorage.setItem('returnToService', 'SUPPLEMENT_CLAIM');
+    if (onNavigate) {
+      onNavigate(AppView.PORTAL);
+    }
+  };
+
+  const handleGuestClick = () => {
+    setShowAuthChoice(false);
+  };
+
+  if (userLoading) {
+    return (
+      <div className="min-h-[70vh] flex items-center justify-center">
+        <Loader2 className="w-8 h-8 text-blue-400 animate-spin" />
+      </div>
+    );
+  }
+
+  if (!isAuthenticated && showAuthChoice) {
+    return (
+      <ServiceAuthChoice
+        serviceName="Supplement Claim Request"
+        serviceDescription="Professional supplement claim services to maximize your insurance recovery. Pricing: 15% of approved supplement amount."
+        onLoginClick={handleLoginClick}
+        onGuestClick={handleGuestClick}
+      />
+    );
+  }
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;

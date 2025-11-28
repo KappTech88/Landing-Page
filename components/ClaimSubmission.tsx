@@ -1,9 +1,19 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Upload, FileText, Loader2, Send, User, MapPin, Phone, Hammer, AlertCircle, ClipboardCheck, Building, Calendar, FileWarning } from 'lucide-react';
 import { analyzeClaim } from '../services/geminiService';
-import { ClaimSubmissionFormData, ClaimType, PropertyType } from '../types';
+import { ClaimSubmissionFormData, ClaimType, PropertyType, AppView } from '../types';
+import { getCurrentUser } from '../lib/supabase';
+import ServiceAuthChoice from './ServiceAuthChoice';
 
-const ClaimSubmission: React.FC = () => {
+interface ClaimSubmissionProps {
+  onNavigate?: (view: AppView) => void;
+}
+
+const ClaimSubmission: React.FC<ClaimSubmissionProps> = ({ onNavigate }) => {
+  const [showAuthChoice, setShowAuthChoice] = useState(true);
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [userLoading, setUserLoading] = useState(true);
+
   const [formData, setFormData] = useState<ClaimSubmissionFormData>({
     // Property Owner Info
     owner_first_name: '',
@@ -47,6 +57,62 @@ const ClaimSubmission: React.FC = () => {
   const [loading, setLoading] = useState(false);
   const [result, setResult] = useState<string | null>(null);
   const [submitSuccess, setSubmitSuccess] = useState(false);
+
+  useEffect(() => {
+    const checkAuth = async () => {
+      try {
+        const user = await getCurrentUser();
+        if (user) {
+          setIsAuthenticated(true);
+          setShowAuthChoice(false);
+          const fullName = user.user_metadata?.full_name || user.email?.split('@')[0] || '';
+          const [firstName, ...lastNameParts] = fullName.split(' ');
+          setFormData(prev => ({
+            ...prev,
+            owner_first_name: firstName || '',
+            owner_last_name: lastNameParts.join(' ') || '',
+            owner_email: user.email || '',
+            owner_phone: user.user_metadata?.phone || '',
+          }));
+        }
+      } catch (error) {
+        setIsAuthenticated(false);
+      } finally {
+        setUserLoading(false);
+      }
+    };
+    checkAuth();
+  }, []);
+
+  const handleLoginClick = () => {
+    sessionStorage.setItem('returnToService', 'CLAIMS');
+    if (onNavigate) {
+      onNavigate(AppView.PORTAL);
+    }
+  };
+
+  const handleGuestClick = () => {
+    setShowAuthChoice(false);
+  };
+
+  if (userLoading) {
+    return (
+      <div className="min-h-[70vh] flex items-center justify-center">
+        <Loader2 className="w-8 h-8 text-blue-400 animate-spin" />
+      </div>
+    );
+  }
+
+  if (!isAuthenticated && showAuthChoice) {
+    return (
+      <ServiceAuthChoice
+        serviceName="Claim Submission"
+        serviceDescription="Submit your insurance claim for professional processing and documentation."
+        onLoginClick={handleLoginClick}
+        onGuestClick={handleGuestClick}
+      />
+    );
+  }
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     const { name, value } = e.target;

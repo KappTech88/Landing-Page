@@ -1,8 +1,19 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Upload, FileText, Loader2, Send, User, MapPin, Phone, Mail, FileCheck, Building2, Hash, AlertCircle } from 'lucide-react';
 import { analyzeClaim } from '../services/geminiService';
+import { getCurrentUser, supabase } from '../lib/supabase';
+import ServiceAuthChoice from './ServiceAuthChoice';
+import { AppView } from '../types';
 
-const DenialAppealForm: React.FC = () => {
+interface DenialAppealFormProps {
+  onNavigate?: (view: AppView) => void;
+}
+
+const DenialAppealForm: React.FC<DenialAppealFormProps> = ({ onNavigate }) => {
+  const [showAuthChoice, setShowAuthChoice] = useState(true);
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [userLoading, setUserLoading] = useState(true);
+
   const [formData, setFormData] = useState({
     contactName: '',
     email: '',
@@ -20,6 +31,67 @@ const DenialAppealForm: React.FC = () => {
   const [photos, setPhotos] = useState<FileList | null>(null);
   const [loading, setLoading] = useState(false);
   const [result, setResult] = useState<string | null>(null);
+
+  // Check if user is authenticated and pre-fill data
+  useEffect(() => {
+    const checkAuth = async () => {
+      try {
+        const user = await getCurrentUser();
+        if (user) {
+          setIsAuthenticated(true);
+          setShowAuthChoice(false);
+
+          // Pre-fill user data
+          setFormData(prev => ({
+            ...prev,
+            contactName: user.user_metadata?.full_name || user.email?.split('@')[0] || '',
+            email: user.email || '',
+            phone: user.user_metadata?.phone || '',
+          }));
+        }
+      } catch (error) {
+        // User not authenticated, show auth choice
+        setIsAuthenticated(false);
+      } finally {
+        setUserLoading(false);
+      }
+    };
+
+    checkAuth();
+  }, []);
+
+  const handleLoginClick = () => {
+    // Store intent to return to this service after login
+    sessionStorage.setItem('returnToService', 'DENIAL_APPEAL');
+    if (onNavigate) {
+      onNavigate(AppView.PORTAL);
+    }
+  };
+
+  const handleGuestClick = () => {
+    setShowAuthChoice(false);
+  };
+
+  // Show loading while checking auth
+  if (userLoading) {
+    return (
+      <div className="min-h-[70vh] flex items-center justify-center">
+        <Loader2 className="w-8 h-8 text-blue-400 animate-spin" />
+      </div>
+    );
+  }
+
+  // Show auth choice if not authenticated and user hasn't chosen guest
+  if (!isAuthenticated && showAuthChoice) {
+    return (
+      <ServiceAuthChoice
+        serviceName="Denial Appeal Request"
+        serviceDescription="Let us help you fight your claim denial. We'll investigate, analyze, and acquire any missing information needed. Pricing: 10% of Total Approved RCV."
+        onLoginClick={handleLoginClick}
+        onGuestClick={handleGuestClick}
+      />
+    );
+  }
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;

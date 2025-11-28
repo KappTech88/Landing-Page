@@ -1,9 +1,20 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Upload, FileText, Loader2, Send, User, Mail, Phone, FileEdit, Briefcase, ClipboardList, CheckCircle } from 'lucide-react';
 import { analyzeClaim } from '../services/geminiService';
 import { submitDocumentRequest, uploadDocumentFile } from '../services/documentRequestService';
+import { getCurrentUser } from '../lib/supabase';
+import ServiceAuthChoice from './ServiceAuthChoice';
+import { AppView } from '../types';
 
-const CustomizedDocumentsForm: React.FC = () => {
+interface CustomizedDocumentsFormProps {
+  onNavigate?: (view: AppView) => void;
+}
+
+const CustomizedDocumentsForm: React.FC<CustomizedDocumentsFormProps> = ({ onNavigate }) => {
+  const [showAuthChoice, setShowAuthChoice] = useState(true);
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [userLoading, setUserLoading] = useState(true);
+
   const [formData, setFormData] = useState({
     contactName: '',
     email: '',
@@ -22,6 +33,60 @@ const CustomizedDocumentsForm: React.FC = () => {
   const [result, setResult] = useState<string | null>(null);
   const [submissionId, setSubmissionId] = useState<string | null>(null);
   const [submissionSuccess, setSubmissionSuccess] = useState(false);
+
+  useEffect(() => {
+    const checkAuth = async () => {
+      try {
+        const user = await getCurrentUser();
+        if (user) {
+          setIsAuthenticated(true);
+          setShowAuthChoice(false);
+          setFormData(prev => ({
+            ...prev,
+            contactName: user.user_metadata?.full_name || user.email?.split('@')[0] || '',
+            email: user.email || '',
+            phone: user.user_metadata?.phone || '',
+            companyName: user.user_metadata?.company_name || '',
+          }));
+        }
+      } catch (error) {
+        setIsAuthenticated(false);
+      } finally {
+        setUserLoading(false);
+      }
+    };
+    checkAuth();
+  }, []);
+
+  const handleLoginClick = () => {
+    sessionStorage.setItem('returnToService', 'CUSTOMIZED_DOCS');
+    if (onNavigate) {
+      onNavigate(AppView.PORTAL);
+    }
+  };
+
+  const handleGuestClick = () => {
+    setShowAuthChoice(false);
+  };
+
+  if (userLoading) {
+    return (
+      <div className="min-h-[70vh] flex items-center justify-center">
+        <Loader2 className="w-8 h-8 text-blue-400 animate-spin" />
+      </div>
+    );
+  }
+
+  if (!isAuthenticated && showAuthChoice) {
+    return (
+      <ServiceAuthChoice
+        serviceName="Customized Documents Request"
+        serviceDescription="Professional custom documents, contracts, and digital forms. Pricing: $50 - $100 depending on complexity."
+        onLoginClick={handleLoginClick}
+        onGuestClick={handleGuestClick}
+      />
+    );
+  }
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
