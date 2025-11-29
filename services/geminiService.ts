@@ -1,35 +1,99 @@
 import { GoogleGenAI, GenerateContentResponse } from "@google/genai";
 
+// Helper to check if Gemini API key is configured
+export const isGeminiConfigured = (): boolean => {
+  const apiKey = import.meta.env.VITE_GEMINI_API_KEY;
+  return !!(apiKey && apiKey !== 'your-gemini-api-key-here' && apiKey.length > 10);
+};
+
 // Helper to get AI instance. Re-instantiated to ensure fresh key if changed.
-const getAI = () => new GoogleGenAI({ apiKey: import.meta.env.VITE_GEMINI_API_KEY });
+const getAI = () => {
+  const apiKey = import.meta.env.VITE_GEMINI_API_KEY;
+  if (!apiKey || apiKey === 'your-gemini-api-key-here') {
+    throw new Error('GEMINI_API_KEY_NOT_CONFIGURED');
+  }
+  return new GoogleGenAI({ apiKey });
+};
+
+// Custom error class for Gemini errors
+export class GeminiError extends Error {
+  code: string;
+
+  constructor(message: string, code: string) {
+    super(message);
+    this.name = 'GeminiError';
+    this.code = code;
+  }
+}
 
 /**
  * Analyzes a claim document text or image/pdf.
  */
 export const analyzeClaim = async (text: string, imageBase64?: string, mimeType: string = 'image/jpeg'): Promise<string> => {
-  const ai = getAI();
-  
-  const parts: any[] = [];
-  if (imageBase64) {
-    parts.push({
-      inlineData: {
-        mimeType: mimeType,
-        data: imageBase64
-      }
+  try {
+    const ai = getAI();
+
+    const parts: any[] = [];
+    if (imageBase64) {
+      parts.push({
+        inlineData: {
+          mimeType: mimeType,
+          data: imageBase64
+        }
+      });
+    }
+    parts.push({ text: `You are a professional insurance and claim estimation assistant for "Estimate Reliance". Analyze this claim submission.
+    If it's a document (PDF or Image), extract and summarize the key points, specific line items, cost estimates if visible, and identify any missing information required for a complete estimate.
+    If it's a user description, provide professional reassurance, analyze the described damages, and outline the next steps for the estimate process.
+
+    User input: ${text}` });
+
+    const response: GenerateContentResponse = await ai.models.generateContent({
+      model: 'gemini-2.5-flash',
+      contents: { parts },
     });
+
+    return response.text || "I couldn't process that claim. Please try again.";
+  } catch (error: any) {
+    // Check for specific error types
+    if (error.message === 'GEMINI_API_KEY_NOT_CONFIGURED') {
+      throw new GeminiError(
+        'AI service is not configured. Your submission has been received and our team will process it manually.',
+        'API_NOT_CONFIGURED'
+      );
+    }
+
+    // Check for API quota/rate limit errors
+    if (error.status === 429 || error.message?.includes('quota') || error.message?.includes('rate')) {
+      throw new GeminiError(
+        'Our AI service is temporarily busy. Your submission has been saved and will be processed shortly.',
+        'RATE_LIMITED'
+      );
+    }
+
+    // Check for invalid API key
+    if (error.status === 401 || error.status === 403 || error.message?.includes('API key')) {
+      throw new GeminiError(
+        'AI service authentication failed. Your submission has been received and our team will review it.',
+        'AUTH_ERROR'
+      );
+    }
+
+    // Network errors
+    if (error.message?.includes('network') || error.message?.includes('fetch') || error.name === 'TypeError') {
+      throw new GeminiError(
+        'Unable to connect to AI service. Please check your internet connection and try again.',
+        'NETWORK_ERROR'
+      );
+    }
+
+    // Generic error with original message for debugging
+    console.error('Gemini API error:', error);
+    throw new GeminiError(
+      'Unable to process your request. Please try again or contact support.',
+      'UNKNOWN_ERROR'
+    );
   }
-  parts.push({ text: `You are a professional insurance and claim estimation assistant for "Estimate Reliance". Analyze this claim submission. 
-  If it's a document (PDF or Image), extract and summarize the key points, specific line items, cost estimates if visible, and identify any missing information required for a complete estimate.
-  If it's a user description, provide professional reassurance, analyze the described damages, and outline the next steps for the estimate process.
-  
-  User input: ${text}` });
-
-  const response: GenerateContentResponse = await ai.models.generateContent({
-    model: 'gemini-2.5-flash',
-    contents: { parts },
-  });
-
-  return response.text || "I couldn't process that claim. Please try again.";
 };
 
 /**

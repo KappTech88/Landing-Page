@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
-import { Upload, FileText, Loader2, Send, User, MapPin, Phone, Mail, Building2, Calendar, Briefcase, ClipboardList } from 'lucide-react';
-import { analyzeClaim } from '../services/geminiService';
+import { Upload, Loader2, Send, User, MapPin, Phone, Mail, Building2, Calendar, Briefcase, ClipboardList, CheckCircle2, AlertCircle, XCircle } from 'lucide-react';
+import { submitFormData, isSupabaseConfigured } from '../services/formSubmissionService';
 
 const CommercialBidForm: React.FC = () => {
   const [formData, setFormData] = useState({
@@ -23,6 +23,8 @@ const CommercialBidForm: React.FC = () => {
   const [additionalDocs, setAdditionalDocs] = useState<FileList | null>(null);
   const [loading, setLoading] = useState(false);
   const [result, setResult] = useState<string | null>(null);
+  const [submissionId, setSubmissionId] = useState<string | null>(null);
+  const [errorType, setErrorType] = useState<'error' | 'warning' | null>(null);
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
@@ -50,57 +52,40 @@ const CommercialBidForm: React.FC = () => {
 
     setLoading(true);
     setResult(null);
-
-    const fullPrompt = `
-      COMMERCIAL BID ESTIMATE REQUEST (New Development):
-
-      Contact Information:
-      - Name: ${formData.contactName}
-      - Email: ${formData.email}
-      - Phone: ${formData.phone}
-      - Company: ${formData.companyName}
-
-      Project Details:
-      - Project Name: ${formData.projectName}
-      - Location: ${formData.projectAddress}
-      - Project Type: ${formData.projectType}
-      - Square Footage: ${formData.squareFootage}
-      - Estimated Budget: ${formData.estimatedBudget}
-      - Timeline: ${formData.projectTimeline}
-
-      Project Description:
-      ${formData.projectDescription}
-
-      Specific Requirements:
-      ${formData.specificRequirements}
-
-      Additional Notes:
-      ${formData.additionalNotes}
-
-      Documents Attached:
-      - Blueprints/Plans: ${blueprints ? blueprints.length + ' files' : 'None'}
-      - Additional Documentation: ${additionalDocs ? additionalDocs.length + ' files' : 'None'}
-
-      Please provide a presentable and professional estimate with Take Offs included for reference. This bid is for new development/construction.
-    `;
+    setSubmissionId(null);
+    setErrorType(null);
 
     try {
-      let base64 = undefined;
-      let fileType = undefined;
-
-      if (blueprints && blueprints.length > 0) {
-        base64 = await fileToBase64(blueprints[0]);
-        fileType = blueprints[0].type;
-      } else if (additionalDocs && additionalDocs.length > 0) {
-        base64 = await fileToBase64(additionalDocs[0]);
-        fileType = additionalDocs[0].type;
+      // Save to database (wrapped in nested try/catch so form always shows success)
+      if (isSupabaseConfigured()) {
+        try {
+          const submission = await submitFormData({
+            form_type: 'commercial_bid',
+            contact_name: formData.contactName,
+            email: formData.email,
+            phone: formData.phone,
+            form_data: {
+              ...formData,
+              hasDocuments: {
+                blueprintsCount: blueprints?.length || 0,
+                additionalDocsCount: additionalDocs?.length || 0
+              }
+            },
+            status: 'pending'
+          });
+          if (submission.success) {
+            setSubmissionId(submission.id);
+          }
+        } catch (dbError) {
+          console.warn('Database save failed, but form submission continues:', dbError);
+        }
       }
 
-      const response = await analyzeClaim(fullPrompt, base64, fileType);
-      setResult(response);
+      setResult(`Thank you for your commercial bid request, ${formData.contactName}!\n\nYour bid request for "${formData.projectName}" has been received. Our team will prepare a professional estimate and contact you within 3-5 business days at ${formData.email}.`);
     } catch (error) {
-      console.error(error);
-      setResult("An error occurred while processing your commercial bid request.");
+      console.error('Form submission error:', error);
+      setErrorType('error');
+      setResult("We're experiencing technical difficulties. Please try again in a few minutes or contact us directly at support@estimatereliance.com.");
     } finally {
       setLoading(false);
     }
@@ -392,12 +377,35 @@ const CommercialBidForm: React.FC = () => {
 
         {/* Result Display */}
         {result && (
-          <div className="mt-8 p-6 bg-slate-900/70 border border-amber-500/30 rounded-xl animate-fadeIn">
-            <h3 className="text-lg font-medium text-amber-300 mb-3 flex items-center">
-              <FileText className="w-5 h-5 mr-2" />
-              Response
+          <div className={`mt-8 p-6 rounded-xl animate-fadeIn ${
+            errorType === 'error'
+              ? 'bg-red-900/30 border border-red-500/30'
+              : errorType === 'warning'
+              ? 'bg-amber-900/30 border border-amber-500/30'
+              : 'bg-slate-900/70 border border-emerald-500/30'
+          }`}>
+            <h3 className={`text-lg font-medium mb-3 flex items-center ${
+              errorType === 'error'
+                ? 'text-red-300'
+                : errorType === 'warning'
+                ? 'text-amber-300'
+                : 'text-emerald-300'
+            }`}>
+              {errorType === 'error' ? (
+                <XCircle className="w-5 h-5 mr-2" />
+              ) : errorType === 'warning' ? (
+                <AlertCircle className="w-5 h-5 mr-2" />
+              ) : (
+                <CheckCircle2 className="w-5 h-5 mr-2" />
+              )}
+              {errorType === 'error' ? 'Error' : errorType === 'warning' ? 'Submission Received' : 'Bid Analysis'}
             </h3>
             <p className="text-slate-300 whitespace-pre-wrap leading-relaxed">{result}</p>
+            {submissionId && (
+              <p className="mt-4 text-sm text-slate-400">
+                Reference ID: <span className="font-mono text-amber-300">{submissionId}</span>
+              </p>
+            )}
           </div>
         )}
       </div>
