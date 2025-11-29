@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
-import { Upload, FileText, Loader2, Send, User, MapPin, Phone, Hammer, AlertCircle, ClipboardCheck, Building, Calendar, FileWarning } from 'lucide-react';
-import { analyzeClaim } from '../services/geminiService';
+import { Upload, FileText, Loader2, Send, User, MapPin, Phone, Hammer, AlertCircle, ClipboardCheck, Building, Calendar, FileWarning, CheckCircle2, XCircle } from 'lucide-react';
+import { analyzeClaim, isGeminiConfigured, GeminiError } from '../services/geminiService';
+import { submitFormData, isSupabaseConfigured } from '../services/formSubmissionService';
 import { ClaimSubmissionFormData, ClaimType, PropertyType } from '../types';
 
 const ClaimSubmission: React.FC = () => {
@@ -47,6 +48,8 @@ const ClaimSubmission: React.FC = () => {
   const [loading, setLoading] = useState(false);
   const [result, setResult] = useState<string | null>(null);
   const [submitSuccess, setSubmitSuccess] = useState(false);
+  const [submissionId, setSubmissionId] = useState<string | null>(null);
+  const [errorType, setErrorType] = useState<'error' | 'warning' | null>(null);
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
@@ -84,6 +87,8 @@ const ClaimSubmission: React.FC = () => {
     setLoading(true);
     setResult(null);
     setSubmitSuccess(false);
+    setSubmissionId(null);
+    setErrorType(null);
 
     // Create AI analysis prompt
     const fullPrompt = `
@@ -122,69 +127,75 @@ const ClaimSubmission: React.FC = () => {
       4. Any additional information needed
     `;
 
+    let aiResponse: string | undefined;
+    let aiError: string | undefined;
+
     try {
       let base64 = undefined;
       if (file) {
         base64 = await fileToBase64(file);
       }
-      const response = await analyzeClaim(fullPrompt, base64, file?.type);
-      setResult(response);
-      setSubmitSuccess(true);
 
-      // TODO: When Supabase is configured, uncomment this to save to database
-      /*
-      import { createClaim } from '../lib/supabase';
-
-      const claimData = {
-        organization_id: 'TEMP_ORG_ID', // Will be dynamic after auth
-        claim_number: `CLM-${Date.now()}`,
-        claim_type: formData.claim_type,
-        date_of_loss: formData.date_of_loss,
-        damage_description: formData.damage_description,
-        status: 'open',
-        priority: 'normal',
-        severity: 'moderate',
-        created_by: 'TEMP_USER_ID', // Will be from auth
-      };
-
-      const propertyData = {
-        organization_id: 'TEMP_ORG_ID',
-        owner_first_name: formData.owner_first_name,
-        owner_last_name: formData.owner_last_name,
-        owner_email: formData.owner_email,
-        owner_phone: formData.owner_phone,
-        owner_phone_alt: formData.owner_phone_alt,
-        address_line1: formData.address_line1,
-        address_line2: formData.address_line2,
-        city: formData.city,
-        state: formData.state,
-        zip_code: formData.zip_code,
-        property_type: formData.property_type,
-        square_footage: formData.square_footage,
-        year_built: formData.year_built,
-        insurance_company: formData.insurance_company,
-        policy_number: formData.policy_number,
-        adjuster_name: formData.adjuster_name,
-        adjuster_phone: formData.adjuster_phone,
-        adjuster_email: formData.adjuster_email,
-      };
-
-      const { claim, property } = await createClaim(claimData, propertyData);
-
-      // Upload photo if present
-      if (file && claim.id) {
-        import { uploadClaimPhoto } from '../lib/supabase';
-        await uploadClaimPhoto(claim.id, 'TEMP_ORG_ID', file, {
-          category: 'damage',
-          description: 'Initial damage documentation',
-          damage_type: formData.claim_type,
-        });
+      // Try AI processing
+      if (isGeminiConfigured()) {
+        try {
+          aiResponse = await analyzeClaim(fullPrompt, base64, file?.type);
+        } catch (error) {
+          if (error instanceof GeminiError) {
+            aiError = error.message;
+            setErrorType('warning');
+          } else {
+            throw error;
+          }
+        }
+      } else {
+        aiError = 'AI service is not configured. Your submission will be processed manually by our team.';
+        setErrorType('warning');
       }
-      */
 
+      // Save to database regardless of AI status
+      if (isSupabaseConfigured()) {
+        try {
+          const submission = await submitFormData({
+            form_type: 'claim_submission',
+            contact_name: `${formData.owner_first_name} ${formData.owner_last_name}`,
+            email: formData.owner_email,
+            phone: formData.owner_phone,
+            form_data: {
+              ...formData,
+              hasFile: !!file
+            },
+            ai_response: aiResponse,
+            ai_error: aiError,
+            status: aiResponse ? 'processing' : 'pending'
+          });
+          setSubmissionId(submission.id);
+        } catch (dbError) {
+          console.warn('Could not save to database:', dbError);
+        }
+      }
+
+      // Show result
+      if (aiResponse) {
+        setResult(aiResponse);
+        setSubmitSuccess(true);
+      } else if (aiError) {
+        setResult(`Thank you for your claim submission, ${formData.owner_first_name}!\n\n${aiError}\n\nOur team has received your ${formData.claim_type} damage claim for ${formData.address_line1}, ${formData.city} and will review it within 24 hours. You will receive updates at ${formData.owner_email}.`);
+        setSubmitSuccess(true);
+      } else {
+        setResult(`Thank you for your claim submission, ${formData.owner_first_name}!\n\nYour ${formData.claim_type} damage claim for ${formData.address_line1}, ${formData.city} has been received. Our team will review your submission and contact you within 24 hours at ${formData.owner_email}.`);
+        setSubmitSuccess(true);
+        setErrorType('warning');
+      }
     } catch (error) {
-      console.error(error);
-      setResult("An error occurred while processing your claim submission. Please try again or contact support.");
+      console.error('Form submission error:', error);
+      setErrorType('error');
+
+      if (error instanceof GeminiError) {
+        setResult(`We encountered an issue: ${error.message}\n\nPlease try again or contact us directly at support@estimatereliance.com.`);
+      } else {
+        setResult("We're experiencing technical difficulties. Please try again in a few minutes or contact us directly at support@estimatereliance.com.");
+      }
     } finally {
       setLoading(false);
     }
@@ -557,16 +568,39 @@ const ClaimSubmission: React.FC = () => {
 
         {/* RESULTS */}
         {result && (
-          <div className="mt-8 p-6 bg-slate-900/60 rounded-xl border border-indigo-500/20 animate-fadeIn">
-            <h3 className="text-lg font-medium text-indigo-200 mb-2 flex items-center">
-              <div className="w-2 h-2 bg-indigo-400 rounded-full mr-2 animate-pulse" />
-              Initial Analysis & Next Steps
+          <div className={`mt-8 p-6 rounded-xl animate-fadeIn ${
+            errorType === 'error'
+              ? 'bg-red-900/30 border border-red-500/30'
+              : errorType === 'warning'
+              ? 'bg-amber-900/30 border border-amber-500/30'
+              : 'bg-slate-900/60 border border-emerald-500/30'
+          }`}>
+            <h3 className={`text-lg font-medium mb-2 flex items-center ${
+              errorType === 'error'
+                ? 'text-red-300'
+                : errorType === 'warning'
+                ? 'text-amber-300'
+                : 'text-emerald-300'
+            }`}>
+              {errorType === 'error' ? (
+                <XCircle className="w-5 h-5 mr-2" />
+              ) : errorType === 'warning' ? (
+                <AlertCircle className="w-5 h-5 mr-2" />
+              ) : (
+                <CheckCircle2 className="w-5 h-5 mr-2" />
+              )}
+              {errorType === 'error' ? 'Error' : errorType === 'warning' ? 'Claim Received' : 'Initial Analysis & Next Steps'}
             </h3>
-            <p className="text-indigo-100/80 whitespace-pre-wrap leading-relaxed font-light">{result}</p>
-            {submitSuccess && (
+            <p className="text-slate-300 whitespace-pre-wrap leading-relaxed font-light">{result}</p>
+            {submissionId && (
+              <p className="mt-4 text-sm text-slate-400">
+                Reference ID: <span className="font-mono text-indigo-300">{submissionId}</span>
+              </p>
+            )}
+            {submitSuccess && !errorType && (
               <div className="mt-4 p-4 bg-green-500/10 border border-green-500/30 rounded-lg">
                 <p className="text-green-400 text-sm">
-                  ✓ Claim submitted successfully! We'll review your submission and contact you within 24 hours.
+                  Claim submitted successfully! We'll review your submission and contact you within 24 hours.
                 </p>
               </div>
             )}
