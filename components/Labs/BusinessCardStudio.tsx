@@ -1,5 +1,5 @@
-import React, { useState, useEffect } from 'react';
-import { ArrowLeft, Key, Upload, Wand2, Loader2, Download, User, Phone, Mail, Globe, MapPin, Briefcase } from 'lucide-react';
+import React, { useState } from 'react';
+import { ArrowLeft, Upload, Wand2, Loader2, Download, User, Phone, Mail, Globe, MapPin, Briefcase, AlertTriangle } from 'lucide-react';
 import { generateProGraphics } from '../../services/geminiService';
 
 interface BusinessCardStudioProps {
@@ -7,7 +7,7 @@ interface BusinessCardStudioProps {
 }
 
 const BusinessCardStudio: React.FC<BusinessCardStudioProps> = ({ onBack }) => {
-  const [hasKey, setHasKey] = useState(false);
+  const hasKey = !!import.meta.env.VITE_GEMINI_API_KEY;
   const [file, setFile] = useState<File | null>(null);
   const [imagePreview, setImagePreview] = useState<string | null>(null);
   const [companyName, setCompanyName] = useState('');
@@ -19,19 +19,6 @@ const BusinessCardStudio: React.FC<BusinessCardStudioProps> = ({ onBack }) => {
   // Contact Info
   const [info, setInfo] = useState({ firstName: '', lastName: '', jobTitle: '', office: '', cell: '', email: '', website: '', address: '' });
   const [prompt, setPrompt] = useState('');
-
-  useEffect(() => {
-    if (window.aistudio && window.aistudio.hasSelectedApiKey) {
-      window.aistudio.hasSelectedApiKey().then(setHasKey);
-    }
-  }, []);
-
-  const handleSelectKey = async () => {
-    if (window.aistudio && window.aistudio.openSelectKey) {
-      await window.aistudio.openSelectKey();
-      setHasKey(await window.aistudio.hasSelectedApiKey());
-    }
-  };
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
@@ -111,8 +98,9 @@ const BusinessCardStudio: React.FC<BusinessCardStudioProps> = ({ onBack }) => {
             <div className="p-8">
                 {!hasKey ? (
                     <div className="text-center py-20">
-                         <Key className="w-12 h-12 text-blue-400 mx-auto mb-4" />
-                         <button onClick={handleSelectKey} className="bg-blue-600 hover:bg-blue-500 text-white font-bold py-3 px-8 rounded-xl mt-4">Connect Key</button>
+                         <AlertTriangle className="w-12 h-12 text-amber-400 mx-auto mb-4" />
+                         <h3 className="text-xl font-bold text-blue-100 mb-2">API Key Required</h3>
+                         <p className="text-slate-400 text-sm max-w-md mx-auto">Please configure VITE_GEMINI_API_KEY in your environment variables to use this feature.</p>
                     </div>
                 ) : (
                     <div className="grid md:grid-cols-2 gap-8 items-start">
