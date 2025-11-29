@@ -128,7 +128,6 @@ const ClaimSubmission: React.FC = () => {
     `;
 
     let aiResponse: string | undefined;
-    let aiError: string | undefined;
 
     try {
       let base64 = undefined;
@@ -136,21 +135,14 @@ const ClaimSubmission: React.FC = () => {
         base64 = await fileToBase64(file);
       }
 
-      // Try AI processing
+      // Try AI processing (optional - form works without it)
       if (isGeminiConfigured()) {
         try {
           aiResponse = await analyzeClaim(fullPrompt, base64, file?.type);
         } catch (error) {
-          if (error instanceof GeminiError) {
-            aiError = error.message;
-            setErrorType('warning');
-          } else {
-            throw error;
-          }
+          // AI failed but that's okay - submission will still be saved
+          console.warn('AI processing skipped:', error);
         }
-      } else {
-        aiError = 'AI service is not configured. Your submission will be processed manually by our team.';
-        setErrorType('warning');
       }
 
       // Save to database regardless of AI status
@@ -166,7 +158,6 @@ const ClaimSubmission: React.FC = () => {
               hasFile: !!file
             },
             ai_response: aiResponse,
-            ai_error: aiError,
             status: aiResponse ? 'processing' : 'pending'
           });
           setSubmissionId(submission.id);
@@ -175,18 +166,15 @@ const ClaimSubmission: React.FC = () => {
         }
       }
 
-      // Show result
+      // Show result - submission is successful regardless of AI
+      const successMessage = `Thank you for your claim submission, ${formData.owner_first_name}!\n\nYour ${formData.claim_type} damage claim for ${formData.address_line1}, ${formData.city} has been received. Our team will review your submission and contact you within 24 hours at ${formData.owner_email}.`;
+
       if (aiResponse) {
         setResult(aiResponse);
-        setSubmitSuccess(true);
-      } else if (aiError) {
-        setResult(`Thank you for your claim submission, ${formData.owner_first_name}!\n\n${aiError}\n\nOur team has received your ${formData.claim_type} damage claim for ${formData.address_line1}, ${formData.city} and will review it within 24 hours. You will receive updates at ${formData.owner_email}.`);
-        setSubmitSuccess(true);
       } else {
-        setResult(`Thank you for your claim submission, ${formData.owner_first_name}!\n\nYour ${formData.claim_type} damage claim for ${formData.address_line1}, ${formData.city} has been received. Our team will review your submission and contact you within 24 hours at ${formData.owner_email}.`);
-        setSubmitSuccess(true);
-        setErrorType('warning');
+        setResult(successMessage);
       }
+      setSubmitSuccess(true);
     } catch (error) {
       console.error('Form submission error:', error);
       setErrorType('error');

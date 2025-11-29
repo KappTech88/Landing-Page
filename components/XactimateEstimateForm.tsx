@@ -87,7 +87,6 @@ const XactimateEstimateForm: React.FC = () => {
     `;
 
     let aiResponse: string | undefined;
-    let aiError: string | undefined;
 
     try {
       let base64 = undefined;
@@ -101,21 +100,14 @@ const XactimateEstimateForm: React.FC = () => {
         fileType = photos[0].type;
       }
 
-      // Try AI processing
+      // Try AI processing (optional - form works without it)
       if (isGeminiConfigured()) {
         try {
           aiResponse = await analyzeClaim(fullPrompt, base64, fileType);
         } catch (error) {
-          if (error instanceof GeminiError) {
-            aiError = error.message;
-            setErrorType('warning');
-          } else {
-            throw error;
-          }
+          // AI failed but that's okay - submission will still be saved
+          console.warn('AI processing skipped:', error);
         }
-      } else {
-        aiError = 'AI service is not configured. Your submission will be processed manually by our team.';
-        setErrorType('warning');
       }
 
       // Save to database regardless of AI status
@@ -134,7 +126,6 @@ const XactimateEstimateForm: React.FC = () => {
               }
             },
             ai_response: aiResponse,
-            ai_error: aiError,
             status: aiResponse ? 'processing' : 'pending'
           });
           setSubmissionId(submission.id);
@@ -143,14 +134,13 @@ const XactimateEstimateForm: React.FC = () => {
         }
       }
 
-      // Show result
+      // Show result - submission is successful regardless of AI
+      const successMessage = `Thank you for your estimate request, ${formData.contactName}!\n\nYour Xactimate estimate request for ${formData.propertyAddress} has been received. Our team will prepare your estimate and contact you within 2-3 business days at ${formData.email}.`;
+
       if (aiResponse) {
         setResult(aiResponse);
-      } else if (aiError) {
-        setResult(`Thank you for your estimate request, ${formData.contactName}!\n\n${aiError}\n\nOur team has received your Xactimate estimate request for ${formData.propertyAddress} and will prepare your estimate within 2-3 business days. You will receive it at ${formData.email}.`);
       } else {
-        setResult(`Thank you for your estimate request, ${formData.contactName}!\n\nYour Xactimate estimate request for ${formData.propertyAddress} has been received. Our team will prepare your estimate and contact you within 2-3 business days at ${formData.email}.`);
-        setErrorType('warning');
+        setResult(successMessage);
       }
     } catch (error) {
       console.error('Form submission error:', error);
