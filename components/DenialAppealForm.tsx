@@ -1,6 +1,5 @@
 import React, { useState } from 'react';
-import { Upload, FileText, Loader2, Send, User, MapPin, Phone, Mail, FileCheck, Building2, Hash, AlertCircle, CheckCircle2, XCircle } from 'lucide-react';
-import { analyzeClaim, isGeminiConfigured, GeminiError } from '../services/geminiService';
+import { Upload, Loader2, Send, User, MapPin, Phone, Mail, FileCheck, Building2, Hash, AlertCircle, CheckCircle2, XCircle } from 'lucide-react';
 import { submitFormData, isSupabaseConfigured } from '../services/formSubmissionService';
 
 const DenialAppealForm: React.FC = () => {
@@ -53,99 +52,32 @@ const DenialAppealForm: React.FC = () => {
     setSubmissionId(null);
     setErrorType(null);
 
-    const fullPrompt = `
-      DENIAL APPEAL REQUEST:
-
-      Contact Information:
-      - Name: ${formData.contactName}
-      - Email: ${formData.email}
-      - Phone: ${formData.phone}
-
-      Property & Claim Details:
-      - Property Address: ${formData.propertyAddress}
-      - Claim Number: ${formData.claimNumber}
-      - Insurance Company: ${formData.insuranceCompany}
-      - Adjuster Name: ${formData.adjusterName}
-
-      Denial Information:
-      ${formData.denialReason}
-
-      Additional Notes:
-      ${formData.additionalNotes}
-
-      Documents Attached:
-      - Denial Letter: ${denialLetter ? 'Yes' : 'No'}
-      - Inspection Report: ${inspectionReport ? 'Yes' : 'No'}
-      - Photos: ${photos ? photos.length + ' files' : 'None'}
-    `;
-
-    let aiResponse: string | undefined;
-
     try {
-      let base64 = undefined;
-      let fileType = undefined;
-
-      if (denialLetter) {
-        base64 = await fileToBase64(denialLetter);
-        fileType = denialLetter.type;
-      } else if (inspectionReport) {
-        base64 = await fileToBase64(inspectionReport);
-        fileType = inspectionReport.type;
-      }
-
-      // Try AI processing (optional - form works without it)
-      if (isGeminiConfigured()) {
-        try {
-          aiResponse = await analyzeClaim(fullPrompt, base64, fileType);
-        } catch (error) {
-          // AI failed but that's okay - submission will still be saved
-          console.warn('AI processing skipped:', error);
-        }
-      }
-
-      // Save to database regardless of AI status
+      // Save to database
       if (isSupabaseConfigured()) {
-        try {
-          const submission = await submitFormData({
-            form_type: 'denial_appeal',
-            contact_name: formData.contactName,
-            email: formData.email,
-            phone: formData.phone,
-            form_data: {
-              ...formData,
-              hasDocuments: {
-                denialLetter: !!denialLetter,
-                inspectionReport: !!inspectionReport,
-                photosCount: photos?.length || 0
-              }
-            },
-            ai_response: aiResponse,
-            status: aiResponse ? 'processing' : 'pending'
-          });
-          setSubmissionId(submission.id);
-        } catch (dbError) {
-          console.warn('Could not save to database:', dbError);
-        }
+        const submission = await submitFormData({
+          form_type: 'denial_appeal',
+          contact_name: formData.contactName,
+          email: formData.email,
+          phone: formData.phone,
+          form_data: {
+            ...formData,
+            hasDocuments: {
+              denialLetter: !!denialLetter,
+              inspectionReport: !!inspectionReport,
+              photosCount: photos?.length || 0
+            }
+          },
+          status: 'pending'
+        });
+        setSubmissionId(submission.id);
       }
 
-      // Show result - submission is successful regardless of AI
-      const successMessage = `Thank you for your submission, ${formData.contactName}!\n\nYour denial appeal request for claim ${formData.claimNumber} has been received. Our team will review your case and contact you within 1-2 business days at ${formData.email}.`;
-
-      if (aiResponse) {
-        setResult(aiResponse);
-      } else {
-        setResult(successMessage);
-        // No error type - this is a successful submission
-      }
+      setResult(`Thank you for your submission, ${formData.contactName}!\n\nYour denial appeal request for claim ${formData.claimNumber} has been received. Our team will review your case and contact you within 1-2 business days at ${formData.email}.`);
     } catch (error) {
       console.error('Form submission error:', error);
       setErrorType('error');
-
-      if (error instanceof GeminiError) {
-        setResult(`We encountered an issue: ${error.message}\n\nPlease try again or contact us directly at support@estimatereliance.com.`);
-      } else {
-        setResult("We're experiencing technical difficulties. Please try again in a few minutes or contact us directly at support@estimatereliance.com.");
-      }
+      setResult("We're experiencing technical difficulties. Please try again in a few minutes or contact us directly at support@estimatereliance.com.");
     } finally {
       setLoading(false);
     }

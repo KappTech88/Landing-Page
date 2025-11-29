@@ -1,6 +1,5 @@
 import React, { useState } from 'react';
-import { Upload, FileText, Loader2, Send, User, MapPin, Phone, Mail, Building2, Calendar, Briefcase, ClipboardList, CheckCircle2, AlertCircle, XCircle } from 'lucide-react';
-import { analyzeClaim, isGeminiConfigured, GeminiError } from '../services/geminiService';
+import { Upload, Loader2, Send, User, MapPin, Phone, Mail, Building2, Calendar, Briefcase, ClipboardList, CheckCircle2, AlertCircle, XCircle } from 'lucide-react';
 import { submitFormData, isSupabaseConfigured } from '../services/formSubmissionService';
 
 const CommercialBidForm: React.FC = () => {
@@ -56,104 +55,31 @@ const CommercialBidForm: React.FC = () => {
     setSubmissionId(null);
     setErrorType(null);
 
-    const fullPrompt = `
-      COMMERCIAL BID ESTIMATE REQUEST (New Development):
-
-      Contact Information:
-      - Name: ${formData.contactName}
-      - Email: ${formData.email}
-      - Phone: ${formData.phone}
-      - Company: ${formData.companyName}
-
-      Project Details:
-      - Project Name: ${formData.projectName}
-      - Location: ${formData.projectAddress}
-      - Project Type: ${formData.projectType}
-      - Square Footage: ${formData.squareFootage}
-      - Estimated Budget: ${formData.estimatedBudget}
-      - Timeline: ${formData.projectTimeline}
-
-      Project Description:
-      ${formData.projectDescription}
-
-      Specific Requirements:
-      ${formData.specificRequirements}
-
-      Additional Notes:
-      ${formData.additionalNotes}
-
-      Documents Attached:
-      - Blueprints/Plans: ${blueprints ? blueprints.length + ' files' : 'None'}
-      - Additional Documentation: ${additionalDocs ? additionalDocs.length + ' files' : 'None'}
-
-      Please provide a presentable and professional estimate with Take Offs included for reference. This bid is for new development/construction.
-    `;
-
-    let aiResponse: string | undefined;
-
     try {
-      let base64 = undefined;
-      let fileType = undefined;
-
-      if (blueprints && blueprints.length > 0) {
-        base64 = await fileToBase64(blueprints[0]);
-        fileType = blueprints[0].type;
-      } else if (additionalDocs && additionalDocs.length > 0) {
-        base64 = await fileToBase64(additionalDocs[0]);
-        fileType = additionalDocs[0].type;
-      }
-
-      // Try AI processing (optional - form works without it)
-      if (isGeminiConfigured()) {
-        try {
-          aiResponse = await analyzeClaim(fullPrompt, base64, fileType);
-        } catch (error) {
-          // AI failed but that's okay - submission will still be saved
-          console.warn('AI processing skipped:', error);
-        }
-      }
-
-      // Save to database regardless of AI status
+      // Save to database
       if (isSupabaseConfigured()) {
-        try {
-          const submission = await submitFormData({
-            form_type: 'commercial_bid',
-            contact_name: formData.contactName,
-            email: formData.email,
-            phone: formData.phone,
-            form_data: {
-              ...formData,
-              hasDocuments: {
-                blueprintsCount: blueprints?.length || 0,
-                additionalDocsCount: additionalDocs?.length || 0
-              }
-            },
-            ai_response: aiResponse,
-            status: aiResponse ? 'processing' : 'pending'
-          });
-          setSubmissionId(submission.id);
-        } catch (dbError) {
-          console.warn('Could not save to database:', dbError);
-        }
+        const submission = await submitFormData({
+          form_type: 'commercial_bid',
+          contact_name: formData.contactName,
+          email: formData.email,
+          phone: formData.phone,
+          form_data: {
+            ...formData,
+            hasDocuments: {
+              blueprintsCount: blueprints?.length || 0,
+              additionalDocsCount: additionalDocs?.length || 0
+            }
+          },
+          status: 'pending'
+        });
+        setSubmissionId(submission.id);
       }
 
-      // Show result - submission is successful regardless of AI
-      const successMessage = `Thank you for your commercial bid request, ${formData.contactName}!\n\nYour bid request for "${formData.projectName}" has been received. Our team will prepare a professional estimate and contact you within 3-5 business days at ${formData.email}.`;
-
-      if (aiResponse) {
-        setResult(aiResponse);
-      } else {
-        setResult(successMessage);
-      }
+      setResult(`Thank you for your commercial bid request, ${formData.contactName}!\n\nYour bid request for "${formData.projectName}" has been received. Our team will prepare a professional estimate and contact you within 3-5 business days at ${formData.email}.`);
     } catch (error) {
       console.error('Form submission error:', error);
       setErrorType('error');
-
-      if (error instanceof GeminiError) {
-        setResult(`We encountered an issue: ${error.message}\n\nPlease try again or contact us directly at support@estimatereliance.com.`);
-      } else {
-        setResult("We're experiencing technical difficulties. Please try again in a few minutes or contact us directly at support@estimatereliance.com.");
-      }
+      setResult("We're experiencing technical difficulties. Please try again in a few minutes or contact us directly at support@estimatereliance.com.");
     } finally {
       setLoading(false);
     }

@@ -1,6 +1,5 @@
 import React, { useState } from 'react';
 import { Upload, FileText, Loader2, Send, User, MapPin, Phone, Hammer, AlertCircle, ClipboardCheck, Building, Calendar, FileWarning, CheckCircle2, XCircle } from 'lucide-react';
-import { analyzeClaim, isGeminiConfigured, GeminiError } from '../services/geminiService';
 import { submitFormData, isSupabaseConfigured } from '../services/formSubmissionService';
 import { ClaimSubmissionFormData, ClaimType, PropertyType } from '../types';
 
@@ -90,100 +89,29 @@ const ClaimSubmission: React.FC = () => {
     setSubmissionId(null);
     setErrorType(null);
 
-    // Create AI analysis prompt
-    const fullPrompt = `
-      CLAIM SUBMISSION ANALYSIS
-
-      Property Owner: ${formData.owner_first_name} ${formData.owner_last_name}
-      Contact: ${formData.owner_phone} | ${formData.owner_email}
-
-      Property Address:
-      ${formData.address_line1}${formData.address_line2 ? `, ${formData.address_line2}` : ''}
-      ${formData.city}, ${formData.state} ${formData.zip_code}
-
-      Property Details:
-      - Type: ${formData.property_type}
-      - Square Footage: ${formData.square_footage || 'Not provided'}
-      - Year Built: ${formData.year_built || 'Not provided'}
-
-      Claim Information:
-      - Claim Type: ${formData.claim_type}
-      - Date of Loss: ${formData.date_of_loss}
-      - Damage Description: ${formData.damage_description}
-
-      Insurance Information:
-      ${formData.insurance_company ? `- Company: ${formData.insurance_company}` : ''}
-      ${formData.policy_number ? `- Policy #: ${formData.policy_number}` : ''}
-      ${formData.adjuster_name ? `- Adjuster: ${formData.adjuster_name} (${formData.adjuster_phone})` : ''}
-
-      Contractor/Submitter:
-      ${formData.contractor_company || formData.contractor_name || 'Direct homeowner submission'}
-      ${formData.contractor_email ? `Contact: ${formData.contractor_email}` : ''}
-
-      Please analyze this claim submission and provide:
-      1. Initial assessment of the damage scope
-      2. Recommended next steps
-      3. Estimated timeline for resolution
-      4. Any additional information needed
-    `;
-
-    let aiResponse: string | undefined;
-
     try {
-      let base64 = undefined;
-      if (file) {
-        base64 = await fileToBase64(file);
-      }
-
-      // Try AI processing (optional - form works without it)
-      if (isGeminiConfigured()) {
-        try {
-          aiResponse = await analyzeClaim(fullPrompt, base64, file?.type);
-        } catch (error) {
-          // AI failed but that's okay - submission will still be saved
-          console.warn('AI processing skipped:', error);
-        }
-      }
-
-      // Save to database regardless of AI status
+      // Save to database
       if (isSupabaseConfigured()) {
-        try {
-          const submission = await submitFormData({
-            form_type: 'claim_submission',
-            contact_name: `${formData.owner_first_name} ${formData.owner_last_name}`,
-            email: formData.owner_email,
-            phone: formData.owner_phone,
-            form_data: {
-              ...formData,
-              hasFile: !!file
-            },
-            ai_response: aiResponse,
-            status: aiResponse ? 'processing' : 'pending'
-          });
-          setSubmissionId(submission.id);
-        } catch (dbError) {
-          console.warn('Could not save to database:', dbError);
-        }
+        const submission = await submitFormData({
+          form_type: 'claim_submission',
+          contact_name: `${formData.owner_first_name} ${formData.owner_last_name}`,
+          email: formData.owner_email,
+          phone: formData.owner_phone,
+          form_data: {
+            ...formData,
+            hasFile: !!file
+          },
+          status: 'pending'
+        });
+        setSubmissionId(submission.id);
       }
 
-      // Show result - submission is successful regardless of AI
-      const successMessage = `Thank you for your claim submission, ${formData.owner_first_name}!\n\nYour ${formData.claim_type} damage claim for ${formData.address_line1}, ${formData.city} has been received. Our team will review your submission and contact you within 24 hours at ${formData.owner_email}.`;
-
-      if (aiResponse) {
-        setResult(aiResponse);
-      } else {
-        setResult(successMessage);
-      }
+      setResult(`Thank you for your claim submission, ${formData.owner_first_name}!\n\nYour ${formData.claim_type} damage claim for ${formData.address_line1}, ${formData.city} has been received. Our team will review your submission and contact you within 24 hours at ${formData.owner_email}.`);
       setSubmitSuccess(true);
     } catch (error) {
       console.error('Form submission error:', error);
       setErrorType('error');
-
-      if (error instanceof GeminiError) {
-        setResult(`We encountered an issue: ${error.message}\n\nPlease try again or contact us directly at support@estimatereliance.com.`);
-      } else {
-        setResult("We're experiencing technical difficulties. Please try again in a few minutes or contact us directly at support@estimatereliance.com.");
-      }
+      setResult("We're experiencing technical difficulties. Please try again in a few minutes or contact us directly at support@estimatereliance.com.");
     } finally {
       setLoading(false);
     }

@@ -12,8 +12,6 @@ export interface FormSubmissionData {
   email: string;
   phone?: string;
   form_data: Record<string, any>;
-  ai_response?: string;
-  ai_error?: string;
   status?: 'pending' | 'processing' | 'completed' | 'failed';
 }
 

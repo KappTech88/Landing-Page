@@ -1,6 +1,5 @@
 import React, { useState } from 'react';
-import { Upload, FileText, Loader2, Send, User, MapPin, Phone, Mail, Calculator, Home, ClipboardList, CheckCircle2, AlertCircle, XCircle } from 'lucide-react';
-import { analyzeClaim, isGeminiConfigured, GeminiError } from '../services/geminiService';
+import { Upload, Loader2, Send, User, MapPin, Phone, Mail, Calculator, Home, ClipboardList, CheckCircle2, AlertCircle, XCircle } from 'lucide-react';
 import { submitFormData, isSupabaseConfigured } from '../services/formSubmissionService';
 
 const XactimateEstimateForm: React.FC = () => {
@@ -53,104 +52,31 @@ const XactimateEstimateForm: React.FC = () => {
     setSubmissionId(null);
     setErrorType(null);
 
-    const fullPrompt = `
-      XACTIMATE ESTIMATE REQUEST (Non-Claim Handling):
-
-      Contact Information:
-      - Name: ${formData.contactName}
-      - Email: ${formData.email}
-      - Phone: ${formData.phone}
-
-      Property Details:
-      - Address: ${formData.propertyAddress}
-      - Property Type: ${formData.propertyType}
-      - Square Footage: ${formData.squareFootage}
-
-      Project Information:
-      Project Description:
-      ${formData.projectDescription}
-
-      Scope of Work:
-      ${formData.scopeOfWork}
-
-      Building Specifications:
-      ${formData.buildingSpecs}
-
-      Additional Notes:
-      ${formData.additionalNotes}
-
-      Documents Attached:
-      - Initial Insurance Estimate: ${insuranceEstimate ? 'Yes' : 'No'}
-      - Photos: ${photos ? photos.length + ' files' : 'None'}
-
-      Please provide a full Xactimate estimate with supplement line items highlighted, building code and manufacture specifications included, and reason notes within the estimate.
-    `;
-
-    let aiResponse: string | undefined;
-
     try {
-      let base64 = undefined;
-      let fileType = undefined;
-
-      if (insuranceEstimate) {
-        base64 = await fileToBase64(insuranceEstimate);
-        fileType = insuranceEstimate.type;
-      } else if (photos && photos.length > 0) {
-        base64 = await fileToBase64(photos[0]);
-        fileType = photos[0].type;
-      }
-
-      // Try AI processing (optional - form works without it)
-      if (isGeminiConfigured()) {
-        try {
-          aiResponse = await analyzeClaim(fullPrompt, base64, fileType);
-        } catch (error) {
-          // AI failed but that's okay - submission will still be saved
-          console.warn('AI processing skipped:', error);
-        }
-      }
-
-      // Save to database regardless of AI status
+      // Save to database
       if (isSupabaseConfigured()) {
-        try {
-          const submission = await submitFormData({
-            form_type: 'xactimate_estimate',
-            contact_name: formData.contactName,
-            email: formData.email,
-            phone: formData.phone,
-            form_data: {
-              ...formData,
-              hasDocuments: {
-                insuranceEstimate: !!insuranceEstimate,
-                photosCount: photos?.length || 0
-              }
-            },
-            ai_response: aiResponse,
-            status: aiResponse ? 'processing' : 'pending'
-          });
-          setSubmissionId(submission.id);
-        } catch (dbError) {
-          console.warn('Could not save to database:', dbError);
-        }
+        const submission = await submitFormData({
+          form_type: 'xactimate_estimate',
+          contact_name: formData.contactName,
+          email: formData.email,
+          phone: formData.phone,
+          form_data: {
+            ...formData,
+            hasDocuments: {
+              insuranceEstimate: !!insuranceEstimate,
+              photosCount: photos?.length || 0
+            }
+          },
+          status: 'pending'
+        });
+        setSubmissionId(submission.id);
       }
 
-      // Show result - submission is successful regardless of AI
-      const successMessage = `Thank you for your estimate request, ${formData.contactName}!\n\nYour Xactimate estimate request for ${formData.propertyAddress} has been received. Our team will prepare your estimate and contact you within 2-3 business days at ${formData.email}.`;
-
-      if (aiResponse) {
-        setResult(aiResponse);
-      } else {
-        setResult(successMessage);
-      }
+      setResult(`Thank you for your estimate request, ${formData.contactName}!\n\nYour Xactimate estimate request for ${formData.propertyAddress} has been received. Our team will prepare your estimate and contact you within 2-3 business days at ${formData.email}.`);
     } catch (error) {
       console.error('Form submission error:', error);
       setErrorType('error');
-
-      if (error instanceof GeminiError) {
-        setResult(`We encountered an issue: ${error.message}\n\nPlease try again or contact us directly at support@estimatereliance.com.`);
-      } else {
-        setResult("We're experiencing technical difficulties. Please try again in a few minutes or contact us directly at support@estimatereliance.com.");
-      }
+      setResult("We're experiencing technical difficulties. Please try again in a few minutes or contact us directly at support@estimatereliance.com.");
     } finally {
       setLoading(false);
     }
